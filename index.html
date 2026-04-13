@@ -655,11 +655,11 @@
   .plan-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px;
+    gap: 8px;
+    padding: 8px 12px;
     background: var(--bg-card);
     border: 1px solid var(--bg-card-hover);
-    border-radius: 10px;
+    border-radius: 8px;
     transition: all 0.2s;
   }
   .plan-item:hover {
@@ -672,6 +672,43 @@
   .plan-item.done .plan-title {
     text-decoration: line-through;
     text-decoration-color: var(--text-secondary);
+  }
+  .plan-item .plan-col-content {
+    width: 90px;
+    min-width: 80px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    overflow: hidden;
+  }
+  .plan-item .plan-col-date {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  .plan-item .plan-col-person {
+    width: 60px;
+    min-width: 50px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .plan-date-text {
+    font-size: 11px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+  .plan-person-text {
+    font-size: 11px;
+    color: var(--accent);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .day-detail-list {
     max-height: 50vh;
@@ -1800,7 +1837,26 @@ const ITINERARY_KEY = 'travel_itinerary_v2';
 const CALENDAR_SYNC_KEY = 'calendar_sync_data';
 
 // ===== 日历清单同步数据（从日历清单软件导入）=====
-const CALENDAR_EVENTS = {"2026-03-06":[{"time":"","title":"伊利周播","source":"calendar_app"}],"2026-03-13":[{"time":"","title":"伊利周播","source":"calendar_app"}],"2026-03-14":[{"time":"","title":"河南驻马店","source":"calendar_app"}],"2026-03-15":[{"time":"","title":"河南驻马店","source":"calendar_app"}],"2026-03-17":[{"time":"","title":"上海","source":"calendar_app"}],"2026-03-18":[{"time":"","title":"上海","source":"calendar_app"}],"2026-03-19":[{"time":"","title":"内蒙古赤峰","source":"calendar_app"}],"2026-03-20":[{"time":"","title":"伊利周播","source":"calendar_app"},{"time":"","title":"内蒙古赤峰","source":"calendar_app"},{"time":"","title":"福建泉州","source":"calendar_app"},{"time":"","title":"河南南阳","source":"calendar_app"}],"2026-03-21":[{"time":"","title":"广东东莞","source":"calendar_app"},{"time":"","title":"福建泉州","source":"calendar_app"},{"time":"","title":"河南南阳","source":"calendar_app"}],"2026-03-22":[{"time":"","title":"广东东莞","source":"calendar_app"},{"time":"","title":"湖北十堰","source":"calendar_app"}],"2026-03-23":[{"time":"","title":"湖北十堰","source":"calendar_app"}],"2026-03-26":[{"time":"","title":"重庆双江区","source":"calendar_app"}],"2026-03-27":[{"time":"","title":"伊利周播","source":"calendar_app"},{"time":"","title":"重庆双江区","source":"calendar_app"}],"2026-03-28":[{"time":"","title":"上海","source":"calendar_app"}],"2026-04-01":[{"time":"","title":"北京","source":"calendar_app"}],"2026-04-03":[{"time":"","title":"伊利周播","source":"calendar_app"}],"2026-04-09":[{"time":"","title":"南昌","source":"calendar_app"},{"time":"","title":"澳门","source":"calendar_app"}],"2026-04-10":[{"time":"","title":"伊利周播","source":"calendar_app"},{"time":"","title":"南昌","source":"calendar_app"}],"2026-04-13":[{"time":"","title":"北京","source":"calendar_app"}],"2026-04-17":[{"time":"","title":"伊利周播","source":"calendar_app"},{"time":"","title":"东莞 骈一鑫","source":"calendar_app"},{"time":"","title":"台州 陈智勇","source":"calendar_app"}],"2026-04-18":[{"time":"","title":"东莞 骈一鑫","source":"calendar_app"},{"time":"","title":"台州 陈智勇","source":"calendar_app"},{"time":"","title":"广西玉林 程广超","source":"calendar_app"}],"2026-04-19":[{"time":"","title":"广西玉林 程广超","source":"calendar_app"}],"2026-04-23":[{"time":"","title":"丽水","source":"calendar_app"},{"time":"","title":"淄博","source":"calendar_app"}],"2026-04-24":[{"time":"","title":"伊利周播","source":"calendar_app"},{"time":"","title":"丽水","source":"calendar_app"},{"time":"","title":"淄博","source":"calendar_app"}],"2026-04-25":[{"time":"","title":"金华","source":"calendar_app"}],"2026-04-28":[{"time":"","title":"侄女喜酒","source":"calendar_app"}],"2026-04-29":[{"time":"","title":"广西茂名","source":"calendar_app"},{"time":"","title":"贵州","source":"calendar_app"}],"2026-04-30":[{"time":"","title":"伊利周播","source":"calendar_app"},{"time":"","title":"广西茂名","source":"calendar_app"},{"time":"","title":"贵州","source":"calendar_app"}],"2026-05-14":[{"time":"","title":"深圳","source":"calendar_app"}],"2026-05-15":[{"time":"","title":"深圳","source":"calendar_app"}],"2026-05-16":[{"time":"","title":"深圳","source":"calendar_app"}]};
+const CALENDAR_EVENTS_DEFAULT = {"2026-03-06":[{"time":"","title":"伊利周播","source":"calendar_app"}],"2026-03-13":[{"time":"","title":"伊利周播","source":"calendar_app"}],"2026-03-14":[{"time":"","title":"河南驻马店","source":"calendar_app"}],"2026-03-15":[{"time":"","title":"河南驻马店","source":"calendar_app"}],"2026-03-17":[{"time":"","title":"上海","source":"calendar_app"}],"2026-03-18":[{"time":"","title":"上海","source":"calendar_app"}],"2026-03-19":[{"time":"","title":"内蒙古赤峰","source":"calendar_app"}],"2026-03-20":[{"time":"","title":"伊利周播","source":"calendar_app"},{"time":"","title":"内蒙古赤峰","source":"calendar_app"},{"time":"","title":"福建泉州","source":"calendar_app"},{"time":"","title":"河南南阳","source":"calendar_app"}],"2026-03-21":[{"time":"","title":"广东东莞","source":"calendar_app"},{"time":"","title":"福建泉州","source":"calendar_app"},{"time":"","title":"河南南阳","source":"calendar_app"}],"2026-03-22":[{"time":"","title":"广东东莞","source":"calendar_app"},{"time":"","title":"湖北十堰","source":"calendar_app"}],"2026-03-23":[{"time":"","title":"湖北十堰","source":"calendar_app"}],"2026-03-26":[{"time":"","title":"重庆双江区","source":"calendar_app"}],"2026-03-27":[{"time":"","title":"伊利周播","source":"calendar_app"},{"time":"","title":"重庆双江区","source":"calendar_app"}],"2026-03-28":[{"time":"","title":"上海","source":"calendar_app"}],"2026-04-01":[{"time":"","title":"北京","source":"calendar_app"}],"2026-04-03":[{"time":"","title":"伊利周播","source":"calendar_app"}],"2026-04-09":[{"time":"","title":"南昌","source":"calendar_app"},{"time":"","title":"澳门","source":"calendar_app"}],"2026-04-10":[{"time":"","title":"伊利周播","source":"calendar_app"},{"time":"","title":"南昌","source":"calendar_app"}],"2026-04-13":[{"time":"","title":"北京","source":"calendar_app"}],"2026-04-17":[{"time":"","title":"伊利周播","source":"calendar_app"},{"time":"","title":"东莞 骈一鑫","source":"calendar_app"},{"time":"","title":"台州 陈智勇","source":"calendar_app"}],"2026-04-18":[{"time":"","title":"东莞 骈一鑫","source":"calendar_app"},{"time":"","title":"台州 陈智勇","source":"calendar_app"},{"time":"","title":"广西玉林 程广超","source":"calendar_app"}],"2026-04-19":[{"time":"","title":"广西玉林 程广超","source":"calendar_app"}],"2026-04-23":[{"time":"","title":"丽水","source":"calendar_app"},{"time":"","title":"淄博","source":"calendar_app"}],"2026-04-24":[{"time":"","title":"伊利周播","source":"calendar_app"},{"time":"","title":"丽水","source":"calendar_app"},{"time":"","title":"淄博","source":"calendar_app"}],"2026-04-25":[{"time":"","title":"金华","source":"calendar_app"}],"2026-04-28":[{"time":"","title":"侄女喜酒","source":"calendar_app"}],"2026-04-29":[{"time":"","title":"广西茂名","source":"calendar_app"},{"time":"","title":"贵州","source":"calendar_app"}],"2026-04-30":[{"time":"","title":"伊利周播","source":"calendar_app"},{"time":"","title":"广西茂名","source":"calendar_app"},{"time":"","title":"贵州","source":"calendar_app"}],"2026-05-14":[{"time":"","title":"深圳","source":"calendar_app"}],"2026-05-15":[{"time":"","title":"深圳","source":"calendar_app"}],"2026-05-16":[{"time":"","title":"深圳","source":"calendar_app"}]};
+let CALENDAR_EVENTS = {};
+
+function loadCalendarEvents() {
+  try {
+    const stored = localStorage.getItem('calendar_events_v2');
+    if (stored) {
+      CALENDAR_EVENTS = JSON.parse(stored);
+    } else {
+      CALENDAR_EVENTS = JSON.parse(JSON.stringify(CALENDAR_EVENTS_DEFAULT));
+      localStorage.setItem('calendar_events_v2', JSON.stringify(CALENDAR_EVENTS));
+    }
+  } catch(e) {
+    CALENDAR_EVENTS = JSON.parse(JSON.stringify(CALENDAR_EVENTS_DEFAULT));
+  }
+}
+
+function saveCalendarEvents() {
+  localStorage.setItem('calendar_events_v2', JSON.stringify(CALENDAR_EVENTS));
+}
 
 // ===== 用户足迹数据（从微信截图识别）=====
 const USER_FOOTPRINTS = [
@@ -2275,6 +2331,7 @@ let mapLayers = {};
 
 // ===== Init =====
 function init() {
+  loadCalendarEvents();
   createStars();
 
   // Initialize Leaflet map with dark theme
@@ -2512,8 +2569,8 @@ function createDayElement(day, isOtherMonth, isToday, plans, isSelected, dateObj
     const key = (e.title || '').trim();
     if (!seen.has(key)) {
       seen.add(key);
-      const { person } = extractPersonFromTitle(e.title);
-      allItems.push({ text: e.title, type: 'calendar', color: '', person: person || '' });
+      const { city, person } = extractPersonFromTitle(e.title);
+      allItems.push({ text: city || e.title, type: 'calendar', color: '', person: person || '' });
     }
   });
   
@@ -2566,7 +2623,7 @@ function createDayElement(day, isOtherMonth, isToday, plans, isSelected, dateObj
       const doneKey = `${dateKey}_${item.text}`;
       const isDone = planDoneSet.has(doneKey);
       const dotColor = item.color || PALETTE[item._ci];
-      const personTag = item.person ? ` <span style="opacity:0.5;font-size:8px">[${item.person}]</span>` : '';
+      const personTag = item.person ? `<span style="opacity:0.45;font-size:8px">(${item.person})</span>` : '';
       eventsHtml += `<div class="day-event ${c}${isDone ? ' done' : ''}" ${style}><span class="day-event-dot" style="background:${dotColor}"></span>${item.text}${personTag}</div>`;
     });
     if (totalCount > 4) {
@@ -2762,38 +2819,12 @@ function renderDayDetail() {
     const doneKey = `${dateKey}_${item.title}`;
     const isDone = planDoneSet.has(doneKey);
     
-    // 构建日期标签：如果有多个相邻日期，显示为一行小标签
-    let datesHtml = '';
-    if (item.dates && item.dates.length > 1) {
-      datesHtml = '<div class="plan-dates">';
-      item.dates.forEach(d => {
-        const isCurrent = d.key === dateKey;
-        const prefix = (d.month !== (selectedDate.getMonth() + 1)) ? `${d.month}/` : '';
-        datesHtml += `<span class="plan-date-tag ${isCurrent ? 'current' : ''}">${prefix}${d.day}</span>`;
-      });
-      datesHtml += '</div>';
-    }
-    
+    // 提取负责人
+    let personName = '';
     if (item.type === 'calendar') {
       const { person: extractedPerson } = extractPersonFromTitle(item.title);
-      const personTag = extractedPerson ? `<span class="plan-person-tag">${extractedPerson}</span>` : '';
-      html += `
-      <div class="plan-item calendar-sync-item ${isDone ? 'done' : ''}" onclick="flyToEvent('${item.title.replace(/'/g, "\\'")}')" ondblclick="editCalendarEvent('${dateKey}', '${item.title.replace(/'/g, "\\'")}')">
-        <div class="done-toggle" onclick="event.stopPropagation(); togglePlanDone('${dateKey}', '${item.title.replace(/'/g, "\\'")}')" title="${isDone ? '取消完成' : '标记完成'}">${isDone ? '✓' : ''}</div>
-        <span class="plan-time"><span class="plan-dot" style="background:${dotColor}"></span></span>
-        <div class="plan-content">
-          <div class="plan-title">${item.title} ${personTag}</div>
-          ${datesHtml}
-        </div>
-        <div class="plan-actions">
-          <button class="plan-edit-btn" onclick="event.stopPropagation(); editCalendarEvent('${dateKey}', '${item.title.replace(/'/g, "\\'")}')" title="编辑">✎</button>
-          <button class="plan-delete" onclick="event.stopPropagation(); removeCalendarEvent('${dateKey}', '${item.title.replace(/'/g, "\\'")}')" title="删除">✕</button>
-        </div>
-      </div>`;
+      personName = extractedPerson || '';
     } else {
-      const plan = item.plan;
-      const planIdx = plans.indexOf(plan);
-      // 负责人：优先用行程自带的 person，没有则从关联足迹查找，都没有则从标题智能提取
       let planPerson = item.plan?.person || '';
       if (!planPerson && plan.locationId) {
         const fp = footprints.find(f => f.id === plan.locationId);
@@ -2803,15 +2834,55 @@ function renderDayDetail() {
         const { person: extracted } = extractPersonFromTitle(item.title);
         planPerson = extracted || '';
       }
-      const personTag = planPerson ? `<span class="plan-person-tag">${planPerson}</span>` : '';
+      personName = planPerson;
+    }
+    
+    // 提取城市名作为内容
+    let cityContent = item.title;
+    if (item.type === 'calendar') {
+      const { city } = extractPersonFromTitle(item.title);
+      if (city) cityContent = city;
+    }
+    
+    // 构建日期标签
+    let dateText = '';
+    if (item.dates && item.dates.length > 1) {
+      const first = item.dates[0];
+      const last = item.dates[item.dates.length - 1];
+      const prefix1 = (first.month !== (selectedDate.getMonth() + 1)) ? `${first.month}/` : '';
+      const prefix2 = (last.month !== (selectedDate.getMonth() + 1)) ? `${last.month}/` : '';
+      dateText = `${prefix1}${first.day}-${prefix2}${last.day}日`;
+    } else {
+      dateText = `${m}月${d}日`;
+    }
+    
+    if (item.type === 'calendar') {
       html += `
-      <div class="plan-item ${isDone ? 'done' : ''}" ${item.planColor ? `style="border-left: 3px solid ${item.planColor}"` : ''} onclick="flyToEvent('${item.title.replace(/'/g, "\\'")}')" ondblclick="editPlanItem('${dateKey}', ${planIdx})">
+      <div class="plan-item calendar-sync-item ${isDone ? 'done' : ''}" onclick="flyToEvent('${item.title.replace(/'/g, "\\'")}')" ondblclick="editCalendarEvent('${dateKey}', '${item.title.replace(/'/g, "\\'")}')">
+        <div class="done-toggle" onclick="event.stopPropagation(); togglePlanDone('${dateKey}', '${item.title.replace(/'/g, "\\'")}')" title="${isDone ? '取消完成' : '标记完成'}">${isDone ? '✓' : ''}</div>
+        <span class="plan-time"><span class="plan-dot" style="background:${dotColor}"></span></span>
+        <div class="plan-col-content" onclick="event.stopPropagation(); flyToEvent('${item.title.replace(/'/g, "\\'")}')">
+          <span class="plan-title">${cityContent}</span>
+        </div>
+        <div class="plan-col-date"><span class="plan-date-text">${dateText}</span></div>
+        <div class="plan-col-person"><span class="plan-person-text">${personName || '-'}</span></div>
+        <div class="plan-actions">
+          <button class="plan-edit-btn" onclick="event.stopPropagation(); editCalendarEvent('${dateKey}', '${item.title.replace(/'/g, "\\'")}')" title="编辑">✎</button>
+          <button class="plan-delete" onclick="event.stopPropagation(); removeCalendarEvent('${dateKey}', '${item.title.replace(/'/g, "\\'")}')" title="删除">✕</button>
+        </div>
+      </div>`;
+    } else {
+      const plan = item.plan;
+      const planIdx = plans.indexOf(plan);
+      html += `
+      <div class="plan-item ${isDone ? 'done' : ''}" ${item.planColor ? `style="border-left: 3px solid ${item.planColor}"` : ''} ondblclick="editPlanItem('${dateKey}', ${planIdx})">
         <div class="done-toggle" onclick="event.stopPropagation(); togglePlanDone('${dateKey}', '${(plan.title || '').replace(/'/g, "\\'")}')" title="${isDone ? '取消完成' : '标记完成'}">${isDone ? '✓' : ''}</div>
         <span class="plan-time"><span class="plan-dot" style="background:${dotColor}"></span></span>
-        <div class="plan-content">
-          <div class="plan-title">${item.title} ${personTag}</div>
-          ${datesHtml}
+        <div class="plan-col-content" onclick="event.stopPropagation(); flyToEvent('${item.title.replace(/'/g, "\\'")}')">
+          <span class="plan-title">${cityContent}</span>
         </div>
+        <div class="plan-col-date"><span class="plan-date-text">${dateText}</span></div>
+        <div class="plan-col-person"><span class="plan-person-text">${personName || '-'}</span></div>
         <div class="plan-actions">
           <button class="plan-edit-btn" onclick="event.stopPropagation(); editPlanItem('${dateKey}', ${planIdx})" title="编辑">✎</button>
           <button class="plan-delete" onclick="event.stopPropagation(); deletePlan('${dateKey}', ${planIdx})" title="删除">✕</button>
@@ -2891,6 +2962,7 @@ function openPlanModal() {
   selectedPlanColor = '';
   document.getElementById('planModalTitle').textContent = '+ 添加行程';
   document.getElementById('planTitle').value = '';
+  document.getElementById('planPerson').value = '';
   document.getElementById('planModal').classList.add('show');
   // 重置颜色选择
   document.querySelectorAll('#colorPickerRow .color-dot').forEach(d => d.classList.remove('selected'));
@@ -2901,6 +2973,7 @@ function openPlanModal() {
 function closePlanModal() {
   document.getElementById('planModal').classList.remove('show');
   document.getElementById('planTitle').value = '';
+  document.getElementById('planPerson').value = '';
   editingPlanKey = null;
   editingPlanIdx = null;
   editingCalendarOldTitle = null;
@@ -2997,13 +3070,17 @@ function savePlan() {
     return;
   }
   
-  if (editingCalendarOldTitle) {
+    if (editingCalendarOldTitle) {
     // 编辑日历清单事件
     const dateKey = editingPlanKey;
     if (CALENDAR_EVENTS[dateKey]) {
       const ev = CALENDAR_EVENTS[dateKey].find(e => e.title === editingCalendarOldTitle);
-      if (ev) ev.title = title;
+      if (ev) {
+        // 用新标题+负责人拼接
+        ev.title = person ? title + ' ' + person : title;
+      }
     }
+    saveCalendarEvents();
     editingCalendarOldTitle = null;
     renderCalendar();
     renderDayDetail();
@@ -3014,6 +3091,7 @@ function savePlan() {
     const dateKey = editingPlanKey;
     const planIdx = editingPlanIdx;
     const old = itinerary[dateKey][planIdx];
+    // 标题用新内容，负责人单独保存
     itinerary[dateKey][planIdx] = { title, color: color || old.color || '', person: person || old.person || '', locationId: old.locationId || '', locationName: old.locationName || '' };
     localStorage.setItem(ITINERARY_KEY, JSON.stringify(itinerary));
     triggerAutoSync();
@@ -3051,6 +3129,7 @@ function removeCalendarEvent(dateKey, title) {
   if (CALENDAR_EVENTS[dateKey]) {
     CALENDAR_EVENTS[dateKey] = CALENDAR_EVENTS[dateKey].filter(e => e.title !== title);
     if (CALENDAR_EVENTS[dateKey].length === 0) delete CALENDAR_EVENTS[dateKey];
+    saveCalendarEvents();
     renderCalendar();
     renderDayDetail();
     showToast('🗑️ 事件已删除', 'error');
@@ -3065,6 +3144,7 @@ function editPlanItem(dateKey, planIdx) {
   selectedPlanColor = plan.color || '';
   document.getElementById('planModalTitle').textContent = '✎ 编辑行程';
   document.getElementById('planTitle').value = plan.title || '';
+  document.getElementById('planPerson').value = plan.person || '';
   // 设置颜色选择器
   document.querySelectorAll('#colorPickerRow .color-dot').forEach(d => {
     d.classList.toggle('selected', d.dataset.color === (plan.color || ''));
@@ -3083,7 +3163,12 @@ function editCalendarEvent(dateKey, title) {
   editingCalendarOldTitle = title;
   selectedPlanColor = '';
   modalTitle.textContent = '✎ 编辑事件';
-  input.value = title;
+  
+  // 提取城市名填入标题输入框，负责人预填
+  const { city, person } = extractPersonFromTitle(title);
+  input.value = city || title;
+  document.getElementById('planPerson').value = person || '';
+  
   // 重置颜色选择器
   document.querySelectorAll('#colorPickerRow .color-dot').forEach(d => {
     d.classList.toggle('selected', d.dataset.color === '');
