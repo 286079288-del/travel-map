@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>超大人旅行足迹 🗺️</title>
+<title>超大人项目规划 🗺️</title>
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <!-- Leaflet JS -->
@@ -11,13 +11,108 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
 
+  /* ===== Theme Variables ===== */
+  :root, .dark-theme {
+    --bg-primary: #0a0e27;
+    --bg-panel: rgba(10,14,39,0.45);
+    --bg-card: rgba(0,0,0,0.06);
+    --bg-card-hover: rgba(0,0,0,0.1);
+    --bg-input: rgba(255,255,255,0.06);
+    --border-color: rgba(255,255,255,0.08);
+    --border-light: rgba(255,255,255,0.04);
+    --text-primary: rgba(255,255,255,0.95);
+    --text-secondary: rgba(255,255,255,0.65);
+    --text-muted: rgba(255,255,255,0.4);
+    --text-faint: rgba(255,255,255,0.2);
+    --accent: #00d4ff;
+    --accent-bg: rgba(0,212,255,0.08);
+    --danger: #ff4757;
+    --danger-bg: rgba(255,71,87,0.12);
+    --warning: #ffd700;
+    --success: #2ed573;
+    --shadow-color: rgba(0,0,0,0.55);
+    --header-gradient: rgba(10,14,39,0.45);
+    --header-gradient-end: rgba(10,14,39,0.3);
+    --star-opacity: 0.3;
+    --cal-bg: rgba(0,0,0,0.15);
+    --cal-day-hover: rgba(255,255,255,0.06);
+    --cal-today-bg: rgba(0,212,255,0.15);
+    --scrollbar-thumb: rgba(255,255,255,0.1);
+    --marker-shadow: rgba(0,0,0,0.3);
+    --popup-bg: rgba(20,24,50,0.95);
+    --schedule-header-bg: rgba(0,212,255,0.06);
+    --schedule-stripe: rgba(0,212,255,0.8);
+  }
+  .light-theme {
+    --bg-primary: #f0f2f5;
+    --bg-panel: rgba(255,255,255,0.7);
+    --bg-card: rgba(0,0,0,0.03);
+    --bg-card-hover: rgba(0,0,0,0.06);
+    --bg-input: rgba(0,0,0,0.04);
+    --border-color: rgba(0,0,0,0.08);
+    --border-light: rgba(0,0,0,0.04);
+    --text-primary: rgba(0,0,0,0.88);
+    --text-secondary: rgba(0,0,0,0.6);
+    --text-muted: rgba(0,0,0,0.4);
+    --text-faint: rgba(0,0,0,0.18);
+    --accent: #0099cc;
+    --accent-bg: rgba(0,153,204,0.08);
+    --danger: #e04050;
+    --danger-bg: rgba(224,64,80,0.08);
+    --warning: #cc9900;
+    --success: #1da855;
+    --shadow-color: rgba(0,0,0,0.1);
+    --header-gradient: rgba(255,255,255,0.7);
+    --header-gradient-end: rgba(255,255,255,0.65);
+    --star-opacity: 0.05;
+    --cal-bg: rgba(0,0,0,0.02);
+    --cal-day-hover: rgba(0,0,0,0.04);
+    --cal-today-bg: rgba(0,153,204,0.1);
+    --scrollbar-thumb: rgba(0,0,0,0.12);
+    --marker-shadow: rgba(0,0,0,0.15);
+    --popup-bg: rgba(255,255,255,0.96);
+    --schedule-header-bg: rgba(0,153,204,0.06);
+    --schedule-stripe: rgba(0,153,204,0.8);
+  }
+    --scrollbar-track: transparent;
+  }
+  [data-theme="light"] {
+    --bg-primary: #f0f2f5;
+    --bg-panel: var(--bg-panel);
+    --bg-card: var(--bg-card);
+    --bg-card-hover: var(--bg-card);
+    --bg-input: var(--bg-card);
+    --border-color: var(--bg-card);
+    --border-light: var(--bg-card);
+    --text-primary: #1a1a2e;
+    --text-secondary: var(--shadow-color);
+    --text-muted: var(--shadow-color);
+    --text-faint: var(--bg-card);
+    --accent: #0088cc;
+    --accent-bg: var(--accent-bg);
+    --danger: #e63946;
+    --danger-bg: rgba(230,57,70,0.08);
+    --warning: #e6a800;
+    --success: #2d9d5a;
+    --shadow-color: var(--bg-card);
+    --header-gradient: var(--bg-panel);
+    --header-gradient-end: var(--text-primary);
+    --star-opacity: 0;
+    --cal-bg: var(--bg-panel);
+    --cal-day-hover: rgba(0,0,0,0.04);
+    --cal-today-bg: var(--accent-bg);
+    --scrollbar-thumb: rgba(0,0,0,0.15);
+    --scrollbar-track: transparent;
+  }
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
     font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
     overflow: hidden;
     height: 100vh;
-    background: #0a0e27;
+    background: var(--bg-primary);
+    transition: background 0.4s ease;
   }
 
   #mapContainer { width: 100%; height: 100vh; position: relative; z-index: 1; }
@@ -25,7 +120,7 @@
   /* ===== Stars ===== */
   .stars { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; opacity:0.6; }
   .star {
-    position: absolute; width: 2px; height: 2px; background: #fff; border-radius: 50%;
+    position: absolute; width: 2px; height: 2px; background: var(--text-primary); border-radius: 50%;
     animation: twinkle var(--dur) ease-in-out infinite; opacity: 0;
   }
   @keyframes twinkle { 0%,100%{opacity:0;transform:scale(0.5)} 50%{opacity:var(--op);transform:scale(1)} }
@@ -33,7 +128,7 @@
   /* ===== Header ===== */
   .header {
     position: fixed; top:0; left:0; right:0; z-index:100; padding:16px 30px;
-    background: linear-gradient(to bottom, rgba(10,14,39,0.95) 0%, rgba(10,14,39,0.7) 70%, transparent 100%);
+    background: linear-gradient(to bottom, var(--header-gradient) 0%, var(--header-gradient-end) 70%, transparent 100%);
     display: flex; justify-content: space-between; align-items: center; pointer-events: none;
   }
   .header > * { pointer-events: auto; }
@@ -42,9 +137,9 @@
     width: 40px; height: 40px;
     background: linear-gradient(135deg, #00d4ff, #7b2ff7);
     border-radius: 12px; display: flex; align-items: center; justify-content: center;
-    font-size: 20px; box-shadow: 0 4px 20px rgba(0,212,255,0.3);
+    font-size: 20px; box-shadow: 0 4px 20px var(--accent-bg);
   }
-  .logo-text { font-size: 22px; font-weight: 300; letter-spacing: 3px; color: #fff; }
+  .logo-text { font-size: 22px; font-weight: 300; letter-spacing: 3px; color: var(--text-primary); }
   .logo-text span {
     font-weight: 700;
     background: linear-gradient(135deg, #00d4ff, #7b2ff7);
@@ -60,21 +155,21 @@
     background: linear-gradient(135deg, #ff4757, #ff6b81);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   }
-  .stat-label { font-size: 10px; color: rgba(255,255,255,0.4); letter-spacing: 2px; margin-top: 4px; }
+  .stat-label { font-size: 10px; color: var(--text-secondary); letter-spacing: 2px; margin-top: 4px; }
 
   /* ===== Mode Switch ===== */
   .mode-switch {
-    display: flex; background: rgba(10,14,39,0.85); backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; overflow: hidden;
+    display: flex; background: var(--bg-panel); backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color); border-radius: 14px; overflow: hidden;
   }
   .mode-btn {
-    padding: 10px 18px; border: none; background: transparent; color: rgba(255,255,255,0.4);
+    padding: 10px 18px; border: none; background: transparent; color: var(--text-secondary);
     font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit;
     transition: all 0.3s ease; display: flex; align-items: center; gap: 6px;
     position: relative;
   }
   .mode-btn.active-visited {
-    background: rgba(0,212,255,0.15); color: #00d4ff;
+    background: var(--accent-bg); color: #00d4ff;
     box-shadow: inset 0 -2px 0 #00d4ff;
   }
 
@@ -86,50 +181,50 @@
     background: rgba(255,71,87,0.15); color: #ff4757;
     box-shadow: inset 0 -2px 0 #ff4757;
   }
-  .mode-btn:hover:not(.active-visited):not(.active-upcoming):not(.active-project) { color: rgba(255,255,255,0.6); }
+  .mode-btn:hover:not(.active-visited):not(.active-upcoming):not(.active-project) { color: var(--text-primary); }
 
   /* ===== Map Type Switch ===== */
   .map-type-switch {
     position: fixed; bottom: 30px; right: 30px; z-index: 100;
-    display: flex; background: rgba(10,14,39,0.85); backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;
+    display: flex; background: var(--bg-panel); backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden;
   }
   .map-type-btn {
-    padding: 8px 14px; border: none; background: transparent; color: rgba(255,255,255,0.5);
+    padding: 8px 14px; border: none; background: transparent; color: var(--text-secondary);
     font-size: 12px; font-weight: 500; cursor: pointer; font-family: inherit;
     transition: all 0.3s ease; display: flex; align-items: center; gap: 6px;
   }
   .map-type-btn.active {
-    background: rgba(0,212,255,0.15); color: #00d4ff;
+    background: var(--accent-bg); color: #00d4ff;
   }
-  .map-type-btn:hover:not(.active) { color: rgba(255,255,255,0.7); }
+  .map-type-btn:hover:not(.active) { color: var(--text-primary); }
 
   /* ===== Left Panel (Search + Itinerary) ===== */
   .left-panel {
     position: fixed; top: 80px; left: 20px; z-index: 100; width: 640px;
     height: calc(100vh - 100px);
     display: flex; flex-direction: column;
-    background: rgba(10,14,39,0.75); backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.08); border-radius: 16px;
+    background: var(--bg-panel); backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color); border-radius: 16px;
     overflow: hidden;
   }
 
   /* Tabs */
   .panel-tabs {
-    display: flex; border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: flex; border-bottom: 1px solid var(--bg-card-hover);
   }
   .panel-tab {
     flex: 1; padding: 14px; border: none; background: transparent;
-    color: rgba(255,255,255,0.4); font-size: 13px; font-weight: 500;
+    color: var(--text-secondary); font-size: 13px; font-weight: 500;
     cursor: pointer; font-family: inherit; transition: all 0.3s ease;
     display: flex; align-items: center; justify-content: center; gap: 6px;
   }
   .panel-tab.active {
     color: #00d4ff;
-    background: rgba(0,212,255,0.08);
+    background: var(--accent-bg);
     box-shadow: inset 0 -2px 0 #00d4ff;
   }
-  .panel-tab:hover:not(.active) { color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.02); }
+  .panel-tab:hover:not(.active) { color: var(--text-primary); background: var(--bg-card); }
 
   /* Tab Content */
   .tab-content { display: none; padding: 16px; overflow-y: auto; }
@@ -137,7 +232,7 @@
 
   /* Search Section */
   .search-section {
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid var(--border-color);
     border-radius: 12px;
     margin-bottom: 16px;
     overflow: hidden;
@@ -147,12 +242,12 @@
     align-items: center;
     justify-content: space-between;
     padding: 12px 16px;
-    background: rgba(0,212,255,0.05);
+    background: var(--accent-bg);
     cursor: pointer;
     transition: all 0.2s ease;
   }
   .search-section-header:hover {
-    background: rgba(0,212,255,0.08);
+    background: var(--accent-bg);
   }
   .search-section-title {
     font-size: 13px;
@@ -161,7 +256,7 @@
   }
   .search-section-toggle {
     font-size: 10px;
-    color: rgba(255,255,255,0.4);
+    color: var(--text-secondary);
     transition: transform 0.3s ease;
   }
   .search-section-header.collapsed .search-section-toggle {
@@ -169,68 +264,68 @@
   }
   .search-section-content {
     padding: 12px;
-    background: rgba(10,14,39,0.5);
+    background: var(--bg-panel);
   }
   .search-section-content.collapsed {
     display: none;
   }
   .search-box { display: flex; gap: 8px; }
   .search-input-wrap { flex: 1; position: relative; }
-  .search-input-wrap svg { position: absolute; left:14px; top:50%; transform:translateY(-50%); width:18px; height:18px; fill:rgba(255,255,255,0.3); }
+  .search-input-wrap svg { position: absolute; left:14px; top:50%; transform:translateY(-50%); width:18px; height:18px; fill:var(--text-muted); }
   .search-input {
     width: 100%; padding: 12px 16px 12px 42px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
-    color: #fff; font-size: 14px; font-family: inherit; outline: none; transition: all 0.3s ease;
+    background: var(--bg-card-hover);
+    border: 1px solid var(--border-color); border-radius: 12px;
+    color: var(--text-primary); font-size: 14px; font-family: inherit; outline: none; transition: all 0.3s ease;
   }
-  .search-input:focus { border-color: rgba(0,212,255,0.4); box-shadow: 0 0 20px rgba(0,212,255,0.1); }
-  .search-input::placeholder { color: rgba(255,255,255,0.25); }
+  .search-input:focus { border-color: rgba(0,212,255,0.4); box-shadow: 0 0 20px var(--accent-bg); }
+  .search-input::placeholder { color: var(--text-faint); }
   .search-btn {
-    padding: 12px 20px; border: none; border-radius: 12px; color: #fff;
+    padding: 12px 20px; border: none; border-radius: 12px; color: var(--text-primary);
     font-size: 14px; font-weight: 600; cursor: pointer;
     font-family: inherit; transition: all 0.3s ease;
     background: linear-gradient(135deg, #00d4ff, #7b2ff7);
-    box-shadow: 0 4px 20px rgba(0,212,255,0.2);
+    box-shadow: 0 4px 20px var(--accent-bg);
   }
   .search-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 30px rgba(0,212,255,0.4); }
 
   .search-results {
     max-height: 280px; overflow-y: auto;
-    background: rgba(10,14,39,0.95);
-    border: 1px solid rgba(255,255,255,0.06); border-radius: 12px;
+    background: var(--header-gradient);
+    border: 1px solid var(--bg-card-hover); border-radius: 12px;
     display: none;
     margin-top: 10px;
     z-index: 200;
   }
   .search-results.show { display: block; }
   .search-result-item {
-    padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.04);
+    padding: 12px 14px; border-bottom: 1px solid var(--bg-card);
     cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 10px;
   }
-  .search-result-item:hover { background: rgba(255,255,255,0.04); }
+  .search-result-item:hover { background: var(--bg-card); }
   .search-result-item:last-child { border-bottom: none; }
   .result-icon {
     width: 28px; height: 28px; border-radius: 6px; display: flex;
     align-items: center; justify-content: center; font-size: 12px;
-    background: rgba(255,255,255,0.05);
+    background: var(--bg-card-hover);
   }
   .result-info { flex: 1; min-width: 0; }
-  .result-name { font-size: 14px; font-weight: 500; color: #fff; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .result-addr { font-size: 11px; color: rgba(255,255,255,0.35); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .result-name { font-size: 14px; font-weight: 500; color: var(--text-primary); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .result-addr { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .result-add-btn {
     padding: 6px 12px; border: none; border-radius: 6px;
     background: linear-gradient(135deg, #00d4ff, #7b2ff7);
-    color: #fff; font-size: 11px; font-weight: 600; cursor: pointer;
+    color: var(--text-primary); font-size: 11px; font-weight: 600; cursor: pointer;
     transition: all 0.2s; white-space: nowrap;
   }
   .result-add-btn:hover { transform: scale(1.05); }
-  .result-add-btn.added { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); cursor: default; }
+  .result-add-btn.added { background: var(--border-color); color: var(--text-secondary); cursor: default; }
 
   /* Destinations Section */
   .destinations-section {
     margin-top: 16px;
     padding-top: 16px;
-    border-top: 1px solid rgba(255,255,255,0.06);
+    border-top: 1px solid var(--bg-card-hover);
   }
   .destinations-header {
     display: flex;
@@ -241,12 +336,12 @@
   .destinations-title {
     font-size: 13px;
     font-weight: 600;
-    color: rgba(255,255,255,0.6);
+    color: var(--text-primary);
   }
   .destinations-count {
     font-size: 11px;
-    color: rgba(255,255,255,0.4);
-    background: rgba(255,255,255,0.05);
+    color: var(--text-secondary);
+    background: var(--bg-card-hover);
     padding: 2px 8px;
     border-radius: 10px;
   }
@@ -260,17 +355,17 @@
     align-items: center;
     gap: 4px;
     padding: 6px 12px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: var(--bg-card-hover);
+    border: 1px solid var(--border-color);
     border-radius: 20px;
     font-size: 12px;
-    color: rgba(255,255,255,0.7);
+    color: var(--text-primary);
     cursor: pointer;
     transition: all 0.2s;
   }
   .destination-tag:hover {
-    background: rgba(0,212,255,0.1);
-    border-color: rgba(0,212,255,0.3);
+    background: var(--accent-bg);
+    border-color: var(--accent-bg);
     color: #00d4ff;
   }
   .destination-tag .type-icon {
@@ -279,14 +374,14 @@
   .empty-destinations {
     padding: 20px;
     text-align: center;
-    color: rgba(255,255,255,0.3);
+    color: var(--text-muted);
     font-size: 12px;
   }
 
   /* ===== Calendar Styles - 苹果日历风格 ===== */
   .calendar-section {
-    background: rgba(10,14,39,0.5);
-    border: 1px solid rgba(255,255,255,0.06);
+    background: var(--bg-panel);
+    border: 1px solid var(--bg-card-hover);
     border-radius: 12px;
     padding: 12px;
     margin-bottom: 16px;
@@ -308,8 +403,8 @@
     height: 24px;
     border: none;
     border-radius: 6px;
-    background: rgba(255,255,255,0.05);
-    color: rgba(255,255,255,0.6);
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
     font-size: 12px;
     cursor: pointer;
     transition: all 0.2s;
@@ -318,13 +413,13 @@
     justify-content: center;
   }
   .nav-btn:hover {
-    background: rgba(255,255,255,0.1);
-    color: #fff;
+    background: var(--border-color);
+    color: var(--text-primary);
   }
   .month-label {
     font-size: 15px;
     font-weight: 600;
-    color: #fff;
+    color: var(--text-primary);
     min-width: 100px;
     text-align: center;
   }
@@ -332,7 +427,7 @@
     padding: 4px 10px;
     border: none;
     border-radius: 6px;
-    background: rgba(0,212,255,0.15);
+    background: var(--accent-bg);
     color: #00d4ff;
     font-size: 12px;
     font-weight: 500;
@@ -353,7 +448,7 @@
   .weekday-row span {
     text-align: center;
     font-size: 10px;
-    color: rgba(255,255,255,0.35);
+    color: var(--text-muted);
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -377,12 +472,12 @@
     display: flex;
     flex-direction: column;
     gap: 0;
-    background: rgba(255,255,255,0.02);
+    background: var(--bg-card);
     overflow: hidden;
     box-sizing: border-box;
   }
   .calendar-day:hover {
-    background: rgba(255,255,255,0.06);
+    background: var(--bg-card-hover);
   }
   .calendar-day.other-month {
     opacity: 0.25;
@@ -395,22 +490,22 @@
     font-weight: 700;
   }
   .calendar-day.selected {
-    background: linear-gradient(135deg, rgba(0,212,255,0.25), rgba(123,47,247,0.2));
+    background: linear-gradient(135deg, rgba(0,212,255,0.25), rgba(123,47,247,0.3)));
     border: 1px solid rgba(0,212,255,0.4);
   }
   .calendar-day.has-events {
-    border: 1px solid rgba(0,212,255,0.3);
-    box-shadow: 0 0 8px rgba(0,212,255,0.1);
+    border: 1px solid var(--accent-bg);
+    box-shadow: 0 0 8px var(--accent-bg);
     background: rgba(0,212,255,0.06);
   }
   .calendar-day.has-events:hover {
     border: 1px solid rgba(0,212,255,0.6);
     box-shadow: 0 0 12px rgba(0,212,255,0.25);
-    background: rgba(0,212,255,0.1);
+    background: var(--accent-bg);
   }
   .day-number {
     font-size: 16px;
-    color: rgba(255,255,255,0.9);
+    color: var(--text-primary);
     font-weight: 700;
     text-align: center;
     line-height: 1;
@@ -456,11 +551,11 @@
   .day-event.c10 { background: rgba(132,204,22,0.3); color: #bef264; }
   .day-event.c11 { background: rgba(225,29,72,0.3); color: #fda4af; }
   .calendar-sync-item {
-    border-left: 2px solid rgba(123,47,247,0.5);
+    border-left: 2px solid rgba(123,47,247,0.3));
   }
   .day-event.more {
     background: transparent;
-    color: rgba(255,255,255,0.4);
+    color: var(--text-secondary);
     font-size: 9px;
     text-align: center;
     padding: 2px;
@@ -477,7 +572,7 @@
     margin: 2px auto 0;
   }
   .calendar-day.selected .day-number {
-    color: #fff;
+    color: var(--text-primary);
   }
   .day-color-bar {
     display: flex;
@@ -506,8 +601,8 @@
 
   /* Day Detail Section */
   .day-detail-section {
-    background: rgba(10,14,39,0.6);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
     border-radius: 14px;
     padding: 16px;
     margin-top: 12px;
@@ -521,7 +616,7 @@
   .day-detail-date {
     font-size: 15px;
     font-weight: 600;
-    color: #fff;
+    color: var(--text-primary);
   }
   .add-plan-btn {
     padding: 6px 14px;
@@ -549,7 +644,7 @@
   .empty-plans {
     padding: 30px;
     text-align: center;
-    color: rgba(255,255,255,0.3);
+    color: var(--text-muted);
     font-size: 13px;
     line-height: 1.6;
   }
@@ -558,21 +653,21 @@
     align-items: center;
     gap: 12px;
     padding: 12px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.06);
+    background: var(--bg-card);
+    border: 1px solid var(--bg-card-hover);
     border-radius: 10px;
     transition: all 0.2s;
   }
   .plan-item:hover {
-    background: rgba(255,255,255,0.06);
-    border-color: rgba(0,212,255,0.2);
+    background: var(--bg-card-hover);
+    border-color: var(--accent-bg);
   }
   .plan-item.done {
     opacity: 0.4;
   }
   .plan-item.done .plan-title {
     text-decoration: line-through;
-    text-decoration-color: rgba(255,255,255,0.5);
+    text-decoration-color: var(--text-secondary);
   }
   .day-detail-list {
     max-height: 50vh;
@@ -589,7 +684,7 @@
     background: transparent;
   }
   .day-detail-list::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.15);
+    background: var(--text-secondary);
     border-radius: 2px;
   }
   .plan-expand-btn {
@@ -600,13 +695,13 @@
     cursor: pointer;
     border-radius: 8px;
     transition: all 0.2s;
-    border: 1px dashed rgba(0,212,255,0.15);
+    border: 1px dashed var(--accent-bg);
     margin-top: 4px;
   }
   .plan-expand-btn:hover {
     color: #00d4ff;
     background: rgba(0,212,255,0.06);
-    border-color: rgba(0,212,255,0.3);
+    border-color: var(--accent-bg);
   }
   .plan-item[draggable="true"]:active {
     cursor: grabbing;
@@ -621,7 +716,7 @@
   .plan-item .done-toggle {
     width: 18px;
     height: 18px;
-    border: 1.5px solid rgba(255,255,255,0.3);
+    border: 1.5px solid var(--text-muted);
     border-radius: 50%;
     cursor: pointer;
     flex-shrink: 0;
@@ -662,7 +757,7 @@
     margin-left: 6px;
     padding: 0 4px;
     border-radius: 3px;
-    background: rgba(255,255,255,0.05);
+    background: var(--bg-card-hover);
   }
   .plan-dates {
     display: flex;
@@ -674,26 +769,26 @@
     font-size: 10px;
     padding: 0 5px;
     border-radius: 3px;
-    background: rgba(255,255,255,0.06);
-    color: rgba(255,255,255,0.4);
+    background: var(--bg-card-hover);
+    color: var(--text-secondary);
     line-height: 1.8;
     position: relative;
   }
   .plan-date-tag:not(:last-child)::after {
     content: '—';
-    color: rgba(255,255,255,0.12);
+    color: var(--border-color);
     margin-left: 1px;
     margin-right: 1px;
     font-size: 8px;
   }
   .plan-date-tag.current {
-    background: rgba(0,212,255,0.2);
+    background: var(--accent-bg);
     color: #00d4ff;
     font-weight: 600;
-    border: 1px solid rgba(0,212,255,0.3);
+    border: 1px solid var(--accent-bg);
   }
   .plan-date-tag.current:not(:last-child)::after {
-    color: rgba(0,212,255,0.3);
+    color: var(--accent-bg);
   }
   .plan-content {
     flex: 1;
@@ -702,12 +797,12 @@
   }
   .plan-title {
     font-size: 13px;
-    color: rgba(255,255,255,0.9);
+    color: var(--text-primary);
     margin-bottom: 2px;
   }
   .plan-location {
     font-size: 11px;
-    color: rgba(255,255,255,0.4);
+    color: var(--text-secondary);
   }
   .plan-actions {
     display: flex;
@@ -724,7 +819,7 @@
     height: 26px;
     border: none;
     background: rgba(100,200,255,0.1);
-    color: rgba(255,255,255,0.5);
+    color: var(--text-secondary);
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s;
@@ -742,8 +837,8 @@
     height: 26px;
     border: none;
     border-radius: 6px;
-    background: rgba(255,100,100,0.1);
-    color: rgba(255,100,100,0.6);
+    background: var(--danger-bg);
+    color: var(--danger-bg);
     font-size: 12px;
     cursor: pointer;
     transition: all 0.2s;
@@ -752,7 +847,7 @@
     justify-content: center;
   }
   .plan-delete:hover {
-    background: rgba(255,100,100,0.2);
+    background: var(--danger-bg);
     color: #ff6b6b;
   }
 
@@ -777,41 +872,107 @@
   }
   .itinerary-stat-label {
     font-size: 10px;
-    color: rgba(255,255,255,0.4);
+    color: var(--text-secondary);
     margin-top: 2px;
   }
 
   /* ===== Right Panel (Footprints) ===== */
   .footprint-panel {
-    position: fixed; top: 80px; right: 30px; z-index: 100; width: 320px;
+    position: fixed; top: 80px; right: 20px; z-index: 100; width: 420px;
     max-height: calc(100vh - 100px);
     display: flex; flex-direction: column;
-    background: rgba(10,14,39,0.75); backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.08); border-radius: 16px;
+    background: var(--bg-panel); backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color); border-radius: 16px;
     overflow: hidden;
   }
   .panel-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: none;
   }
-  .panel-title { font-size: 14px; font-weight: 600; color: #fff; }
-  .panel-clear {
-    padding: 6px 12px; border: 1px solid rgba(255,100,100,0.3); border-radius: 8px;
-    background: rgba(255,100,100,0.1); color: rgba(255,100,100,0.8);
-    font-size: 11px; cursor: pointer; transition: all 0.2s;
-  }
-  .panel-clear:hover { background: rgba(255,100,100,0.2); color: #ff6b6b; }
-  .panel-clear-data {
-    font-size: 14px; cursor: pointer;
-    padding: 4px 8px; border-radius: 6px; transition: all 0.2s;
-    border: none; background: rgba(255,255,255,0.05);
-    font-family: inherit;
-  }
-  .panel-clear-data:hover { background: rgba(255,255,255,0.1); }
+  .panel-title { font-size: 14px; font-weight: 600; color: var(--text-primary); display: none; }
+  .panel-tabs { display: none; }
+  .panel-tab { display: none; }
 
+  /* Top Tabs */
+  .panel-top-tabs {
+    display: flex; border-bottom: 1px solid var(--border-color);
+    background: var(--shadow-color);
+  }
+  .top-tab {
+    flex: 1; padding: 12px 0; border: none; background: transparent;
+    color: var(--text-secondary); font-size: 13px; font-weight: 600;
+    cursor: pointer; font-family: inherit; transition: all 0.3s;
+    text-align: center; letter-spacing: 0.5px;
+  }
+  .top-tab.active {
+    color: var(--text-primary);
+    background: rgba(0,212,255,0.06);
+    box-shadow: inset 0 -2px 0 #00d4ff;
+  }
+  .top-tab:hover:not(.active) { color: var(--text-primary); background: var(--bg-card); }
+
+  /* Panel Content */
+  .panel-content { padding: 0; }
+
+  /* Toolbar */
+  .panel-toolbar {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; border-bottom: 1px solid var(--bg-card-hover);
+  }
+  .toolbar-btn {
+    padding: 5px 10px; border: 1px solid var(--border-color); border-radius: 6px;
+    background: var(--bg-card); color: var(--text-primary);
+    font-size: 12px; cursor: pointer; transition: all 0.2s; font-family: inherit;
+    white-space: nowrap;
+  }
+  .toolbar-btn:hover { background: var(--border-color); color: var(--text-primary); }
+  .toolbar-btn.danger { border-color: var(--danger-bg); }
+  .toolbar-btn.danger:hover { background: var(--danger-bg); color: #ff6b6b; }
+
+  /* Schedule Table */
+  .schedule-month-label {
+    font-size: 12px; color: var(--text-muted); text-align: right;
+  }
+  .schedule-table-wrap {
+    flex: 1; overflow-y: auto; padding: 8px 12px;
+    max-height: calc(100vh - 200px);
+  }
+  .schedule-table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+  }
+  .schedule-table thead { position: sticky; top: 0; z-index: 2; }
+  .schedule-table th {
+    padding: 8px 6px; text-align: left; font-weight: 600;
+    color: var(--text-secondary); font-size: 11px;
+    background: rgba(15,20,35,0.95); border-bottom: 1px solid var(--border-color);
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .schedule-table td {
+    padding: 8px 6px; border-bottom: 1px solid var(--bg-card);
+    color: var(--text-primary); vertical-align: middle;
+  }
+  .schedule-table tr:hover td { background: var(--bg-card); }
+  .th-seq { width: 36px; text-align: center; }
+  .th-person { width: 70px; }
+  .th-time { width: 80px; }
+  .th-action { width: 60px; text-align: center; }
+  .td-seq { width: 30px; text-align: center; color: var(--text-muted); font-size: 12px; }
+  .td-content { color: var(--text-primary); font-weight: 500; cursor: pointer; width: 70px; max-width: 70px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .td-content:hover { color: #00d4ff; }
+  .td-person { color: #00d4ff; font-size: 12px; width: 60px; }
+  .td-time { color: var(--text-secondary); font-size: 12px; width: auto; }
+  .td-action { width: 50px; text-align: center; }
+  .td-action button {
+    border: none; background: none; cursor: pointer; font-size: 13px;
+    padding: 2px 6px; border-radius: 4px; transition: all 0.2s;
+  }
+  .td-action .edit-btn:hover { background: var(--accent-bg); }
+  .td-action .del-btn:hover { background: var(--danger-bg); }
+  .schedule-empty-row td {
+    text-align: center; padding: 40px 10px; color: var(--text-faint);
+  }
   .footprint-list {
-    overflow-y: auto; max-height: calc(100vh - 140px); display: flex; flex-direction: column;
-    gap: 6px; padding-right: 4px;
+    overflow-y: auto; flex: 1; display: flex; flex-direction: column;
+    gap: 6px; padding: 8px 12px;
   }
   .footprint-list-section {
     display: flex;
@@ -825,17 +986,17 @@
     padding: 8px;
     text-align: center;
     font-size: 11px;
-    color: rgba(255,255,255,0.35);
+    color: var(--text-muted);
     cursor: pointer;
     border-radius: 8px;
     transition: all 0.2s;
-    border: 1px dashed rgba(255,255,255,0.08);
+    border: 1px dashed var(--border-color);
     margin: 4px 0;
   }
   .expand-more-btn:hover {
-    background: rgba(255,255,255,0.04);
-    color: rgba(255,255,255,0.6);
-    border-color: rgba(255,255,255,0.15);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
   }
 
   /* Section headers */
@@ -844,17 +1005,17 @@
     display: flex; align-items: center; gap: 6px;
     cursor: pointer; user-select: none; border-radius: 10px;
     transition: all 0.2s ease;
-    background: rgba(255,255,255,0.02);
-    border: 1px solid rgba(255,255,255,0.04);
+    background: var(--bg-card);
+    border: 1px solid var(--bg-card);
   }
-  .list-section-title:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.08); }
+  .list-section-title:hover { background: var(--bg-card-hover); border-color: var(--border-color); }
   .list-section-title.visited-title { color: rgba(0,212,255,0.5); }
 
   .list-section-title.upcoming-title { color: rgba(255,215,0,0.5); }
   .list-section-title.project-title { color: rgba(255,71,87,0.6); }
   .list-section-title .section-count {
     font-size: 10px; padding: 1px 8px; border-radius: 10px; font-weight: 400;
-    background: rgba(255,255,255,0.06);
+    background: var(--bg-card-hover);
   }
   .list-section-title .collapse-icon {
     margin-left: auto; font-size: 9px; opacity: 0.3;
@@ -864,7 +1025,7 @@
   .list-section-title.collapsed .collapse-icon {
     transform: rotate(-90deg);
   }
-  .visited-title .section-count { background: rgba(0,212,255,0.1); }
+  .visited-title .section-count { background: var(--accent-bg); }
 
   .upcoming-title .section-count { background: rgba(255,215,0,0.1); color: rgba(255,215,0,0.8); }
   .project-title .section-count { background: rgba(255,71,87,0.15); color: rgba(255,71,87,0.8); }
@@ -878,8 +1039,8 @@
   .list-section-title.collapsed .visibility-toggle { display: none; }
 
   .footprint-card {
-    padding: 14px 16px; background: rgba(10,14,39,0.8); backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; cursor: pointer;
+    padding: 14px 16px; background: var(--bg-panel); backdrop-filter: blur(20px);
+    border: 1px solid var(--bg-card-hover); border-radius: 12px; cursor: pointer;
     transition: all 0.3s ease; position: relative; overflow: hidden;
   }
   .footprint-card.visited-card::after {
@@ -895,7 +1056,7 @@
     content: ''; position: absolute; top:0; left:0; width:3px; height:100%;
     background: linear-gradient(to bottom, #ff4757, #ff6b81); border-radius: 0 2px 2px 0;
   }
-  .footprint-card.visited-card:hover { transform: translateX(-4px); border-color: rgba(0,212,255,0.2); box-shadow: 0 4px 30px rgba(0,212,255,0.1); }
+  .footprint-card.visited-card:hover { transform: translateX(-4px); border-color: var(--accent-bg); box-shadow: 0 4px 30px var(--accent-bg); }
 
   .footprint-card.upcoming-card:hover { transform: translateX(-4px); border-color: rgba(255,215,0,0.2); box-shadow: 0 4px 30px rgba(255,215,0,0.1); }
   .footprint-card.project-card:hover { transform: translateX(-4px); border-color: rgba(255,71,87,0.3); box-shadow: 0 4px 30px rgba(255,71,87,0.15); }
@@ -916,13 +1077,13 @@
   .fp-actions { display: flex; gap: 4px; }
   .fp-action-btn {
     width: 24px; height: 24px; background: none; border: none;
-    color: rgba(255,255,255,0.15); cursor: pointer; border-radius: 6px;
+    color: var(--text-secondary); cursor: pointer; border-radius: 6px;
     display: flex; align-items: center; justify-content: center; font-size: 13px; transition: all 0.2s;
   }
-  .fp-action-btn:hover { color: #ff6b6b; background: rgba(255,100,100,0.1); }
+  .fp-action-btn:hover { color: #ff6b6b; background: var(--danger-bg); }
   .fp-action-btn.convert-btn:hover { color: #00ff88; background: rgba(0,255,136,0.1); }
-  .fp-name { font-size: 15px; font-weight: 600; color: #fff; margin-top: 4px; }
-  .fp-addr { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fp-name { font-size: 15px; font-weight: 600; color: var(--text-primary); margin-top: 4px; }
+  .fp-addr { font-size: 11px; color: var(--text-muted); margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .fp-time { font-size: 11px; margin-top: 6px; }
   .fp-time.visited-time { color: rgba(0,212,255,0.4); }
 
@@ -934,7 +1095,7 @@
     padding: 2px 8px;
     border-radius: 10px;
     display: inline-block;
-    background: rgba(0,212,255,0.1);
+    background: var(--accent-bg);
     color: rgba(0,212,255,0.7);
   }
 
@@ -943,28 +1104,28 @@
     color: rgba(255,215,0,0.7);
   }
   .fp-unlocked.project-unlocked {
-    background: rgba(255,71,87,0.1);
+    background: var(--danger-bg);
     color: rgba(255,71,87,0.7);
   }
 
   /* ===== Leaflet Custom Popup ===== */
   .leaflet-popup-content-wrapper {
-    background: rgba(10,14,39,0.95) !important;
+    background: var(--header-gradient) !important;
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid var(--border-color);
     border-radius: 14px !important;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important;
+    box-shadow: 0 10px 40px var(--shadow-color) !important;
   }
   .leaflet-popup-content {
     margin: 0 !important;
     padding: 0 !important;
   }
   .leaflet-popup-tip {
-    background: rgba(10,14,39,0.95) !important;
-    border: 1px solid rgba(255,255,255,0.1);
+    background: var(--header-gradient) !important;
+    border: 1px solid var(--border-color);
   }
   .leaflet-container a.leaflet-popup-close-button {
-    color: rgba(255,255,255,0.5) !important;
+    color: var(--text-secondary) !important;
     top: 8px !important;
     right: 8px !important;
   }
@@ -975,7 +1136,7 @@
   .custom-popup {
     padding: 16px 20px;
     min-width: 220px;
-    color: #fff;
+    color: var(--text-primary);
     font-family: inherit;
   }
   .custom-popup.visited-popup { border-left: 3px solid #00d4ff; }
@@ -1009,13 +1170,13 @@
   .popup-badge.project { background: rgba(255,71,87,0.15); color: #ff4757; }
   .popup-addr {
     font-size: 12px;
-    color: rgba(255,255,255,0.4);
+    color: var(--text-secondary);
     line-height: 1.5;
     margin-bottom: 4px;
   }
   .popup-time {
     font-size: 11px;
-    color: rgba(255,255,255,0.3);
+    color: var(--text-muted);
     margin-bottom: 12px;
   }
   .popup-actions {
@@ -1040,11 +1201,11 @@
   }
   .popup-btn.convert:hover { background: rgba(0,255,136,0.2); }
   .popup-btn.danger {
-    background: rgba(255,100,100,0.15);
+    background: var(--danger-bg);
     color: #ff6b6b;
-    border: 1px solid rgba(255,100,100,0.2);
+    border: 1px solid var(--danger-bg);
   }
-  .popup-btn.danger:hover { background: rgba(255,100,100,0.25); }
+  .popup-btn.danger:hover { background: var(--danger-bg); }
 
   /* ===== Custom Markers with Labels ===== */
   .custom-marker { width: auto; height: auto; position: relative; display: flex; flex-direction: column; align-items: center; }
@@ -1065,7 +1226,7 @@
     width: 30px; height: 30px; border-radius: 50%; position: absolute; top: 7px; left: 50%;
     transform: translateX(-50%); animation: markerPulse 2s 0.5s ease-out infinite;
   }
-  .marker-ring2.visited-ring2 { border: 1px solid rgba(123,47,247,0.3); }
+  .marker-ring2.visited-ring2 { border: 1px solid rgba(123,47,247,0.3)); }
 
   .marker-ring2.upcoming-ring2 { border: 1px solid rgba(255,170,0,0.3); }
   .marker-ring2.project-ring2 { border: 1px solid rgba(255,107,129,0.3); animation: projectPulse2 1.5s 0.5s ease-out infinite; }
@@ -1076,17 +1237,30 @@
     left: 50%;
     transform: translateX(-50%);
     white-space: nowrap;
-    background: rgba(10,14,39,0.9);
-    backdrop-filter: blur(4px);
-    padding: 5px 12px;
-    border-radius: 6px;
-    font-size: 14px;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    padding: 3px 10px;
+    border-radius: 5px;
+    font-size: 13px;
     font-weight: 600;
     color: #fff;
-    border: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
     z-index: 10;
     pointer-events: none;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .marker-label .label-city { font-weight: 600; }
+  .marker-label .label-person {
+    font-size: 10px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.1);
+    padding: 1px 5px;
+    border-radius: 3px;
   }
   .marker-label.visited-label { color: #00d4ff; border-color: rgba(0,212,255,0.3); }
 
@@ -1094,32 +1268,35 @@
   .marker-label.project-label { color: #ff4757; border-color: rgba(255,71,87,0.4); text-shadow: 0 0 8px rgba(255,71,87,0.5); }
   .marker-date {
     position: absolute;
-    top: 66px;
-    left: 50%;
-    transform: translateX(-50%);
-    white-space: nowrap;
-    font-size: 12px;
-    font-weight: 700;
-    padding: 1px 6px;
-    border-radius: 3px;
-    background: rgba(10,14,39,0.75);
-    z-index: 10;
-    pointer-events: none;
-    letter-spacing: 0.3px;
-  }
-  .marker-date.upcoming-date { color: rgba(255,215,0,0.85); }
-  .marker-date.project-date { color: rgba(255,71,87,0.85); }
-  .marker-person {
-    position: absolute;
-    top: 46px;
+    top: 38px;
     left: 50%;
     transform: translateX(-50%);
     white-space: nowrap;
     font-size: 10px;
     font-weight: 500;
-    padding: 0 4px;
+    padding: 1px 6px;
     border-radius: 3px;
-    background: rgba(10,14,39,0.6);
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    color: rgba(255,255,255,0.6);
+    z-index: 10;
+    pointer-events: none;
+  }
+  .marker-date.upcoming-date { color: rgba(255,215,0,0.9); }
+  .marker-date.project-date { color: rgba(255,71,87,0.9); }
+  .marker-person {
+    position: absolute;
+    top: 38px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    color: rgba(255,255,255,0.8);
     z-index: 10;
     pointer-events: none;
   }
@@ -1150,54 +1327,54 @@
   /* ===== Toast ===== */
   .toast {
     position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-20px); z-index: 9999;
-    padding: 12px 24px; background: rgba(10,14,39,0.95); backdrop-filter: blur(20px);
-    border-radius: 12px; color: #fff; font-size: 14px; opacity: 0; transition: all 0.4s ease;
+    padding: 12px 24px; background: var(--header-gradient); backdrop-filter: blur(20px);
+    border-radius: 12px; color: var(--text-primary); font-size: 14px; opacity: 0; transition: all 0.4s ease;
     pointer-events: none; white-space: nowrap;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .toast.success { border: 1px solid rgba(0,255,136,0.3); }
-  .toast.error { border: 1px solid rgba(255,100,100,0.3); }
+  .toast.error { border: 1px solid var(--danger-bg); }
   .toast.upcoming { border: 1px solid rgba(255,215,0,0.3); }
   .toast.project { border: 1px solid rgba(255,71,87,0.4); }
 
   /* ===== Modal ===== */
   .modal-overlay {
     position: fixed; inset: 0; z-index: 10000;
-    background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+    background: var(--shadow-color); backdrop-filter: blur(5px);
     display: none; align-items: center; justify-content: center;
   }
   .modal-overlay.show { display: flex; }
   .modal {
     width: 400px; max-width: 90vw;
-    background: rgba(10,14,39,0.95); backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.1); border-radius: 20px;
+    background: var(--header-gradient); backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color); border-radius: 20px;
     padding: 24px;
   }
-  .modal-title { font-size: 18px; font-weight: 600; color: #fff; margin-bottom: 20px; }
+  .modal-title { font-size: 18px; font-weight: 600; color: var(--text-primary); margin-bottom: 20px; }
   .form-group { margin-bottom: 16px; }
-  .form-label { display: block; font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 6px; }
+  .form-label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
   .form-input, .form-select {
     width: 100%; padding: 12px 16px;
     background: #1a1f3a;
-    border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
-    color: #fff; font-size: 14px; font-family: inherit;
+    border: 1px solid var(--border-color); border-radius: 10px;
+    color: var(--text-primary); font-size: 14px; font-family: inherit;
     outline: none; transition: all 0.3s;
   }
   .form-input:focus, .form-select:focus { border-color: rgba(0,212,255,0.4); }
-  .form-input::placeholder { color: rgba(255,255,255,0.25); }
-  .form-select option { background: #1a1f3a; color: #fff; }
+  .form-input::placeholder { color: var(--text-faint); }
+  .form-select option { background: #1a1f3a; color: var(--text-primary); }
   .color-picker-row {
     display: flex; gap: 8px; padding: 4px 0; flex-wrap: wrap;
   }
   .color-dot {
     width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
     border: 2px solid transparent; transition: all 0.15s;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    box-shadow: 0 1px 4px var(--shadow-color);
   }
   .color-dot:hover { transform: scale(1.15); }
   .color-dot.selected {
-    border-color: #fff; transform: scale(1.2);
-    box-shadow: 0 0 0 2px rgba(255,255,255,0.3);
+    border-color: var(--text-primary); transform: scale(1.2);
+    box-shadow: 0 0 0 2px var(--text-muted);
   }
   .form-actions { display: flex; gap: 12px; margin-top: 24px; }
   .form-btn {
@@ -1206,20 +1383,20 @@
   }
   .form-btn.primary {
     background: linear-gradient(135deg, #00d4ff, #7b2ff7);
-    color: #fff;
+    color: var(--text-primary);
   }
-  .form-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,212,255,0.3); }
+  .form-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 4px 20px var(--accent-bg); }
   .form-btn.secondary {
-    background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.6);
+    background: var(--bg-card-hover); color: var(--text-primary);
   }
-  .form-btn.secondary:hover { background: rgba(255,255,255,0.1); }
+  .form-btn.secondary:hover { background: var(--border-color); }
 
   /* Cloud Sync Modal Styles */
   .sync-tabs {
     display: flex;
     gap: 8px;
     margin-bottom: 20px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid var(--border-color);
     padding-bottom: 12px;
   }
   .sync-tab {
@@ -1227,18 +1404,18 @@
     padding: 10px;
     border: none;
     border-radius: 8px;
-    background: rgba(255,255,255,0.05);
-    color: rgba(255,255,255,0.5);
+    background: var(--bg-card-hover);
+    color: var(--text-secondary);
     font-size: 13px;
     cursor: pointer;
     transition: all 0.2s;
   }
   .sync-tab.active {
-    background: rgba(0,212,255,0.15);
+    background: var(--accent-bg);
     color: #00d4ff;
   }
   .sync-tab:hover:not(.active) {
-    background: rgba(255,255,255,0.08);
+    background: var(--border-color);
   }
   .sync-content {
     display: none;
@@ -1247,37 +1424,37 @@
     display: block;
   }
   .sync-info {
-    background: rgba(0,212,255,0.05);
-    border: 1px solid rgba(0,212,255,0.1);
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-bg);
     border-radius: 10px;
     padding: 12px 16px;
     margin-bottom: 20px;
   }
   .sync-info p {
     font-size: 12px;
-    color: rgba(255,255,255,0.6);
+    color: var(--text-primary);
     margin: 4px 0;
     line-height: 1.5;
   }
 
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
 
   .loading-overlay {
-    position: fixed; inset: 0; background: #0a0e27; z-index: 99999;
+    position: fixed; inset: 0; background: var(--bg-primary); z-index: 99999;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     transition: opacity 0.8s ease, visibility 0.8s ease;
   }
   .loading-overlay.hidden { opacity: 0; visibility: hidden; }
   .loading-spinner { width: 50px; height: 50px; border: 3px solid transparent; border-top-color: #00d4ff; border-right-color: #7b2ff7; border-radius: 50%; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { margin-top: 20px; font-size: 14px; letter-spacing: 6px; color: rgba(255,255,255,0.4); animation: pulse 1.5s ease-in-out infinite; }
+  .loading-text { margin-top: 20px; font-size: 14px; letter-spacing: 6px; color: var(--text-secondary); animation: pulse 1.5s ease-in-out infinite; }
   @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:0.8} }
 
   /* Leaflet Dark Theme Overrides */
   .leaflet-container {
-    background: #0a0e27 !important;
+    background: var(--bg-primary) !important;
     cursor: default !important;
   }
   .leaflet-container:active {
@@ -1290,11 +1467,11 @@
     cursor: default !important;
   }
   .leaflet-control-attribution {
-    background: rgba(10,14,39,0.8) !important;
-    color: rgba(255,255,255,0.4) !important;
+    background: var(--bg-panel) !important;
+    color: var(--text-secondary) !important;
   }
   .leaflet-control-attribution a {
-    color: rgba(255,255,255,0.5) !important;
+    color: var(--text-secondary) !important;
   }
   
   /* 暗色地图滤镜 */
@@ -1316,7 +1493,7 @@
 <div class="header">
   <div class="logo">
     <div class="logo-icon">🗺️</div>
-    <div class="logo-text">超大人<span>旅行足迹</span></div>
+    <div class="logo-text">超大人<span>项目规划</span></div>
   </div>
   <div class="stats">
     <div class="stat-item">
@@ -1392,20 +1569,82 @@
 
 <!-- Footprint Panel -->
 <div class="footprint-panel">
-  <div class="panel-header">
-    <span class="panel-title">📍 我的足迹</span>
-    <div style="display:flex;gap:8px;">
-      <button class="panel-clear-data" id="cloudSyncBtn" title="云同步">云同步</button>
-      <button class="panel-clear-data" id="exportData" title="导出到文件">导出</button>
-      <button class="panel-clear-data" id="importData" title="从文件导入">导入</button>
-      <button class="panel-clear-data" id="fullscreenBtn" title="全屏">全屏</button>
-      <button class="panel-clear-data" id="cleanData" title="清理测试数据">清理</button>
-      <button class="panel-clear" id="clearAll">清空</button>
+  <!-- Top tabs -->
+  <div class="panel-top-tabs">
+    <button class="top-tab" id="tabFootprints" onclick="switchPanelTab('footprints')">📍 我的足迹</button>
+    <button class="top-tab active" id="tabSchedule" onclick="switchPanelTab('schedule')">📋 项目安排</button>
+  </div>
+
+  <!-- Tab: 我的足迹 -->
+  <div class="panel-content" id="panelFootprints" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+    <div class="panel-toolbar">
+      <div style="display:flex;gap:6px;flex:1;flex-wrap:wrap;">
+        <button class="toolbar-btn" id="cloudSyncBtn" title="云同步">☁️ 同步</button>
+        <button class="toolbar-btn" id="exportData" title="导出到文件">📤 导出</button>
+        <button class="toolbar-btn" id="importData" title="从文件导入">📥 导入</button>
+        <button class="toolbar-btn" id="fullscreenBtn" title="全屏">⛶ 全屏</button>
+        <button class="toolbar-btn" id="themeToggleBtn" title="切换亮/暗主题">🌙</button>
+        <button class="toolbar-btn danger" id="cleanData" title="清理测试数据">🧹 清理</button>
+        <button class="toolbar-btn danger" id="clearAll">🗑️ 清空</button>
+      </div>
+    </div>
+    <div class="footprint-list" id="footprintList"></div>
+  </div>
+
+  <!-- Tab: 项目安排 -->
+  <div class="panel-content" id="panelSchedule" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+    <div class="panel-toolbar">
+      <div style="display:flex;gap:6px;flex:1;flex-wrap:wrap;">
+        <button class="toolbar-btn" onclick="openScheduleAddModal()">➕ 添加</button>
+        <button class="toolbar-btn" onclick="refreshScheduleFromCalendar()">🔄 刷新日历</button>
+      </div>
+      <div class="schedule-month-label" id="scheduleMonthLabel"></div>
+    </div>
+    <div class="schedule-table-wrap">
+      <table class="schedule-table">
+        <thead>
+          <tr><th class="th-seq">序号</th><th class="th-content">内容</th><th class="th-person">负责人</th><th class="th-time">时间</th><th class="th-action">操作</th></tr>
+        </thead>
+        <tbody id="scheduleTableBody"></tbody>
+      </table>
     </div>
   </div>
-  <div class="footprint-list" id="footprintList"></div>
 </div>
 <input type="file" id="importFileInput" accept=".json" style="display:none">
+
+<!-- Schedule Item Modal -->
+<div class="modal-overlay" id="scheduleItemModal">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-title" id="scheduleItemModalTitle">➕ 添加项目</div>
+    <div class="form-group">
+      <label class="form-label">项目内容</label>
+      <input type="text" class="form-input" id="scheduleContent" placeholder="例如：贵州出差">
+    </div>
+    <div class="form-group">
+      <label class="form-label">负责人</label>
+      <select class="form-input" id="schedulePerson">
+        <option value="">-- 不指定 --</option>
+        <option value="陈志勇">陈志勇</option>
+        <option value="程广超">程广超</option>
+        <option value="骈一鑫">骈一鑫</option>
+        <option value="李彦赛">李彦赛</option>
+        <option value="张恩林">张恩林</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">时间</label>
+      <input type="date" class="form-input" id="scheduleDate">
+    </div>
+    <div class="form-group">
+      <label class="form-label">结束时间（可选，多日项目）</label>
+      <input type="date" class="form-input" id="scheduleEndDate">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeScheduleItemModal()">取消</button>
+      <button class="btn-confirm" onclick="saveScheduleItem()">保存</button>
+    </div>
+  </div>
+</div>
 
 <!-- Plan Modal -->
 <div class="modal-overlay" id="planModal">
@@ -1520,7 +1759,7 @@
       </div>
       <div class="form-actions">
         <button class="form-btn secondary" onclick="closeCloudSyncModal()">取消</button>
-        <button class="form-btn" style="background: linear-gradient(135deg, #00ff88, #00d4aa); color: #fff;" onclick="uploadToGist()">⬆️ 上传到云端</button>
+        <button class="form-btn" style="background: linear-gradient(135deg, #00ff88, #00d4aa); color: var(--text-primary);" onclick="uploadToGist()">⬆️ 上传到云端</button>
         <button class="form-btn primary" onclick="downloadFromGist()">⬇️ 从云端下载</button>
       </div>
     </div>
@@ -1532,7 +1771,7 @@
       </div>
       <div class="form-actions">
         <button class="form-btn secondary" onclick="closeCloudSyncModal()">关闭</button>
-        <button class="form-btn" style="background: linear-gradient(135deg, #00d4ff, #7b2ff7); color: #fff;" onclick="exportData(); closeCloudSyncModal();">💾 导出到文件</button>
+        <button class="form-btn" style="background: linear-gradient(135deg, #00d4ff, #7b2ff7); color: var(--text-primary);" onclick="exportData(); closeCloudSyncModal();">💾 导出到文件</button>
         <button class="form-btn primary" onclick="document.getElementById('importFileInput').click(); closeCloudSyncModal();">📂 从文件导入</button>
       </div>
     </div>
@@ -2017,7 +2256,6 @@ let currentMode = 'visited';
 let footprints = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
 let markers = {};
 let activePopup = null;
-let currentPanelTab = 'search';
 let currentMonth = new Date();
 let selectedDate = new Date();
 let itinerary = {};
@@ -2137,6 +2375,7 @@ function init() {
   document.getElementById('importData').addEventListener('click', () => document.getElementById('importFileInput').click());
   document.getElementById('importFileInput').addEventListener('change', importData);
   document.getElementById('fullscreenBtn').addEventListener('click', toggleFullscreen);
+  document.getElementById('themeToggleBtn').addEventListener('click', toggleTheme);
   document.getElementById('cloudSyncBtn').addEventListener('click', openCloudSyncModal);
 
   // Modal close on overlay click
@@ -2150,6 +2389,7 @@ function init() {
     if (e.target.id === 'editFootprintModal') closeEditFootprintModal();
   });
 
+  applyTheme(currentTheme);
   renderAllMarkers();
   renderFootprints();
   updateStats();
@@ -2173,23 +2413,6 @@ function createStars() {
     s.style.setProperty('--op', (0.2+Math.random()*0.6));
     s.style.animationDelay = Math.random()*4+'s';
     c.appendChild(s);
-  }
-}
-
-// ===== Panel Tab Switch =====
-function switchPanelTab(tab, btn) {
-  currentPanelTab = tab;
-  document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-
-  btn.classList.add('active');
-  document.getElementById(tab + 'Tab').classList.add('active');
-
-  if (tab === 'itinerary') {
-    renderCalendar();
-    renderDayDetail();
-    drawRouteLine();
-    renderDestinations();
   }
 }
 
@@ -2491,27 +2714,34 @@ function renderDayDetail() {
   
   // 确保同一天内颜色不重复
   const seenColors = new Set();
+  const seenTitles = new Set(); // 用标准化标题去重
+  function normalizeTitle(t) {
+    const { city, person } = extractPersonFromTitle(t || '');
+    return city || (t || '').trim();
+  }
   calEvents.forEach(ev => {
-    const key = (ev.title || '').trim();
-    if (!seen.has(key)) {
-      let ci = getColor(key);
+    const normKey = normalizeTitle(ev.title);
+    if (!seenTitles.has(normKey)) {
+      seenTitles.add(normKey);
+      let ci = getColor(normKey);
       if (seenColors.has(ci)) {
         for (let i = 0; i < DOT_COLORS.length; i++) { if (!seenColors.has(i)) { ci = i; break; } }
       }
       seenColors.add(ci);
-      const dates = getSurroundingDates(key);
+      const dates = getSurroundingDates(ev.title);
       merged.push({ title: ev.title, type: 'calendar', dates, _ci: ci });
     }
   });
   plans.forEach(p => {
-    const key = (p.locationName || p.title).trim();
-    if (!seen.has(key)) {
-      let ci = getColor(key);
+    const normKey = normalizeTitle(p.title) || (p.locationName || '').trim();
+    if (!seenTitles.has(normKey)) {
+      seenTitles.add(normKey);
+      let ci = getColor(normKey);
       if (seenColors.has(ci)) {
         for (let i = 0; i < DOT_COLORS.length; i++) { if (!seenColors.has(i)) { ci = i; break; } }
       }
       seenColors.add(ci);
-      const dates = getSurroundingDates(key);
+      const dates = getSurroundingDates(p.locationName || p.title);
       merged.push({ title: p.locationName || p.title, type: 'plan', plan: p, dates, _ci: ci });
     }
   });
@@ -2559,12 +2789,23 @@ function renderDayDetail() {
     } else {
       const plan = item.plan;
       const planIdx = plans.indexOf(plan);
+      // 负责人：优先用行程自带的 person，没有则从关联足迹查找，都没有则从标题智能提取
+      let planPerson = item.plan?.person || '';
+      if (!planPerson && plan.locationId) {
+        const fp = footprints.find(f => f.id === plan.locationId);
+        if (fp?.person) planPerson = fp.person;
+      }
+      if (!planPerson) {
+        const { person: extracted } = extractPersonFromTitle(item.title);
+        planPerson = extracted || '';
+      }
+      const personTag = planPerson ? `<span class="plan-person-tag">${planPerson}</span>` : '';
       html += `
       <div class="plan-item ${isDone ? 'done' : ''}" ${item.planColor ? `style="border-left: 3px solid ${item.planColor}"` : ''} onclick="flyToEvent('${item.title.replace(/'/g, "\\'")}')" ondblclick="editPlanItem('${dateKey}', ${planIdx})">
         <div class="done-toggle" onclick="event.stopPropagation(); togglePlanDone('${dateKey}', '${(plan.title || '').replace(/'/g, "\\'")}')" title="${isDone ? '取消完成' : '标记完成'}">${isDone ? '✓' : ''}</div>
         <span class="plan-time"><span class="plan-dot" style="background:${dotColor}"></span></span>
         <div class="plan-content">
-          <div class="plan-title">${item.title} <span class="plan-person-tag">${item.plan?.person || ''}</span></div>
+          <div class="plan-title">${item.title} ${personTag}</div>
           ${datesHtml}
         </div>
         <div class="plan-actions">
@@ -3186,22 +3427,24 @@ function addMarker(fp) {
       `;
     }
   } else if (fp.type === 'upcoming') {
+    const personInline = fp.person ? `<span class="label-person">${fp.person}</span>` : '';
+    const dateHtml = fp.time ? `<div class="marker-date upcoming-date">${fp.time.split(' ')[0].replace(/\s*点亮\s*$/, '')}</div>` : '';
     markerContent.innerHTML = `
       <div class="marker-dot upcoming-dot"></div>
       <div class="marker-ring upcoming-ring"></div>
       <div class="marker-ring2 upcoming-ring2"></div>
-      <div class="marker-label upcoming-label">${displayName}</div>
-      ${fp.person ? `<div class="marker-person upcoming-date">${fp.person}</div>` : ''}
-      ${dateStr ? `<div class="marker-date upcoming-date">${dateStr}</div>` : ''}
+      <div class="marker-label upcoming-label"><span class="label-city">${displayName}</span>${personInline}</div>
+      ${dateHtml}
     `;
   } else if (fp.type === 'project') {
+    const personInline = fp.person ? `<span class="label-person">${fp.person}</span>` : '';
+    const dateHtml = fp.time ? `<div class="marker-date project-date">${fp.time.split(' ')[0].replace(/\s*点亮\s*$/, '')}</div>` : '';
     markerContent.innerHTML = `
       <div class="marker-dot project-dot"></div>
       <div class="marker-ring project-ring"></div>
       <div class="marker-ring2 project-ring2"></div>
-      <div class="marker-label project-label">${displayName}</div>
-      ${fp.person ? `<div class="marker-person project-date">${fp.person}</div>` : ''}
-      ${dateStr ? `<div class="marker-date project-date">${dateStr}</div>` : ''}
+      <div class="marker-label project-label"><span class="label-city">${displayName}</span>${personInline}</div>
+      ${dateHtml}
     `;
   } else {
     markerContent.innerHTML = `
@@ -3213,7 +3456,7 @@ function addMarker(fp) {
   }
 
   // 草稿标记和正常标记使用不同的尺寸和锚点
-  const hasExtra = (dateStr && (fp.type === 'upcoming' || fp.type === 'project')) || (fp.person && (fp.type === 'upcoming' || fp.type === 'project'));
+  const showExtra = (fp.type === 'project' || fp.type === 'upcoming') && (fp.person || fp.time);
   const icon = isDraft ? L.divIcon({
     html: markerContent,
     className: 'custom-div-icon',
@@ -3222,8 +3465,8 @@ function addMarker(fp) {
   }) : L.divIcon({
     html: markerContent,
     className: 'custom-div-icon',
-    iconSize: [120, hasExtra ? 85 : 55],
-    iconAnchor: [60, 35]
+    iconSize: showExtra ? [140, 52] : [120, 40],
+    iconAnchor: showExtra ? [70, 20] : [60, 20]
   });
 
   const marker = L.marker([fp.lat, fp.lng], { icon });
@@ -3246,7 +3489,7 @@ function addMarker(fp) {
     : '';
   
   const personHTML = fp.person
-    ? `<div style="margin-top:6px;color:rgba(255,255,255,0.6);font-size:12px;">👤 负责人：${fp.person}</div>`
+    ? `<div style="margin-top:6px;color:var(--text-secondary);font-size:12px;">👤 负责人：${fp.person}</div>`
     : '';
   
   const popupContent = `
@@ -3270,7 +3513,7 @@ function addMarker(fp) {
   marker.bindPopup(popupContent, {
     closeButton: true,
     className: 'custom-popup-wrapper',
-    offset: [0, -15]
+    offset: [0, -5]
   });
 
   marker.on('popupopen', () => { activePopup = marker; });
@@ -3312,7 +3555,7 @@ function updateMarkerPopup(fpId) {
     : '';
   
   const personHTML = fp.person
-    ? `<div style="margin-top:6px;color:rgba(255,255,255,0.6);font-size:12px;">👤 负责人：${fp.person}</div>`
+    ? `<div style="margin-top:6px;color:var(--text-secondary);font-size:12px;">👤 负责人：${fp.person}</div>`
     : '';
   
   const popupContent = `
@@ -3355,32 +3598,228 @@ function switchMapType(type) {
 }
 
 // ===== Render List =====
+// ===== Panel Tab Switch =====
+let currentPanelTab = 'footprints';
+function switchPanelTab(tab) {
+  currentPanelTab = tab;
+  document.getElementById('tabFootprints').classList.toggle('active', tab === 'footprints');
+  document.getElementById('tabSchedule').classList.toggle('active', tab === 'schedule');
+  document.getElementById('panelFootprints').style.display = tab === 'footprints' ? 'flex' : 'none';
+  document.getElementById('panelSchedule').style.display = tab === 'schedule' ? 'flex' : 'none';
+  if (tab === 'schedule') renderProjectSchedule();
+}
+
+// ===== Schedule Items (stored in localStorage) =====
+const SCHEDULE_KEY = 'travel_schedule_v1';
+let scheduleItems = [];
+
+function loadScheduleItems() {
+  try {
+    scheduleItems = JSON.parse(localStorage.getItem(SCHEDULE_KEY) || '[]');
+  } catch(e) { scheduleItems = []; }
+}
+
+function saveScheduleItems() {
+  localStorage.setItem(SCHEDULE_KEY, JSON.stringify(scheduleItems));
+  triggerAutoSync();
+}
+
+// ===== Project Schedule =====
+let editingScheduleIdx = -1;
+
+function renderProjectSchedule() {
+  loadScheduleItems();
+  const tbody = document.getElementById('scheduleTableBody');
+  const monthLabel = document.getElementById('scheduleMonthLabel');
+
+  // Show current month
+  const now = new Date();
+  monthLabel.textContent = now.getFullYear() + '年' + (now.getMonth()+1) + '月';
+
+  // Filter current month items
+  const monthItems = scheduleItems.filter(item => {
+    if (!item.date) return false;
+    const d = new Date(item.date);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  });
+
+  if (monthItems.length === 0) {
+    tbody.innerHTML = '<tr class="schedule-empty-row"><td colspan="5">暂无项目安排<br>点击「添加」或「刷新日历」</td></tr>';
+    return;
+  }
+
+  // Sort by date
+  monthItems.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+
+  // Aggregate: merge consecutive same-content items
+  const aggregated = [];
+  monthItems.forEach(item => {
+    const last = aggregated[aggregated.length - 1];
+    if (last && last.content === item.content && last.person === item.person) {
+      // Check if dates are consecutive
+      const lastEnd = last.endDate || last.date;
+      const lastDate = new Date(lastEnd);
+      const itemDate = new Date(item.date);
+      const diffDays = (itemDate - lastDate) / (1000*60*60*24);
+      if (diffDays <= 1) {
+        // Merge: update endDate
+        last.endDate = item.date;
+        last._indices.push(scheduleItems.indexOf(item));
+        return;
+      }
+    }
+    aggregated.push({
+      content: item.content,
+      person: item.person || '',
+      date: item.date,
+      endDate: item.endDate || item.date,
+      _indices: [scheduleItems.indexOf(item)]
+    });
+  });
+
+  tbody.innerHTML = aggregated.map((item, idx) => {
+    const d1 = new Date(item.date);
+    const d2 = new Date(item.endDate);
+    let dateDisplay;
+    if (item.date === item.endDate || !item.endDate) {
+      dateDisplay = (d1.getMonth()+1) + '月' + d1.getDate() + '日';
+    } else if (d1.getMonth() === d2.getMonth()) {
+      dateDisplay = (d1.getMonth()+1) + '月' + d1.getDate() + '日-' + d2.getDate() + '日';
+    } else {
+      dateDisplay = (d1.getMonth()+1) + '月' + d1.getDate() + '日-' + (d2.getMonth()+1) + '月' + d2.getDate() + '日';
+    }
+    const realIdx = item._indices[0];
+    return '<tr>' +
+      '<td class="td-seq">' + (idx + 1) + '</td>' +
+      '<td class="td-content" onclick="editScheduleItem(' + realIdx + ')">' + (item.content || '') + '</td>' +
+      '<td class="td-person">' + (item.person || '-') + '</td>' +
+      '<td class="td-time">' + dateDisplay + '</td>' +
+      '<td class="td-action">' +
+        '<button class="edit-btn" onclick="editScheduleItem(' + realIdx + ')" title="编辑">✎</button>' +
+        '<button class="del-btn" onclick="deleteScheduleGroup([' + item._indices.join(',') + '])" title="删除">✕</button>' +
+      '</td></tr>';
+  }).join('');
+}
+
+function deleteScheduleGroup(indices) {
+  // Sort descending to avoid index shifting
+  indices.sort((a, b) => b - a);
+  indices.forEach(i => scheduleItems.splice(i, 1));
+  saveScheduleItems();
+  renderProjectSchedule();
+  showToast('🗑️ 已删除', 'info');
+}
+
+function openScheduleAddModal() {
+  editingScheduleIdx = -1;
+  document.getElementById('scheduleItemModalTitle').textContent = '➕ 添加项目';
+  document.getElementById('scheduleContent').value = '';
+  document.getElementById('schedulePerson').value = '';
+  document.getElementById('scheduleDate').value = '';
+  document.getElementById('scheduleEndDate').value = '';
+  document.getElementById('scheduleItemModal').classList.add('show');
+}
+
+function editScheduleItem(idx) {
+  const item = scheduleItems[idx];
+  if (!item) return;
+  editingScheduleIdx = idx;
+  document.getElementById('scheduleItemModalTitle').textContent = '✎ 编辑项目';
+  document.getElementById('scheduleContent').value = item.content || '';
+  document.getElementById('schedulePerson').value = item.person || '';
+  document.getElementById('scheduleDate').value = item.date || '';
+  document.getElementById('scheduleEndDate').value = item.endDate || '';
+  document.getElementById('scheduleItemModal').classList.add('show');
+}
+
+function saveScheduleItem() {
+  const content = document.getElementById('scheduleContent').value.trim();
+  const person = document.getElementById('schedulePerson').value;
+  const date = document.getElementById('scheduleDate').value;
+  const endDate = document.getElementById('scheduleEndDate').value;
+  if (!content) { showToast('请输入项目内容', 'error'); return; }
+
+  if (editingScheduleIdx >= 0) {
+    scheduleItems[editingScheduleIdx] = { ...scheduleItems[editingScheduleIdx], content, person, date, endDate: endDate || '' };
+    showToast('✅ 项目已更新', 'success');
+  } else {
+    scheduleItems.push({ content, person, date, endDate: endDate || '', id: Date.now() });
+    showToast('✅ 项目已添加', 'success');
+  }
+  saveScheduleItems();
+  closeScheduleItemModal();
+  renderProjectSchedule();
+}
+
+function deleteScheduleItem(idx) {
+  const item = scheduleItems[idx];
+  if (!item) return;
+  scheduleItems.splice(idx, 1);
+  saveScheduleItems();
+  renderProjectSchedule();
+  showToast('🗑️ 已删除', 'info');
+}
+
+function closeScheduleItemModal() {
+  document.getElementById('scheduleItemModal').classList.remove('show');
+  editingScheduleIdx = -1;
+}
+
+function refreshScheduleFromCalendar() {
+  loadScheduleItems();
+  let added = 0;
+  const existingSet = new Set(scheduleItems.map(s => s.content + s.date));
+
+  Object.entries(CALENDAR_EVENTS || {}).forEach(([dateKey, events]) => {
+    events.forEach(ev => {
+      if (existingSet.has(ev.title + dateKey)) return;
+      const { city, person } = extractPersonFromTitle(ev.title || '');
+      const content = city ? city + (person ? ' (' + person + ')' : '') : ev.title;
+      scheduleItems.push({ content, person: person || '', date: dateKey, id: Date.now() + added });
+      existingSet.add(ev.title + dateKey);
+      added++;
+    });
+  });
+
+  if (added > 0) {
+    saveScheduleItems();
+    renderProjectSchedule();
+    showToast('🔄 已从日历同步 ' + added + ' 条项目', 'success');
+  } else {
+    showToast('✅ 日历数据已是最新', 'info');
+  }
+}
+
 function renderFootprints() {
   const list = document.getElementById('footprintList');
   list.innerHTML = '';
 
-  // 过滤掉草稿状态的足迹（不在右侧显示）
   const isDraft = f => f.name === '新地点' || f.name === '地点';
-  
+
   const visited = footprints.filter(f => f.type === 'visited' && !isDraft(f));
   const upcoming = footprints.filter(f => f.type === 'upcoming' && !isDraft(f));
   const projects = footprints.filter(f => f.type === 'project' && !isDraft(f));
+  const wishlist = footprints.filter(f => f.type === 'wishlist' && !isDraft(f));
 
-  if (visited.length === 0 && upcoming.length === 0 && projects.length === 0) {
+  if (visited.length === 0 && upcoming.length === 0 && projects.length === 0 && wishlist.length === 0) {
     list.innerHTML = '<div style="padding:30px;text-align:center;color:rgba(255,255,255,0.2);font-size:13px;">还没有足迹<br>搜索地点或点击地图开始记录 ✨</div>';
     return;
   }
 
   if (!window.sectionCollapsed) {
-    window.sectionCollapsed = { project: true, upcoming: true, visited: true };
+    window.sectionCollapsed = { project: true, upcoming: true, visited: true, wishlist: true };
   }
 
   if (projects.length > 0) {
-    renderSection(list, 'project', '近期项目', projects, 'project-title');
+    renderSection(list, 'project', '🔴 近期项目', projects, 'project-title');
   }
 
   if (upcoming.length > 0) {
-    renderSection(list, 'upcoming', 'CGC项目', upcoming, 'upcoming-title');
+    renderSection(list, 'upcoming', '🟡 CGC项目', upcoming, 'upcoming-title');
+  }
+
+  if (wishlist.length > 0) {
+    renderSection(list, 'wishlist', '🌟 想去', wishlist, 'wishlist-title');
   }
 
   if (visited.length > 0) {
@@ -3610,6 +4049,22 @@ function toggleFullscreen() {
   }
 }
 
+// ===== Theme Toggle =====
+let currentTheme = localStorage.getItem('theme') || 'dark';
+function applyTheme(theme) {
+  const body = document.body;
+  body.classList.remove('dark-theme', 'light-theme');
+  body.classList.add(theme + '-theme');
+  const btn = document.getElementById('themeToggleBtn');
+  if (btn) btn.textContent = theme === 'dark' ? '🌙' : '☀️';
+  localStorage.setItem('theme', theme);
+  currentTheme = theme;
+  renderAllMarkers();
+}
+function toggleTheme() {
+  applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+}
+
 // ===== Cloud Sync Modal =====
 function openCloudSyncModal() {
   const savedToken = localStorage.getItem('github_token');
@@ -3724,7 +4179,8 @@ async function downloadFromGist() {
     const fileContent = result.files['travel-map-data.json']?.content;
 
     if (!fileContent) {
-      throw new Error('Gist 中没有找到数据文件');
+      const availableFiles = Object.keys(result.files || {}).join(', ');
+      throw new Error('Gist 中没有找到 travel-map-data.json（现有文件: ' + availableFiles + '）');
     }
 
     const data = JSON.parse(fileContent);
@@ -3737,6 +4193,8 @@ async function downloadFromGist() {
       itinerary = data.itinerary;
       localStorage.setItem(ITINERARY_KEY, JSON.stringify(itinerary));
     }
+
+    localStorage.setItem('last_sync_time', data.syncTime || new Date().toISOString());
 
     renderAllMarkers();
     renderFootprints();
