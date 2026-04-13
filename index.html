@@ -1394,6 +1394,9 @@
         <p>💡 使用 GitHub Gist 免费存储数据，可在多台电脑同步</p>
         <p>🔒 Token 只保存在本地浏览器</p>
       </div>
+      <div style="margin-bottom: 12px;">
+        <button id="autoSyncBtn" class="form-btn" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);" onclick="toggleAutoSync()">自动同步: 关</button>
+      </div>
       <div class="form-actions">
         <button class="form-btn secondary" onclick="closeCloudSyncModal()">取消</button>
         <button class="form-btn" style="background: linear-gradient(135deg, #00ff88, #00d4aa); color: #fff;" onclick="uploadToGist()">⬆️ 上传到云端</button>
@@ -2504,6 +2507,7 @@ function savePlan() {
     const old = itinerary[dateKey][planIdx];
     itinerary[dateKey][planIdx] = { title, color: color || old.color || '', locationId: old.locationId || '', locationName: old.locationName || '' };
     localStorage.setItem(ITINERARY_KEY, JSON.stringify(itinerary));
+    triggerAutoSync();
     renderCalendar();
     renderDayDetail();
     closePlanModal();
@@ -2514,6 +2518,7 @@ function savePlan() {
     if (!itinerary[dateKey]) itinerary[dateKey] = [];
     itinerary[dateKey].push({ title, color, locationId: '', locationName: '' });
     localStorage.setItem(ITINERARY_KEY, JSON.stringify(itinerary));
+    triggerAutoSync();
     renderCalendar();
     renderDayDetail();
     closePlanModal();
@@ -2525,6 +2530,7 @@ function deletePlan(dateKey, idx) {
   itinerary[dateKey].splice(idx, 1);
   if (itinerary[dateKey].length === 0) delete itinerary[dateKey];
   localStorage.setItem(ITINERARY_KEY, JSON.stringify(itinerary));
+  triggerAutoSync();
   renderCalendar();
   renderDayDetail();
   updateItineraryStats();
@@ -2804,6 +2810,7 @@ function removeFootprint(id) {
     if (itinerary[dateKey].length === 0) delete itinerary[dateKey];
   });
   localStorage.setItem(ITINERARY_KEY, JSON.stringify(itinerary));
+  triggerAutoSync();
   updateItineraryStats();
   drawRouteLine();
 }
@@ -2876,6 +2883,7 @@ function cleanTestData() {
 
 function save() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(footprints));
+  triggerAutoSync();
 }
 
 // ===== Markers =====
@@ -3469,8 +3477,132 @@ async function downloadFromGist() {
   }
 }
 
+// ===== Auto Cloud Sync =====
+let autoSyncEnabled = localStorage.getItem('auto_sync') === 'true';
+let autoSyncTimer = null;
+let autoSyncPending = false;
+
+// 静默上传（不弹 toast）
+async function silentUploadToGist() {
+  const token = localStorage.getItem('github_token');
+  const gistId = localStorage.getItem('gist_id');
+  if (!token || !gistId || !autoSyncEnabled) return;
+
+  try {
+    const data = {
+      footprints: footprints,
+      itinerary: itinerary,
+      syncTime: new Date().toISOString(),
+      version: '2.0'
+    };
+
+    await fetch(`https://api.github.com/gists/${gistId}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `token ${token}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        description: 'Travel Map Data - 旅行足迹数据备份',
+        public: false,
+        files: {
+          'travel-map-data.json': {
+            content: JSON.stringify(data, null, 2)
+          }
+        }
+      })
+    });
+    console.log('☁️ 自动同步成功', new Date().toLocaleTimeString());
+  } catch (err) {
+    console.error('☁️ 自动同步失败:', err.message);
+  }
+}
+
+// 静默下载（页面加载时）
+async function silentDownloadFromGist() {
+  const token = localStorage.getItem('github_token');
+  const gistId = localStorage.getItem('gist_id');
+  if (!token || !gistId || !autoSyncEnabled) return;
+
+  try {
+    const headers = token ? { 'Authorization': `token ${token}` } : {};
+    const response = await fetch(`https://api.github.com/gists/${gistId}`, { headers: headers });
+
+    if (!response.ok) return;
+
+    const result = await response.json();
+    const fileContent = result.files['travel-map-data.json']?.content;
+    if (!fileContent) return;
+
+    const data = JSON.parse(fileContent);
+    const cloudTime = data.syncTime ? new Date(data.syncTime) : 0;
+    const localTime = localStorage.getItem('last_sync_time') ? new Date(localStorage.getItem('last_sync_time')) : 0;
+
+    // 只在云端数据比本地新时才下载
+    if (cloudTime > localTime) {
+      if (data.footprints) {
+        footprints = data.footprints;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(footprints));
+      }
+      if (data.itinerary) {
+        itinerary = data.itinerary;
+        localStorage.setItem(ITINERARY_KEY, JSON.stringify(itinerary));
+      }
+      renderAllMarkers();
+      renderFootprints();
+      updateStats();
+      renderCalendar();
+      renderDayDetail();
+      updateItineraryStats();
+      drawRouteLine();
+      renderDestinations();
+      showToast('☁️ 已自动同步云端数据', 'info');
+    }
+  } catch (err) {
+    console.error('自动下载失败:', err.message);
+  }
+}
+
+// 触发自动上传（防抖 3 秒）
+function triggerAutoSync() {
+  if (!autoSyncEnabled) return;
+  autoSyncPending = true;
+  if (autoSyncTimer) clearTimeout(autoSyncTimer);
+  autoSyncTimer = setTimeout(async () => {
+    await silentUploadToGist();
+    if (autoSyncPending) {
+      localStorage.setItem('last_sync_time', new Date().toISOString());
+      autoSyncPending = false;
+    }
+  }, 3000);
+}
+
+// 切换自动同步
+function toggleAutoSync() {
+  autoSyncEnabled = !autoSyncEnabled;
+  localStorage.setItem('auto_sync', autoSyncEnabled);
+  updateAutoSyncUI();
+  if (autoSyncEnabled) {
+    showToast('☁️ 自动同步已开启', 'success');
+    triggerAutoSync();
+  } else {
+    showToast('☁️ 自动同步已关闭', 'info');
+  }
+}
+
+function updateAutoSyncUI() {
+  const btn = document.getElementById('autoSyncBtn');
+  if (btn) {
+    btn.textContent = autoSyncEnabled ? '自动同步: 开' : '自动同步: 关';
+    btn.style.color = autoSyncEnabled ? '#00ff88' : 'rgba(255,255,255,0.5)';
+  }
+}
+
 // Start
 init();
+updateAutoSyncUI();
+setTimeout(silentDownloadFromGist, 2000);
 </script>
 </body>
 </html>
