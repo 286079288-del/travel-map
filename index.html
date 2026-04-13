@@ -369,8 +369,8 @@
     gap: 3px;
   }
   .calendar-day {
-    height: 140px;
-    padding: 3px 3px;
+    height: 110px;
+    padding: 2px 3px;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.15s;
@@ -432,6 +432,15 @@
     text-overflow: ellipsis;
     line-height: 1.5;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .day-event-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
   }
   .day-event.c0 { background: rgba(59,130,246,0.3); color: #93c5fd; }
   .day-event.c1 { background: rgba(168,85,247,0.3); color: #d8b4fe; }
@@ -462,6 +471,22 @@
   }
   .calendar-day.selected .day-number {
     color: #fff;
+  }
+  .day-color-bar {
+    display: flex;
+    gap: 2px;
+    justify-content: center;
+    padding: 2px 4px 3px;
+  }
+  .day-color-dot {
+    width: 16px;
+    height: 3px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    opacity: 0.95;
+  }
+  .calendar-day.other-month .day-color-dot {
+    opacity: 0.5;
   }
   .day-dot {
     width: 4px;
@@ -611,6 +636,47 @@
     font-weight: 600;
     color: #00d4ff;
     min-width: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .plan-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .plan-dates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-top: 3px;
+  }
+  .plan-date-tag {
+    font-size: 10px;
+    padding: 0 5px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.4);
+    line-height: 1.8;
+    position: relative;
+  }
+  .plan-date-tag:not(:last-child)::after {
+    content: '—';
+    color: rgba(255,255,255,0.12);
+    margin-left: 1px;
+    margin-right: 1px;
+    font-size: 8px;
+  }
+  .plan-date-tag.current {
+    background: rgba(0,212,255,0.2);
+    color: #00d4ff;
+    font-weight: 600;
+    border: 1px solid rgba(0,212,255,0.3);
+  }
+  .plan-date-tag.current:not(:last-child)::after {
+    color: rgba(0,212,255,0.3);
   }
   .plan-content {
     flex: 1;
@@ -2181,6 +2247,17 @@ function createDayElement(day, isOtherMonth, isToday, plans, isSelected, dateObj
   const displayItems = allItems.slice(0, 6);
   const totalCount = allItems.length;
   
+  // 底部彩色色块指示器
+  let colorBarHtml = '';
+  if (allItems.length > 0) {
+    colorBarHtml = '<div class="day-color-bar">';
+    allItems.forEach(item => {
+      const dotColor = item.color || ['#3b82f6','#a855f7','#f59e0b','#22c55e','#ef4444','#0ea5e9'][getColor(item.text)];
+      colorBarHtml += `<span class="day-color-dot" style="background:${dotColor}"></span>`;
+    });
+    colorBarHtml += '</div>';
+  }
+  
   let eventsHtml = '';
   if (displayItems.length > 0) {
     eventsHtml = '<div class="day-events">';
@@ -2190,7 +2267,8 @@ function createDayElement(day, isOtherMonth, isToday, plans, isSelected, dateObj
       const c = style ? '' : 'c' + getColor(item.text);
       const doneKey = `${dateKey}_${item.text}`;
       const isDone = planDoneSet.has(doneKey);
-      eventsHtml += `<div class="day-event ${c}${isDone ? ' done' : ''}" ${style}>${idx + 1}. ${item.text}</div>`;
+      const dotColor = item.color || ['#3b82f6','#a855f7','#f59e0b','#22c55e','#ef4444','#0ea5e9'][getColor(item.text)];
+      eventsHtml += `<div class="day-event ${c}${isDone ? ' done' : ''}" ${style}><span class="day-event-dot" style="background:${dotColor}"></span>${item.text}</div>`;
     });
     if (totalCount > 6) {
       eventsHtml += `<div class="day-event more">+${totalCount - 6} 更多</div>`;
@@ -2201,6 +2279,7 @@ function createDayElement(day, isOtherMonth, isToday, plans, isSelected, dateObj
   div.innerHTML = `
     <span class="day-number">${day}</span>
     ${eventsHtml}
+    ${colorBarHtml}
   `;
   
   div.onclick = () => selectDate(dateObj);
@@ -2255,16 +2334,69 @@ function renderDayDetail() {
   
   let html = '';
   
-  // 合并去重
+  // 获取颜色映射
+  if (!window._calendarColorMap) window._calendarColorMap = {};
+  function getColor(name) {
+    if (!(name in window._calendarColorMap)) {
+      window._calendarColorMap[name] = Object.keys(window._calendarColorMap).length % 6;
+    }
+    return window._calendarColorMap[name];
+  }
+  const DOT_COLORS = ['#3b82f6','#a855f7','#f59e0b','#22c55e','#ef4444','#0ea5e9'];
+  
+  // 合并去重，并收集相邻日期同名称的所有日期
   const seen = new Set();
   const merged = [];
+  
+  // 计算前后日期，查找相邻日期中的同名事件
+  function getSurroundingDates(title) {
+    const dates = [];
+    const sel = new Date(selectedDate);
+    for (let offset = -3; offset <= 3; offset++) {
+      const d = new Date(sel);
+      d.setDate(d.getDate() + offset);
+      const dk = formatDateKey(d);
+      const evts = CALENDAR_EVENTS[dk] || [];
+      evts.forEach(e => {
+        if ((e.title || '').trim() === title) {
+          const dayNum = d.getDate();
+          const m = d.getMonth() + 1;
+          if (!dates.some(x => x.day === dayNum && x.month === m)) {
+            dates.push({ day: dayNum, month: m, key: dk, source: e.source });
+          }
+        }
+      });
+      // 也检查 itinerary
+      const plans = itinerary[dk] || [];
+      plans.forEach(p => {
+        if ((p.title || '').trim() === title || (p.locationName || '').trim() === title) {
+          const dayNum = d.getDate();
+          const m = d.getMonth() + 1;
+          if (!dates.some(x => x.day === dayNum && x.month === m)) {
+            dates.push({ day: dayNum, month: m, key: dk });
+          }
+        }
+      });
+    }
+    dates.sort((a, b) => a.key.localeCompare(b.key));
+    return dates;
+  }
+  
   calEvents.forEach(ev => {
     const key = (ev.title || '').trim();
-    if (!seen.has(key)) { seen.add(key); merged.push({ title: ev.title, type: 'calendar' }); }
+    if (!seen.has(key)) {
+      seen.add(key);
+      const dates = getSurroundingDates(key);
+      merged.push({ title: ev.title, type: 'calendar', dates });
+    }
   });
   plans.forEach(p => {
     const key = (p.locationName || p.title).trim();
-    if (!seen.has(key)) { seen.add(key); merged.push({ title: p.locationName || p.title, type: 'plan', plan: p }); }
+    if (!seen.has(key)) {
+      seen.add(key);
+      const dates = getSurroundingDates(key);
+      merged.push({ title: p.locationName || p.title, type: 'plan', plan: p, dates });
+    }
   });
   
   // 按序号渲染，默认只显示前5个
@@ -2274,16 +2406,31 @@ function renderDayDetail() {
   const hiddenCount = merged.length - COLLAPSE_COUNT;
   
   visibleItems.forEach((item, idx) => {
-    const num = idx + 1;
+    const colorIdx = getColor(item.title);
+    const dotColor = item.plan?.color || DOT_COLORS[colorIdx];
+    const doneKey = `${dateKey}_${item.title}`;
+    const isDone = planDoneSet.has(doneKey);
+    
+    // 构建日期标签：如果有多个相邻日期，显示为一行小标签
+    let datesHtml = '';
+    if (item.dates && item.dates.length > 1) {
+      datesHtml = '<div class="plan-dates">';
+      item.dates.forEach(d => {
+        const isCurrent = d.key === dateKey;
+        const prefix = (d.month !== (selectedDate.getMonth() + 1)) ? `${d.month}/` : '';
+        datesHtml += `<span class="plan-date-tag ${isCurrent ? 'current' : ''}">${prefix}${d.day}</span>`;
+      });
+      datesHtml += '</div>';
+    }
+    
     if (item.type === 'calendar') {
-      const doneKey = `${dateKey}_${item.title}`;
-      const isDone = planDoneSet.has(doneKey);
       html += `
       <div class="plan-item calendar-sync-item ${isDone ? 'done' : ''}" ondblclick="editCalendarEvent('${dateKey}', '${item.title.replace(/'/g, "\\'")}')">
         <div class="done-toggle" onclick="event.stopPropagation(); togglePlanDone('${dateKey}', '${item.title.replace(/'/g, "\\'")}')" title="${isDone ? '取消完成' : '标记完成'}">${isDone ? '✓' : ''}</div>
-        <span class="plan-time">${num}</span>
+        <span class="plan-time"><span class="plan-dot" style="background:${dotColor}"></span></span>
         <div class="plan-content">
           <div class="plan-title">${item.title}</div>
+          ${datesHtml}
         </div>
         <div class="plan-actions">
           <button class="plan-edit-btn" onclick="event.stopPropagation(); editCalendarEvent('${dateKey}', '${item.title.replace(/'/g, "\\'")}')" title="编辑">✎</button>
@@ -2293,15 +2440,13 @@ function renderDayDetail() {
     } else {
       const plan = item.plan;
       const planIdx = plans.indexOf(plan);
-      const doneKey = `${dateKey}_${plan.title}`;
-      const isDone = planDoneSet.has(doneKey);
-      const planColor = plan.color || '';
       html += `
-      <div class="plan-item ${isDone ? 'done' : ''}" ${planColor ? `style="border-left: 3px solid ${planColor}"` : ''} ondblclick="editPlanItem('${dateKey}', ${planIdx})">
+      <div class="plan-item ${isDone ? 'done' : ''}" ${item.planColor ? `style="border-left: 3px solid ${item.planColor}"` : ''} ondblclick="editPlanItem('${dateKey}', ${planIdx})">
         <div class="done-toggle" onclick="event.stopPropagation(); togglePlanDone('${dateKey}', '${(plan.title || '').replace(/'/g, "\\'")}')" title="${isDone ? '取消完成' : '标记完成'}">${isDone ? '✓' : ''}</div>
-        <span class="plan-time" ${planColor ? `style="color:${planColor}"` : ''}>${num}</span>
+        <span class="plan-time"><span class="plan-dot" style="background:${dotColor}"></span></span>
         <div class="plan-content">
-          <div class="plan-title" ${planColor ? `style="color:${planColor}"` : ''}>${plan.title}</div>
+          <div class="plan-title">${item.title}</div>
+          ${datesHtml}
         </div>
         <div class="plan-actions">
           <button class="plan-edit-btn" onclick="event.stopPropagation(); editPlanItem('${dateKey}', ${planIdx})" title="编辑">✎</button>
