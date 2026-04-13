@@ -975,7 +975,7 @@
   }
   .schedule-table-wrap {
     flex: 1; overflow-y: auto; padding: 8px 12px;
-    max-height: calc(100vh - 200px);
+    min-height: 200px;
   }
   .schedule-table {
     width: 100%; border-collapse: collapse; font-size: 13px;
@@ -993,14 +993,15 @@
   }
   .schedule-table tr:hover td { background: var(--bg-card); }
   .th-seq { width: 36px; text-align: center; }
+  .th-content { width: 90px; }
   .th-person { width: 70px; }
-  .th-time { width: 80px; }
+  .th-time { width: 90px; text-align: center; }
   .th-action { width: 60px; text-align: center; }
   .td-seq { width: 30px; text-align: center; color: var(--text-muted); font-size: 12px; }
-  .td-content { color: var(--text-primary); font-weight: 500; cursor: pointer; width: 70px; max-width: 70px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .td-content { color: var(--text-primary); font-weight: 500; cursor: pointer; white-space: nowrap; width: 90px; max-width: 90px; overflow: hidden; text-overflow: ellipsis; }
   .td-content:hover { color: #00d4ff; }
-  .td-person { color: #00d4ff; font-size: 12px; width: 60px; }
-  .td-time { color: var(--text-secondary); font-size: 12px; width: auto; }
+  .td-person { color: #00d4ff; font-size: 12px; width: 70px; text-align: center; }
+  .td-time { color: var(--text-secondary); font-size: 12px; width: 90px; text-align: center; white-space: nowrap; }
   .td-action { width: 50px; text-align: center; }
   .td-action button {
     border: none; background: none; cursor: pointer; font-size: 13px;
@@ -1633,7 +1634,7 @@
   </div>
 
   <!-- Tab: 项目安排 -->
-  <div class="panel-content" id="panelSchedule" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+  <div class="panel-content" id="panelSchedule" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
     <div class="panel-toolbar">
       <div style="display:flex;gap:6px;flex:1;flex-wrap:wrap;">
         <button class="toolbar-btn" onclick="openScheduleAddModal()">➕ 添加</button>
@@ -2458,6 +2459,7 @@ function init() {
   renderCalendar();
   renderDayDetail();
   updateItineraryStats();
+  renderProjectSchedule();
   
   // 加载用户足迹数据
   loadUserFootprints();
@@ -3688,7 +3690,7 @@ function switchMapType(type) {
 
 // ===== Render List =====
 // ===== Panel Tab Switch =====
-let currentPanelTab = 'footprints';
+let currentPanelTab = 'schedule';
 function switchPanelTab(tab) {
   currentPanelTab = tab;
   document.getElementById('tabFootprints').classList.toggle('active', tab === 'footprints');
@@ -3699,15 +3701,15 @@ function switchPanelTab(tab) {
 }
 
 // ===== Schedule Items (stored in localStorage) =====
-const SCHEDULE_KEY = 'travel_schedule_v1';
+const SCHEDULE_KEY = 'travel_schedule_v2';
 const DEFAULT_SCHEDULE = [
   { id: 1, content: '浙江台州', person: '陈志勇', date: '2026-04-17', endDate: '2026-04-18' },
   { id: 2, content: '广州东莞', person: '骈一鑫', date: '2026-04-17', endDate: '2026-04-18' },
-  { id: 3, content: '广西玉林', person: '', date: '2026-04-18', endDate: '2026-04-19' },
-  { id: 4, content: '浙江丽水', person: '陈志勇', date: '2026-04-23', endDate: '2026-04-24' },
-  { id: 5, content: '山东淄博', person: '骈一鑫', date: '2026-04-23', endDate: '2026-04-24' },
+  { id: 3, content: '广西玉林', person: '程广超', date: '2026-04-18', endDate: '2026-04-19' },
+  { id: 4, content: '浙江丽水', person: '', date: '2026-04-23', endDate: '2026-04-24' },
+  { id: 5, content: '山东淄博', person: '', date: '2026-04-23', endDate: '2026-04-24' },
   { id: 6, content: '浙江金华', person: '', date: '2026-04-24', endDate: '2026-04-25' },
-  { id: 7, content: '吉林长春', person: '程广超', date: '2026-04-27', endDate: '2026-04-28' },
+  { id: 7, content: '吉林长春', person: '', date: '2026-04-27', endDate: '2026-04-28' },
   { id: 8, content: '广西茂名', person: '', date: '2026-04-29', endDate: '2026-04-30' },
   { id: 9, content: '贵州', person: '', date: '2026-04-29', endDate: '2026-04-30' },
   { id: 10, content: '合肥', person: '', date: '2026-04-29', endDate: '2026-04-30' },
@@ -3715,14 +3717,9 @@ const DEFAULT_SCHEDULE = [
 let scheduleItems = [];
 
 function loadScheduleItems() {
-  try {
-    scheduleItems = JSON.parse(localStorage.getItem(SCHEDULE_KEY) || '[]');
-  } catch(e) { scheduleItems = []; }
-  if (!scheduleItems.length || !localStorage.getItem('schedule_inited_v2')) {
-    scheduleItems = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));
-    saveScheduleItems();
-    localStorage.setItem('schedule_inited_v2', '1');
-  }
+  // 强制使用默认数据（每次加载都重置，确保数据正确）
+  scheduleItems = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));
+  saveScheduleItems();
 }
 
 function saveScheduleItems() {
@@ -3742,11 +3739,11 @@ function renderProjectSchedule() {
   const now = new Date();
   monthLabel.textContent = now.getFullYear() + '年' + (now.getMonth()+1) + '月';
 
-  // Filter current month items
+  // Filter current month items (use UTC to avoid timezone issues)
   const monthItems = scheduleItems.filter(item => {
     if (!item.date) return false;
-    const d = new Date(item.date);
-    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+    const [y, m] = item.date.split('-').map(Number);
+    return y === now.getFullYear() && (m - 1) === now.getMonth();
   });
 
   if (monthItems.length === 0) {
@@ -3757,44 +3754,19 @@ function renderProjectSchedule() {
   // Sort by date
   monthItems.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
 
-  // Aggregate: merge consecutive same-content items
-  const aggregated = [];
-  monthItems.forEach(item => {
-    const last = aggregated[aggregated.length - 1];
-    if (last && last.content === item.content && last.person === item.person) {
-      // Check if dates are consecutive
-      const lastEnd = last.endDate || last.date;
-      const lastDate = new Date(lastEnd);
-      const itemDate = new Date(item.date);
-      const diffDays = (itemDate - lastDate) / (1000*60*60*24);
-      if (diffDays <= 1) {
-        // Merge: update endDate
-        last.endDate = item.date;
-        last._indices.push(scheduleItems.indexOf(item));
-        return;
-      }
-    }
-    aggregated.push({
-      content: item.content,
-      person: item.person || '',
-      date: item.date,
-      endDate: item.endDate || item.date,
-      _indices: [scheduleItems.indexOf(item)]
-    });
-  });
-
-  tbody.innerHTML = aggregated.map((item, idx) => {
+  // 直接逐条显示，不合并
+  tbody.innerHTML = monthItems.map((item, idx) => {
     const d1 = new Date(item.date);
-    const d2 = new Date(item.endDate);
+    const d2 = new Date(item.endDate || item.date);
     let dateDisplay;
-    if (item.date === item.endDate || !item.endDate) {
+    if (item.date === (item.endDate || '') || !item.endDate) {
       dateDisplay = (d1.getMonth()+1) + '月' + d1.getDate() + '日';
     } else if (d1.getMonth() === d2.getMonth()) {
       dateDisplay = (d1.getMonth()+1) + '月' + d1.getDate() + '日-' + d2.getDate() + '日';
     } else {
       dateDisplay = (d1.getMonth()+1) + '月' + d1.getDate() + '日-' + (d2.getMonth()+1) + '月' + d2.getDate() + '日';
     }
-    const realIdx = item._indices[0];
+    const realIdx = scheduleItems.indexOf(item);
     return '<tr>' +
       '<td class="td-seq">' + (idx + 1) + '</td>' +
       '<td class="td-content" onclick="editScheduleItem(' + realIdx + ')">' + (item.content || '') + '</td>' +
@@ -3802,7 +3774,7 @@ function renderProjectSchedule() {
       '<td class="td-time">' + dateDisplay + '</td>' +
       '<td class="td-action">' +
         '<button class="edit-btn" onclick="editScheduleItem(' + realIdx + ')" title="编辑">✎</button>' +
-        '<button class="del-btn" onclick="deleteScheduleGroup([' + item._indices.join(',') + '])" title="删除">✕</button>' +
+        '<button class="del-btn" onclick="deleteScheduleItem(' + realIdx + ')" title="删除">✕</button>' +
       '</td></tr>';
   }).join('');
 }
