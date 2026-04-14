@@ -1701,7 +1701,7 @@
     <div class="search-box">
       <div class="search-input-wrap">
         <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-        <input type="text" class="search-input" id="searchInput" placeholder="搜索地点，如：北京故宫" autocomplete="off">
+        <input type="text" class="search-input" id="searchInput" name="travel_search" placeholder="搜索地点，如：北京故宫" autocomplete="off">
       </div>
       <button class="search-btn" id="searchBtn">搜索</button>
     </div>
@@ -1918,11 +1918,11 @@
     <div class="sync-content active" id="gistTab">
       <div class="form-group">
         <label class="form-label">GitHub Token <a href="https://github.com/settings/tokens/new" target="_blank" style="color:#00d4ff;font-size:11px;">如何获取?</a></label>
-        <input type="password" class="form-input" id="githubToken" placeholder="ghp_xxxxxxxxxxxx" autocomplete="off">
+        <input type="password" class="form-input" id="githubToken" name="github_token_field" placeholder="ghp_xxxxxxxxxxxx" autocomplete="new-password">
       </div>
       <div class="form-group">
         <label class="form-label">Gist ID (可选，留空则创建新的)</label>
-        <input type="text" class="form-input" id="gistId" placeholder="例如：a1b2c3d4e5f6..." autocomplete="off">
+        <input type="text" class="form-input" id="gistId" name="gist_id_field" placeholder="例如：a1b2c3d4e5f6..." autocomplete="off">
       </div>
       <div class="sync-info">
         <p>💡 使用 GitHub Gist 免费存储数据，可在多台电脑同步</p>
@@ -4646,6 +4646,11 @@ document.addEventListener('DOMContentLoaded', () => {
       this.classList.add('active');
     });
   });
+  // 阻止浏览器自动填充搜索框
+  setTimeout(() => {
+    const si = document.getElementById('searchInput');
+    if (si && si.value) { si.value = ''; si.blur(); }
+  }, 300);
 });
 </script>
 </body>
