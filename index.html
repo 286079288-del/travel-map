@@ -74,8 +74,6 @@
     --schedule-header-bg: rgba(77,201,246,0.1);
     --schedule-stripe: rgba(77,201,246,0.85);
   }
-    --scrollbar-track: transparent;
-  }
   [data-theme="light"] {
     --bg-primary: #e8ecf0;
     --bg-panel: rgba(30,38,50,0.75);
@@ -1369,15 +1367,18 @@
   /* ===== Toast ===== */
   .toast {
     position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-20px); z-index: 9999;
-    padding: 12px 24px; background: var(--header-gradient); backdrop-filter: blur(20px);
-    border-radius: 12px; color: var(--text-primary); font-size: 14px; opacity: 0; transition: all 0.4s ease;
+    padding: 14px 28px; border-radius: 12px; font-size: 15px; font-weight: 500; opacity: 0; transition: all 0.4s ease;
     pointer-events: none; white-space: nowrap;
+    background: rgba(20,25,45,0.92); backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #fff; text-shadow: none;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  .toast.success { border: 1px solid rgba(0,255,136,0.3); }
-  .toast.error { border: 1px solid var(--danger-bg); }
-  .toast.upcoming { border: 1px solid rgba(255,215,0,0.3); }
-  .toast.project { border: 1px solid rgba(255,71,87,0.4); }
+  .toast.success { background: rgba(20,80,40,0.95); border: 1px solid rgba(0,255,136,0.5); }
+  .toast.error { background: rgba(120,20,30,0.95); border: 1px solid rgba(255,71,87,0.6); }
+  .toast.upcoming { background: rgba(80,70,10,0.95); border: 1px solid rgba(255,215,0,0.5); }
+  .toast.project { background: rgba(100,20,50,0.95); border: 1px solid rgba(255,71,87,0.5); }
 
   /* ===== Modal ===== */
   .modal-overlay {
@@ -1520,6 +1521,134 @@
   .dark-map .leaflet-tile-pane {
     filter: brightness(0.5) contrast(1.1) saturate(0.6);
   }
+
+  /* ===== Mobile Responsive (≤768px) ===== */
+  @media (max-width: 768px) {
+    .header {
+      padding: 10px 14px;
+      top: 0;
+    }
+    .logo-icon { width: 32px; height: 32px; font-size: 16px; border-radius: 8px; }
+    .logo-text { font-size: 16px; letter-spacing: 1px; }
+
+    /* 左面板：全宽覆盖，从header下方开始 */
+    .left-panel {
+      position: fixed;
+      top: 52px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: auto;
+      border-radius: 0;
+      border: none;
+      border-top: 1px solid var(--border-color);
+      z-index: 90;
+      overflow-y: auto;
+    }
+    .search-section { margin-bottom: 8px; padding: 10px; border-radius: 0; border: none; }
+    .search-input { padding: 10px 14px 10px 38px; font-size: 14px; }
+    .search-btn { padding: 10px 14px; font-size: 13px; }
+
+    /* 日历手机适配 */
+    .calendar-section {
+      margin: 0;
+      padding: 8px;
+      border-radius: 0;
+      border: none;
+      border-top: 1px solid var(--border-color);
+    }
+    .calendar-header { margin-bottom: 6px; }
+    .calendar-nav .nav-btn { width: 30px; height: 30px; font-size: 18px; }
+    .month-label { font-size: 14px; }
+    .today-btn { padding: 3px 8px; font-size: 11px; }
+    .weekday-row span { font-size: 9px; }
+    .calendar-day {
+      height: 60px;
+      padding: 1px 2px;
+      border-radius: 6px;
+    }
+    .day-number { font-size: 12px; }
+    .day-event { font-size: 7px; padding: 0 1px; line-height: 1.2; }
+    .day-event-dot { width: 4px; height: 4px; margin-right: 1px; }
+    .day-color-dot { width: 8px; height: 2px; }
+
+    /* 日程详情 */
+    .day-detail-section {
+      border-radius: 0;
+      border: none;
+      border-top: 1px solid var(--border-color);
+      margin: 0;
+      padding: 12px;
+    }
+
+    /* 右面板：隐藏，通过底部tab切换 */
+    .footprint-panel {
+      display: none;
+      position: fixed;
+      top: 52px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      max-height: none;
+      border-radius: 0;
+      border: none;
+      z-index: 91;
+    }
+    .footprint-panel.mobile-show {
+      display: flex;
+    }
+
+    /* 项目安排表格 */
+    .schedule-table th { padding: 6px 4px; font-size: 10px; }
+    .schedule-table td { padding: 6px 4px; font-size: 12px; }
+    .td-content { width: 70px; max-width: 70px; font-size: 12px; }
+    .td-person { width: 55px; font-size: 11px; }
+    .td-time { width: 70px; font-size: 11px; }
+    .th-content { width: 70px; }
+    .th-person { width: 55px; }
+    .th-time { width: 70px; }
+    .th-action { width: 44px; }
+    .th-seq { width: 28px; }
+
+    /* 底部导航栏（手机端独有） */
+    .mobile-bottom-nav {
+      display: flex !important;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 200;
+      background: var(--bg-panel);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border-color);
+    }
+    .mobile-nav-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 8px 0;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 10px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .mobile-nav-btn .nav-icon { font-size: 18px; }
+    .mobile-nav-btn.active { color: #00d4ff; }
+
+    /* 隐藏桌面端不需要的元素 */
+    .map-type-switch { display: none; }
+    .panel-toolbar .toolbar-btn { padding: 4px 8px; font-size: 11px; }
+  }
+
+  /* Mobile bottom nav (hidden on desktop) */
+  .mobile-bottom-nav { display: none; }
 </style>
 </head>
 <body>
@@ -2483,6 +2612,7 @@ function createStars() {
 function toggleSearchSection() {
   const header = document.querySelector('.search-section-header');
   const content = document.getElementById('searchSectionContent');
+  if (!content || !header) return;
   const isCollapsed = content.classList.toggle('collapsed');
   header.classList.toggle('collapsed', isCollapsed);
 }
@@ -2537,8 +2667,11 @@ function renderCalendar() {
       const isSelected = selectedDate && dateObj.toDateString() === selectedDate.toDateString();
       const dayPlans = itinerary[dateKey] || [];
       const calendarEvents = CALENDAR_EVENTS[dateKey] || [];
+      const daySchedule = (scheduleItems || []).filter(s =>
+        (s.date === dateKey || s.endDate === dateKey || (s.date < dateKey && s.endDate > dateKey))
+      );
       
-      const dayEl = createDayElement(dayNum, isOtherMonth, isToday, dayPlans, isSelected, dateObj, calendarEvents);
+      const dayEl = createDayElement(dayNum, isOtherMonth, isToday, dayPlans, isSelected, dateObj, calendarEvents, daySchedule);
       weekRow.appendChild(dayEl);
     }
     
@@ -2546,7 +2679,7 @@ function renderCalendar() {
   }
 }
 
-function createDayElement(day, isOtherMonth, isToday, plans, isSelected, dateObj, calendarEvents) {
+function createDayElement(day, isOtherMonth, isToday, plans, isSelected, dateObj, calendarEvents, daySchedule) {
   try {
   const div = document.createElement('div');
   div.className = 'calendar-day';
@@ -2573,6 +2706,14 @@ function createDayElement(day, isOtherMonth, isToday, plans, isSelected, dateObj
       seen.add(key);
       const { city, person } = extractPersonFromTitle(e.title);
       allItems.push({ text: city || e.title, type: 'calendar', color: '', person: person || '' });
+    }
+  });
+  // 再加项目安排
+  (daySchedule || []).forEach(s => {
+    const key = (s.content || '').trim();
+    if (!seen.has(key)) {
+      seen.add(key);
+      allItems.push({ text: s.content, type: 'schedule', color: '', person: s.person || '' });
     }
   });
   
@@ -2710,6 +2851,10 @@ function renderDayDetail() {
   const dateKey = formatDateKey(selectedDate);
   const plans = itinerary[dateKey] || [];
   const calEvents = CALENDAR_EVENTS[dateKey] || [];
+  // 查找当天的项目安排（包含跨天匹配）
+  const scheduleForDay = (scheduleItems || []).filter(s =>
+    (s.date === dateKey || s.endDate === dateKey || (s.date < dateKey && s.endDate > dateKey))
+  );
   const section = document.getElementById('dayDetailSection');
   const list = document.getElementById('dayDetailList');
   
@@ -2722,7 +2867,7 @@ function renderDayDetail() {
   const weekDay = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][selectedDate.getDay()];
   document.getElementById('selectedDateDetail').textContent = `${m}月${d}日 ${weekDay}`;
   
-  if (plans.length === 0 && calEvents.length === 0) {
+  if (plans.length === 0 && calEvents.length === 0 && scheduleForDay.length === 0) {
     list.innerHTML = '<div class="empty-plans">这一天还没有安排<br>点击「添加」开始规划 ✨</div>';
     return;
   }
@@ -2809,6 +2954,21 @@ function renderDayDetail() {
     }
   });
   
+  // 加入项目安排
+  scheduleForDay.forEach(s => {
+    const normKey = (s.content || '').trim();
+    if (!seenTitles.has(normKey)) {
+      seenTitles.add(normKey);
+      let ci = getColor(normKey);
+      if (seenColors.has(ci)) {
+        for (let i = 0; i < DOT_COLORS.length; i++) { if (!seenColors.has(i)) { ci = i; break; } }
+      }
+      seenColors.add(ci);
+      const dateRange = s.date !== s.endDate ? `${s.date.slice(5)}~${s.endDate.slice(5)}` : s.date.slice(5);
+      merged.push({ title: s.content, type: 'schedule', schedule: s, dates: [{ day: selectedDate.getDate(), month: selectedDate.getMonth() + 1, key: dateKey }], _ci: ci, dateRange });
+    }
+  });
+  
   // 按序号渲染，默认只显示前5个
   const COLLAPSE_COUNT = 5;
   const showAll = dayDetailExpanded.has(dateKey);
@@ -2826,10 +2986,12 @@ function renderDayDetail() {
     if (item.type === 'calendar') {
       const { person: extractedPerson } = extractPersonFromTitle(item.title);
       personName = extractedPerson || '';
+    } else if (item.type === 'schedule') {
+      personName = item.schedule?.person || '';
     } else {
       let planPerson = item.plan?.person || '';
-      if (!planPerson && plan.locationId) {
-        const fp = footprints.find(f => f.id === plan.locationId);
+      if (!planPerson && item.plan?.locationId) {
+        const fp = footprints.find(f => f.id === item.plan.locationId);
         if (fp?.person) planPerson = fp.person;
       }
       if (!planPerson) {
@@ -2848,7 +3010,9 @@ function renderDayDetail() {
     
     // 构建日期标签
     let dateText = '';
-    if (item.dates && item.dates.length > 1) {
+    if (item.type === 'schedule' && item.dateRange) {
+      dateText = item.dateRange;
+    } else if (item.dates && item.dates.length > 1) {
       const first = item.dates[0];
       const last = item.dates[item.dates.length - 1];
       const prefix1 = (first.month !== (selectedDate.getMonth() + 1)) ? `${first.month}/` : '';
@@ -2872,6 +3036,16 @@ function renderDayDetail() {
           <button class="plan-edit-btn" onclick="event.stopPropagation(); editCalendarEvent('${dateKey}', '${item.title.replace(/'/g, "\\'")}')" title="编辑">✎</button>
           <button class="plan-delete" onclick="event.stopPropagation(); removeCalendarEvent('${dateKey}', '${item.title.replace(/'/g, "\\'")}')" title="删除">✕</button>
         </div>
+      </div>`;
+    } else if (item.type === 'schedule') {
+      html += `
+      <div class="plan-item calendar-sync-item ${isDone ? 'done' : ''}">
+        <span class="plan-time"><span class="plan-dot" style="background:${dotColor}"></span></span>
+        <div class="plan-col-content" onclick="event.stopPropagation(); flyToEvent('${item.title.replace(/'/g, "\\'")}')">
+          <span class="plan-title">${cityContent}</span>
+        </div>
+        <div class="plan-col-date"><span class="plan-date-text">${dateText}</span></div>
+        <div class="plan-col-person"><span class="plan-person-text">${personName || '-'}</span></div>
       </div>`;
     } else {
       const plan = item.plan;
@@ -3187,19 +3361,24 @@ function updateItineraryStats() {
     return fp ? fp.name : null;
   }).filter(Boolean)).size;
   
-  document.getElementById('planDays').textContent = uniqueDates;
-  document.getElementById('planCities').textContent = uniqueCities;
-  document.getElementById('planSpots').textContent = allPlans.length;
+  const planDaysEl = document.getElementById('planDays');
+  const planCitiesEl = document.getElementById('planCities');
+  const planSpotsEl = document.getElementById('planSpots');
+  if (planDaysEl) planDaysEl.textContent = uniqueDates;
+  if (planCitiesEl) planCitiesEl.textContent = uniqueCities;
+  if (planSpotsEl) planSpotsEl.textContent = allPlans.length;
   
   renderDestinations();
 }
 
 function renderDestinations() {
   const container = document.getElementById('destinationsList');
+  if (!container) return;
   const allPlans = Object.values(itinerary).flat();
   const uniqueLocations = [...new Set(allPlans.filter(p => p.locationId).map(p => p.locationId))];
   
-  document.getElementById('destCount').textContent = uniqueLocations.length;
+  const destCountEl = document.getElementById('destCount');
+  if (destCountEl) destCountEl.textContent = uniqueLocations.length;
   
   if (uniqueLocations.length === 0) {
     container.innerHTML = '<div class="empty-destinations">还没有规划目的地<br>在地图上标记地点或搜索添加</div>';
@@ -3701,7 +3880,7 @@ function switchPanelTab(tab) {
 }
 
 // ===== Schedule Items (stored in localStorage) =====
-const SCHEDULE_KEY = 'travel_schedule_v2';
+const SCHEDULE_KEY = 'travel_schedule_v3';
 const DEFAULT_SCHEDULE = [
   { id: 1, content: '浙江台州', person: '陈志勇', date: '2026-04-17', endDate: '2026-04-18' },
   { id: 2, content: '广州东莞', person: '骈一鑫', date: '2026-04-17', endDate: '2026-04-18' },
@@ -3717,9 +3896,13 @@ const DEFAULT_SCHEDULE = [
 let scheduleItems = [];
 
 function loadScheduleItems() {
-  // 强制使用默认数据（每次加载都重置，确保数据正确）
-  scheduleItems = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));
-  saveScheduleItems();
+  const stored = localStorage.getItem(SCHEDULE_KEY);
+  if (stored) {
+    try { scheduleItems = JSON.parse(stored); } catch(e) { scheduleItems = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE)); }
+  } else {
+    scheduleItems = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));
+    saveScheduleItems();
+  }
 }
 
 function saveScheduleItems() {
@@ -4250,7 +4433,7 @@ async function downloadFromGist() {
     });
 
     if (!response.ok) {
-      throw new Error('下载失败，请检查 Gist ID');
+      throw new Error('下载失败！HTTP ' + response.status + ' - 请检查 Gist ID 是否正确');
     }
 
     const result = await response.json();
@@ -4258,7 +4441,7 @@ async function downloadFromGist() {
 
     if (!fileContent) {
       const availableFiles = Object.keys(result.files || {}).join(', ');
-      throw new Error('Gist 中没有找到 travel-map-data.json（现有文件: ' + availableFiles + '）');
+      throw new Error('Gist中没有找到 travel-map-data.json 文件，现有文件: ' + (availableFiles || '无'));
     }
 
     const data = JSON.parse(fileContent);
@@ -4416,6 +4599,51 @@ function updateAutoSyncUI() {
 init();
 updateAutoSyncUI();
 setTimeout(silentDownloadFromGist, 2000);
+</script>
+
+<!-- Mobile Bottom Navigation -->
+<div class="mobile-bottom-nav" id="mobileNav">
+  <button class="mobile-nav-btn active" onclick="mobileSwitchView('calendar')">
+    <span class="nav-icon">📅</span><span>日历</span>
+  </button>
+  <button class="mobile-nav-btn" onclick="mobileSwitchView('schedule')">
+    <span class="nav-icon">📋</span><span>项目</span>
+  </button>
+  <button class="mobile-nav-btn" onclick="mobileSwitchView('map')">
+    <span class="nav-icon">🗺️</span><span>地图</span>
+  </button>
+</div>
+
+<script>
+// Mobile view switching
+function mobileSwitchView(view) {
+  const leftPanel = document.querySelector('.left-panel');
+  const rightPanel = document.querySelector('.footprint-panel');
+
+  // Reset
+  leftPanel.style.display = '';
+  rightPanel.classList.remove('mobile-show');
+
+  if (view === 'calendar') {
+    leftPanel.style.display = 'flex';
+  } else if (view === 'schedule') {
+    leftPanel.style.display = 'none';
+    rightPanel.classList.add('mobile-show');
+    switchPanelTab('schedule');
+  } else if (view === 'map') {
+    leftPanel.style.display = 'none';
+  }
+}
+
+// Fix: typo in mobileSwitchView
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+});
 </script>
 </body>
 </html>
