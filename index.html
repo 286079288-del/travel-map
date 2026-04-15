@@ -3642,8 +3642,17 @@ function addFootprintWithReturn(name, address, lnglat, type, visitDate = null, u
 }
 
 // ===== 加载用户足迹数据 =====
+const FP_LOAD_VERSION = 'fp_v6'; // 升级版本号强制重载
 function loadUserFootprints() {
-  if (localStorage.getItem('user_footprints_loaded')) return;
+  // 版本变化时强制重载
+  const lastVer = localStorage.getItem('fp_load_version');
+  if (lastVer === FP_LOAD_VERSION && localStorage.getItem('user_footprints_loaded')) return;
+  
+  // 版本变化，清空旧数据重新加载
+  if (lastVer !== FP_LOAD_VERSION) {
+    localStorage.removeItem('travel_footprints_v5');
+    localStorage.removeItem('user_footprints_loaded');
+  }
   
   const existingIds = new Set(
     JSON.parse(localStorage.getItem('travel_footprints_v5') || '[]').map(f => f.id)
@@ -3662,6 +3671,7 @@ function loadUserFootprints() {
   });
   
   localStorage.setItem('user_footprints_loaded', 'true');
+  localStorage.setItem('fp_load_version', FP_LOAD_VERSION);
   if (addedCount > 0) showToast('✅ 已加载 ' + addedCount + ' 个足迹', 'success');
 }
 
