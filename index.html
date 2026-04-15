@@ -938,7 +938,7 @@
 
   /* ===== Right Panel (Footprints) ===== */
   .footprint-panel {
-    position: fixed; top: 76px; right: 16px; z-index: 100; width: 420px;
+    position: fixed; top: 76px; right: 16px; z-index: 100; width: 520px;
     max-height: calc(100vh - 92px);
     display: flex; flex-direction: column;
     background: var(--bg-panel); backdrop-filter: blur(24px);
@@ -2982,7 +2982,7 @@ function createDayElement(day, isOtherMonth, isToday, plans, isSelected, dateObj
   });
   
   const dateKey = formatDateKey(dateObj);
-  const displayItems = allItems.slice(0, 4);
+  const displayItems = allItems.slice(0, 6);
   const totalCount = allItems.length;
   
   // 底部彩色色块指示器
@@ -3006,7 +3006,7 @@ function createDayElement(day, isOtherMonth, isToday, plans, isSelected, dateObj
       const doneKey = `${dateKey}_${item.text}`;
       const isDone = planDoneSet.has(doneKey);
       const dotColor = item.color || PALETTE[item._ci];
-      const personTag = item.person ? `<span style="opacity:0.45;font-size:8px">(${item.person})</span>` : '';
+      const personTag = item.person ? `<span style="opacity:0.7;font-size:9px;margin-left:2px">[${item.person}]</span>` : '';
       eventsHtml += `<div class="day-event ${c}${isDone ? ' done' : ''}" ${style}><span class="day-event-dot" style="background:${dotColor}"></span>${item.text}${personTag}</div>`;
     });
     if (totalCount > 4) {
