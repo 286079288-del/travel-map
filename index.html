@@ -3806,6 +3806,9 @@ function loadUserFootprints() {
   });
   
   localStorage.setItem('user_footprints_loaded', 'true');
+  // 重新渲染日历，让项目安排内容显示在格子里
+  renderCalendar();
+  renderProjectSchedule();
   showToast(`✅ 已加载 ${USER_FOOTPRINTS.length} 个城市的足迹`, 'success');
 }
 
