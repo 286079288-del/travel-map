@@ -3205,8 +3205,6 @@
 
         <button class="toolbar-btn" onclick="openScheduleAddModal()">➕ 添加</button>
 
-        <button class="toolbar-btn" onclick="refreshScheduleFromCalendar()">🔄 刷新日历</button>
-
       </div>
 
       <div class="schedule-month-label" id="scheduleMonthLabel"></div>
@@ -6535,6 +6533,29 @@ function savePlan() {
 
 function deletePlan(dateKey, idx) {
 
+  const item = itinerary[dateKey]?.[idx];
+
+  // 如果删除的是项目安排同步来的事件，同步删除项目安排中的对应条目
+  if (item && item.source === 'schedule') {
+
+    const title = (item.title || '').trim();
+
+    const delIdx = scheduleItems.findIndex(s => (s.content || '').trim() === title && s.date === dateKey);
+
+    if (delIdx >= 0) {
+
+      scheduleItems.splice(delIdx, 1);
+
+      localStorage.setItem(SCHEDULE_KEY, JSON.stringify(scheduleItems));
+
+      renderProjectSchedule();
+
+    }
+
+  }
+
+
+
   itinerary[dateKey].splice(idx, 1);
 
   if (itinerary[dateKey].length === 0) delete itinerary[dateKey];
@@ -7698,7 +7719,8 @@ function loadScheduleItems() {
 
   } catch(e) { scheduleItems = []; }
 
-  if (!scheduleItems.length || !localStorage.getItem('schedule_inited_v2')) {
+  // 只在首次且没有任何数据时初始化默认值
+  if (!scheduleItems.length && !localStorage.getItem('schedule_inited_v2')) {
 
     scheduleItems = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));
 
@@ -7719,7 +7741,110 @@ function saveScheduleItems() {
   // 自动同步到 Bmob 云端
   cloudSaveSchedule(scheduleItems);
 
+  // 同步项目安排到日历面板（itinerary）
+  syncScheduleToCalendar();
+
   triggerAutoSync();
+
+}
+
+// 将项目安排同步到日历面板
+function syncScheduleToCalendar() {
+
+  // 先清除之前由项目安排同步过来的日历项（标记 source=schedule 的）
+  Object.keys(itinerary).forEach(dateKey => {
+
+    itinerary[dateKey] = itinerary[dateKey].filter(item => item.source !== 'schedule');
+
+    if (itinerary[dateKey].length === 0) delete itinerary[dateKey];
+
+  });
+
+
+
+  // 将当前项目安排写入 itinerary
+  scheduleItems.forEach(item => {
+
+    if (!item.date) return;
+
+    const dateKey = item.date;
+
+    // 检查是否已存在同标题的日历事件（非schedule来源）
+    if (!itinerary[dateKey]) itinerary[dateKey] = [];
+
+    const exists = itinerary[dateKey].some(e => e.title === (item.content || '').trim() && e.source !== 'schedule');
+
+    if (!exists) {
+
+      itinerary[dateKey].push({
+
+        title: (item.content || '').trim(),
+
+        color: '',
+
+        person: item.person || '',
+
+        locationId: '',
+
+        locationName: '',
+
+        source: 'schedule'  // 标记来源，方便后续清理
+
+      });
+
+    }
+
+
+
+    // 处理结束日期范围
+    if (item.endDate && item.endDate !== item.date) {
+
+      const start = new Date(item.date);
+
+      const end = new Date(item.endDate);
+
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+
+        const dk = formatDateKey(d);
+
+        if (dk === dateKey) continue; // 起始日期已处理
+
+        if (!itinerary[dk]) itinerary[dk] = [];
+
+        const existsRange = itinerary[dk].some(e => e.title === (item.content || '').trim() && e.source !== 'schedule');
+
+        if (!existsRange) {
+
+          itinerary[dk].push({
+
+            title: (item.content || '').trim(),
+
+            color: '',
+
+            person: item.person || '',
+
+            locationId: '',
+
+            locationName: '',
+
+            source: 'schedule'
+
+          });
+
+        }
+
+      }
+
+    }
+
+  });
+
+
+
+  localStorage.setItem(ITINERARY_KEY, JSON.stringify(itinerary));
+
+  // 刷新日历显示
+  if (typeof renderCalendar === 'function') renderCalendar();
 
 }
 
@@ -7765,7 +7890,7 @@ function renderProjectSchedule() {
 
   if (monthItems.length === 0) {
 
-    tbody.innerHTML = '<tr class="schedule-empty-row"><td colspan="5">暂无项目安排<br>点击「添加」或「刷新日历」</td></tr>';
+    tbody.innerHTML = '<tr class="schedule-empty-row"><td colspan="5">暂无项目安排<br>点击「➕ 添加」开始规划</td></tr>';
 
     return;
 
@@ -9213,6 +9338,9 @@ async function cloudLoadCalendar() {
 init();
 
 updateAutoSyncUI();
+
+// 启动时同步项目安排到日历面板
+syncScheduleToCalendar();
 
 // 启动时从云端加载最新数据
 setTimeout(() => { cloudLoadSchedule(); cloudLoadCalendar(); }, 2000);
