@@ -9117,8 +9117,6 @@ async function uploadToGist() {
 
 async function downloadFromGist() {
 
-  const token = document.getElementById('githubToken').value.trim() || localStorage.getItem('github_token') || '';
-
   const gistId = document.getElementById('gistId').value.trim() || localStorage.getItem('gist_id') || '8537a1418e2225641e85b15a81ad6c61';
 
 
@@ -9131,14 +9129,6 @@ async function downloadFromGist() {
 
   }
 
-
-
-  if (token) {
-
-    localStorage.setItem('github_token', token);
-
-  }
-
   localStorage.setItem('gist_id', gistId);
 
 
@@ -9147,11 +9137,10 @@ async function downloadFromGist() {
 
     showToast('⏳ 正在从云端下载数据...', 'info');
 
-    const headers = token ? { 'Authorization': `token ${token}` } : {};
-
+    // 下载公开Gist不需要Token，不带Authorization避免过期Token导致401
     const response = await fetch(`https://api.github.com/gists/${gistId}`, {
 
-      headers: headers
+      headers: {}
 
     });
 
@@ -9191,7 +9180,7 @@ async function downloadFromGist() {
 
       console.log('Gist content truncated, fetching raw URL...');
 
-      const rawResponse = await fetch(fileInfo.raw_url, { headers: headers });
+      const rawResponse = await fetch(fileInfo.raw_url);
 
       if (!rawResponse.ok) throw new Error('获取完整数据失败');
 
@@ -9367,19 +9356,15 @@ async function silentUploadToGist() {
 
 async function silentDownloadFromGist() {
 
-  const token = localStorage.getItem('github_token');
-
   const gistId = localStorage.getItem('gist_id');
 
-  if (!token || !gistId || !autoSyncEnabled) return;
+  if (!gistId || !autoSyncEnabled) return;
 
 
 
   try {
 
-    const headers = token ? { 'Authorization': `token ${token}` } : {};
-
-    const response = await fetch(`https://api.github.com/gists/${gistId}`, { headers: headers });
+    const response = await fetch(`https://api.github.com/gists/${gistId}`);
 
 
 
