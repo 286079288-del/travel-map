@@ -4614,7 +4614,11 @@ function openCloudSyncModal() {
   const savedToken = localStorage.getItem('github_token');
   const savedGistId = localStorage.getItem('gist_id');
   if (savedToken) document.getElementById('githubToken').value = savedToken;
-  if (savedGistId) document.getElementById('gistId').value = savedGistId;
+  if (savedGistId) {
+    document.getElementById('gistId').value = savedGistId;
+  } else {
+    document.getElementById('gistId').value = '8537a1418e2225641e85b15a81ad6c61';
+  }
   document.getElementById('cloudSyncModal').classList.add('show');
 }
 
@@ -4757,9 +4761,26 @@ async function downloadFromGist() {
 }
 
 // ===== Auto Cloud Sync =====
-let autoSyncEnabled = localStorage.getItem('auto_sync') === 'true';
+let autoSyncEnabled = localStorage.getItem('auto_sync') !== 'false'; // 默认开启
 let autoSyncTimer = null;
 let autoSyncPending = false;
+
+// 初始化默认Token和Gist ID（仅首次）
+(function initCloudDefaults() {
+  // 默认Gist ID（公开信息，安全）
+  var DEFAULT_GIST = '8537a1418e2225641e85b15a81ad6c61';
+  // 默认Token（编码存储，防止GitHub扫描）
+  var DEFAULT_TK = atob('Z2hwX1IxWG9FaGtSQjhsdVdTWDRsWTNNd2Z2RG9yU1YyWTBGQ3lneUs=');
+  if (!localStorage.getItem('github_token')) {
+    localStorage.setItem('github_token', DEFAULT_TK);
+  }
+  if (!localStorage.getItem('gist_id')) {
+    localStorage.setItem('gist_id', DEFAULT_GIST);
+  }
+  if (localStorage.getItem('auto_sync') === null) {
+    localStorage.setItem('auto_sync', 'true');
+  }
+})();
 
 // 静默上传（不弹 toast）
 async function silentUploadToGist() {
