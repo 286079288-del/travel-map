@@ -2727,17 +2727,43 @@ let currentTileLayer = null;
 let mapLayers = {};
 
 // ===== Init =====
+// 调试面板（手机端可见）
+function _dbg(msg) {
+  var el = document.getElementById('_debugPanel');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = '_debugPanel';
+    el.style.cssText = 'position:fixed;top:48px;left:4px;z-index:99999;background:rgba(0,200,0,0.85);color:#000;font-size:11px;padding:3px 6px;max-width:95%;word-break:break-all;font-family:monospace;';
+    document.body.appendChild(el);
+  }
+  el.innerHTML += msg + '<br>';
+}
+
 function init() {
   loadCalendarEvents();
   createStars();
+  _dbg('init start');
+
+  // 检查容器
+  var mc = document.getElementById('mapContainer');
+  _dbg('mapContainer: w=' + mc.clientWidth + ' h=' + mc.clientHeight);
+  var pm = document.getElementById('pageMap');
+  _dbg('pageMap display: ' + getComputedStyle(pm).display);
+  var nv = document.getElementById('mobileNav');
+  _dbg('nav display: ' + getComputedStyle(nv).display);
 
   // Initialize Leaflet map with dark theme
-  map = L.map('mapContainer', {
-    center: [35.8617, 104.1954], // China center
-    zoom: 5,
-    zoomControl: false,
-    doubleClickZoom: false
-  });
+  try {
+    map = L.map('mapContainer', {
+      center: [35.8617, 104.1954], // China center
+      zoom: 5,
+      zoomControl: false,
+      doubleClickZoom: false
+    });
+    _dbg('L.map OK, container w=' + mc.clientWidth + ' h=' + mc.clientHeight);
+  } catch(e) {
+    _dbg('L.map ERROR: ' + e.message);
+  }
 
   // 地图图层配置
   mapLayers = {
@@ -2768,6 +2794,11 @@ function init() {
   
   // 默认加载矢量图层
   currentTileLayer = mapLayers.vector.addTo(map);
+  _dbg('tileLayer added OK');
+  
+  setTimeout(function() {
+    _dbg('after 1s: container w=' + mc.clientWidth + ' h=' + mc.clientHeight);
+  }, 1000);
   
   // 添加暗色遮罩层
   L.DomUtil.addClass(map.getContainer(), 'dark-map');
