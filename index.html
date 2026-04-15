@@ -1684,31 +1684,36 @@
     /* 日历手机适配 */
     .calendar-section {
       margin: 0 !important;
-      padding: 12px 16px !important;
+      padding: 10px 8px !important;
       border-radius: 0 !important;
       border: none !important;
       border-bottom: 1px solid var(--border-color) !important;
       background: var(--bg-primary) !important;
     }
-    .calendar-header { margin-bottom: 8px; }
-    .calendar-nav .nav-btn { width: 30px; height: 30px; font-size: 18px; }
-    .month-label { font-size: 14px; }
-    .today-btn { padding: 3px 8px; font-size: 11px; }
-    .weekday-row span { font-size: 9px; }
+    .calendar-header { margin-bottom: 6px; display:flex; align-items:center; justify-content:space-between; }
+    .calendar-nav { gap:4px; }
+    .calendar-nav .nav-btn { width: 28px; height: 28px; font-size: 16px; border-radius:8px; }
+    .month-label { font-size: 13px; font-weight:600; }
+    .today-btn { padding: 2px 7px; font-size: 11px; border-radius:8px; }
+    .weekday-row span { font-size: 9px; padding:4px 0; }
+    .calendar-grid { gap: 3px !important; }
     .calendar-day {
-      height: 52px;
+      min-height: 72px;
+      max-height: 90px;
       padding: 2px 3px;
       border-radius: 8px;
+      overflow-y: auto;
     }
-    .day-number { font-size: 13px; }
-    .day-event { font-size: 0; padding: 0; line-height: 0; height: 0; overflow: hidden; }
-    .day-event-dot { width: 0; height: 0; }
+    .day-number { font-size: 13px; font-weight:600; margin-bottom:2px; }
+    /* 显示事件文字 */
+    .day-event { font-size: 8px !important; line-height: 15px !important; padding: 0 2px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width:100%; display:block; }
+    .day-event-dot { width: 5px; height: 5px; flex-shrink:0; }
     .day-color-dot {
-      width: 6px !important;
-      height: 6px !important;
+      width: 5px !important;
+      height: 5px !important;
       border-radius: 50% !important;
       display: inline-block !important;
-      margin: 1px;
+      margin: 1px 1px 1px 0;
     }
 
     /* 日程详情 */
@@ -1994,7 +1999,6 @@
     <div class="panel-toolbar">
       <div style="display:flex;gap:6px;flex:1;flex-wrap:wrap;">
         <button class="toolbar-btn" onclick="openScheduleAddModal()">➕ 添加</button>
-        <button class="toolbar-btn" onclick="refreshScheduleFromCalendar()">🔄 刷新日历</button>
       </div>
       <div class="schedule-month-label" id="scheduleMonthLabel"></div>
     </div>
