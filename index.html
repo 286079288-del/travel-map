@@ -2743,15 +2743,21 @@ function _dbg(msg) {
 function init() {
   loadCalendarEvents();
   createStars();
-  _dbg('init start');
 
   // 检查容器
   var mc = document.getElementById('mapContainer');
-  _dbg('mapContainer: w=' + mc.clientWidth + ' h=' + mc.clientHeight);
   var pm = document.getElementById('pageMap');
-  _dbg('pageMap display: ' + getComputedStyle(pm).display);
-  var nv = document.getElementById('mobileNav');
-  _dbg('nav display: ' + getComputedStyle(nv).display);
+  _dbg('init start, mc=' + (mc?'OK':'NULL') + ' pm=' + (pm?'OK':'NULL'));
+
+  // 手机端强制设置容器高度
+  var isMobile = window.innerWidth <= 768;
+  _dbg('isMobile=' + isMobile + ' innerWidth=' + window.innerWidth);
+  if (isMobile && pm && mc) {
+    var h = window.innerHeight - 110;
+    pm.style.cssText = 'display:block !important; position:relative !important; width:100% !important; height:' + h + 'px !important; overflow:hidden !important;';
+    mc.style.cssText = 'position:relative !important; width:100% !important; height:' + h + 'px !important;';
+    _dbg('JS set: pageMap h=' + h + ' mapContainer h=' + h);
+  }
 
   // Initialize Leaflet map with dark theme
   try {
@@ -2761,7 +2767,7 @@ function init() {
       zoomControl: false,
       doubleClickZoom: false
     });
-    _dbg('L.map OK, container w=' + mc.clientWidth + ' h=' + mc.clientHeight);
+    _dbg('L.map OK, w=' + mc.clientWidth + ' h=' + mc.clientHeight);
   } catch(e) {
     _dbg('L.map ERROR: ' + e.message);
   }
