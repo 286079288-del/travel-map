@@ -1879,9 +1879,9 @@
 
   .schedule-table-wrap {
 
-    flex: 1; overflow-y: auto; padding: 8px 12px;
+    flex: 1; overflow-y: auto; padding: 10px 14px;
 
-    max-height: calc(100vh - 200px);
+    max-height: calc(100vh - 180px);
 
   }
 
@@ -1895,7 +1895,7 @@
 
   .schedule-table th {
 
-    padding: 8px 6px; text-align: left; font-weight: 600;
+    padding: 10px 8px; text-align: left; font-weight: 600;
 
     color: var(--text-secondary); font-size: 11px;
 
@@ -1907,7 +1907,7 @@
 
   .schedule-table td {
 
-    padding: 8px 6px; border-bottom: 1px solid var(--bg-card);
+    padding: 10px 8px; border-bottom: 1px solid var(--bg-card);
 
     color: var(--text-primary); vertical-align: middle;
 
@@ -1915,21 +1915,25 @@
 
   .schedule-table tr:hover td { background: var(--bg-card); }
 
-  .th-seq { width: 36px; text-align: center; }
+  .th-seq { width: 40px; text-align: center; }
 
-  .th-person { width: 70px; }
+  .th-person { width: 75px; }
 
-  .th-time { width: 80px; }
+  .th-connector { width: 70px; }
 
-  .th-action { width: 60px; text-align: center; }
+  .th-time { width: 90px; }
 
-  .td-seq { width: 30px; text-align: center; color: var(--text-muted); font-size: 12px; }
+  .th-action { width: 65px; text-align: center; }
 
-  .td-content { color: var(--text-primary); font-weight: 500; cursor: pointer; width: 70px; max-width: 70px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .td-seq { width: 35px; text-align: center; color: var(--text-muted); font-size: 12px; }
+
+  .td-content { color: var(--text-primary); font-weight: 500; cursor: pointer; min-width: 80px; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   .td-content:hover { color: #00d4ff; }
 
-  .td-person { color: #00d4ff; font-size: 12px; width: 60px; }
+  .td-person { color: #00d4ff; font-size: 12px; width: 70px; }
+
+  .td-connector { color: #a78bfa; font-size: 12px; width: 65px; }
 
   .td-time { color: var(--text-secondary); font-size: 12px; width: auto; }
 
@@ -3202,7 +3206,7 @@
 
         <thead>
 
-          <tr><th class="th-seq">序号</th><th class="th-content">内容</th><th class="th-person">负责人</th><th class="th-time">时间</th><th class="th-action">操作</th></tr>
+          <tr><th class="th-seq">序号</th><th class="th-content">内容</th><th class="th-person">负责人</th><th class="th-connector">对接人</th><th class="th-time">时间</th><th class="th-action">操作</th></tr>
 
         </thead>
 
@@ -3254,7 +3258,7 @@
 
         <option value="">-- 不指定 --</option>
 
-        <option value="陈志勇">陈志勇</option>
+        <option value="陈智勇">陈智勇</option>
 
         <option value="程广超">程广超</option>
 
@@ -3263,6 +3267,28 @@
         <option value="李彦赛">李彦赛</option>
 
         <option value="张恩林">张恩林</option>
+
+        <option value="王志斌">王志斌</option>
+
+      </select>
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">对接人</label>
+
+      <select class="form-input" id="scheduleConnector">
+
+        <option value="">-- 不指定 --</option>
+
+        <option value="芯言">芯言</option>
+
+        <option value="雅婕">雅婕</option>
+
+        <option value="赵悦">赵悦</option>
+
+        <option value="七七">七七</option>
 
       </select>
 
@@ -7916,7 +7942,7 @@ function renderProjectSchedule() {
 
   if (monthItems.length === 0) {
 
-    tbody.innerHTML = '<tr class="schedule-empty-row"><td colspan="5">暂无项目安排<br>点击「➕ 添加」开始规划</td></tr>';
+    tbody.innerHTML = '<tr class="schedule-empty-row"><td colspan="6">暂无项目安排<br>点击「➕ 添加」开始规划</td></tr>';
 
     return;
 
@@ -7938,7 +7964,7 @@ function renderProjectSchedule() {
 
     const last = aggregated[aggregated.length - 1];
 
-    if (last && last.content === item.content && last.person === item.person) {
+    if (last && last.content === item.content && last.person === item.person && last.connector === (item.connector || '')) {
 
       // Check if dates are consecutive
 
@@ -7969,6 +7995,8 @@ function renderProjectSchedule() {
       content: item.content,
 
       person: item.person || '',
+
+      connector: item.connector || '',
 
       date: item.date,
 
@@ -8014,6 +8042,8 @@ function renderProjectSchedule() {
 
       '<td class="td-person">' + (item.person || '-') + '</td>' +
 
+      '<td class="td-connector">' + (item.connector || '-') + '</td>' +
+
       '<td class="td-time">' + dateDisplay + '</td>' +
 
       '<td class="td-action">' +
@@ -8058,6 +8088,8 @@ function openScheduleAddModal() {
 
   document.getElementById('schedulePerson').value = '';
 
+  document.getElementById('scheduleConnector').value = '';
+
   document.getElementById('scheduleDate').value = '';
 
   document.getElementById('scheduleEndDate').value = '';
@@ -8082,6 +8114,8 @@ function editScheduleItem(idx) {
 
   document.getElementById('schedulePerson').value = item.person || '';
 
+  document.getElementById('scheduleConnector').value = item.connector || '';
+
   document.getElementById('scheduleDate').value = item.date || '';
 
   document.getElementById('scheduleEndDate').value = item.endDate || '';
@@ -8098,6 +8132,8 @@ function saveScheduleItem() {
 
   const person = document.getElementById('schedulePerson').value;
 
+  const connector = document.getElementById('scheduleConnector').value;
+
   const date = document.getElementById('scheduleDate').value;
 
   const endDate = document.getElementById('scheduleEndDate').value;
@@ -8108,13 +8144,13 @@ function saveScheduleItem() {
 
   if (editingScheduleIdx >= 0) {
 
-    scheduleItems[editingScheduleIdx] = { ...scheduleItems[editingScheduleIdx], content, person, date, endDate: endDate || '' };
+    scheduleItems[editingScheduleIdx] = { ...scheduleItems[editingScheduleIdx], content, person, connector, date, endDate: endDate || '' };
 
     showToast('✅ 项目已更新', 'success');
 
   } else {
 
-    scheduleItems.push({ content, person, date, endDate: endDate || '', id: Date.now() });
+    scheduleItems.push({ content, person, connector, date, endDate: endDate || '', id: Date.now() });
 
     showToast('✅ 项目已添加', 'success');
 
