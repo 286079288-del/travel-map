@@ -2819,6 +2819,8 @@ function init() {
   });
 
   applyTheme(currentTheme);
+  // 先加载内置足迹数据，再渲染
+  loadUserFootprints();
   renderAllMarkers();
   renderFootprints();
   updateStats();
@@ -2827,10 +2829,6 @@ function init() {
   renderDayDetail();
   updateItineraryStats();
   renderProjectSchedule();
-  
-  // 加载用户足迹数据
-  loadUserFootprints();
-}
 
 function createStars() {
   const c = document.getElementById('stars');
