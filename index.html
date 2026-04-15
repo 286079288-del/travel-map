@@ -6885,11 +6885,9 @@ function updateItineraryStats() {
 
   
 
-  document.getElementById('planDays').textContent = uniqueDates;
-
-  document.getElementById('planCities').textContent = uniqueCities;
-
-  document.getElementById('planSpots').textContent = allPlans.length;
+  const el1 = document.getElementById('planDays'); if(el1) el1.textContent = uniqueDates;
+  const el2 = document.getElementById('planCities'); if(el2) el2.textContent = uniqueCities;
+  const el3 = document.getElementById('planSpots'); if(el3) el3.textContent = allPlans.length;
 
   
 
@@ -6909,7 +6907,7 @@ function renderDestinations() {
 
   
 
-  document.getElementById('destCount').textContent = uniqueLocations.length;
+  const el4 = document.getElementById('destCount'); if(el4) el4.textContent = uniqueLocations.length;
 
   
 
@@ -9251,9 +9249,9 @@ async function downloadFromGist() {
 
     updateStats();
 
-    renderCalendar();
+    try { renderCalendar(); } catch(e) { console.warn('renderCalendar error:', e); }
 
-    renderDayDetail();
+    try { renderDayDetail(); } catch(e) { console.warn('renderDayDetail error:', e); }
 
     updateItineraryStats();
 
