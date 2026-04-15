@@ -5125,48 +5125,81 @@ let currentPage = 'calendar';
 function switchMobilePage(page) {
   if (!isMobile()) return;
   currentPage = page;
-  var panel = document.querySelector('.left-panel');
   var navItems = document.querySelectorAll('.mobile-nav-item');
-
   navItems.forEach(function(item) { item.classList.toggle('active', item.dataset.page === page); });
 
+  // 关键结构：
+  // .left-panel 包含：searchSection + calendarSection + dayDetailSection
+  // .footprint-panel 包含：panelTopTabs + panelSchedule(项目安排表格) + panelFootprints(足迹列表)
+  var leftPanel = document.querySelector('.left-panel');
+  var fpPanel = document.querySelector('.footprint-panel');
   var calSec = document.getElementById('calendarSection');
-  var schedSec = document.getElementById('panelSchedule');
-  var topTabs = document.querySelector('.panel-top-tabs');
+  var dayDetailSec = document.getElementById('dayDetailSection');
   var searchSec = document.querySelector('.search-section');
+  var schedContent = document.getElementById('panelSchedule');    // 在 footprint-panel 内
+  var fpTabBar = document.querySelector('.panel-top-tabs');       // 在 footprint-panel 内
+  var fpContent = document.getElementById('panelFootprints');     // 在 footprint-panel 内
   var mapEl = document.getElementById('map');
 
+  // Step 1: 先全部隐藏/重置
+  if (leftPanel) leftPanel.style.display = 'none';
+  if (fpPanel) { fpPanel.style.display = 'none'; fpPanel.style.position = ''; fpPanel.style.top = ''; fpPanel.style.left = ''; fpPanel.style.right = ''; fpPanel.style.bottom = ''; fpPanel.style.width = ''; fpPanel.style.maxHeight = ''; }
+  if (calSec) calSec.style.display = '';
+  if (dayDetailSec) dayDetailSec.style.display = '';
+  if (searchSec) searchSec.style.display = '';
+  if (fpTabBar) fpTabBar.style.display = '';
+  if (schedContent) schedContent.style.display = '';
+  if (fpContent) fpContent.style.display = '';
+  if (mapEl) mapEl.style.opacity = '';
+
   if (page === 'calendar') {
-    // 日历页：显示日历区，隐藏其他
-    if (calSec) calSec.style.display = '';
-    if (schedSec) schedSec.style.display = 'none';
-    if (topTabs) topTabs.style.display = 'none';
-    if (searchSec) searchSec.style.display = '';
-    if (panel) { panel.style.display = ''; panel.style.width = ''; }
+    // ===== 日历页：显示 left-panel 全屏，隐藏右侧面板 =====
+    if (leftPanel) {
+      leftPanel.style.position = 'fixed';
+      leftPanel.style.top = '56px';
+      leftPanel.style.left = '0';
+      leftPanel.style.right = '0';
+      leftPanel.style.bottom = '54px';
+      leftPanel.style.width = '100%';
+      leftPanel.style.zIndex = '99';
+      leftPanel.style.borderRadius = '0';
+      leftPanel.style.display = '';
+    }
+    if (fpPanel) fpPanel.style.display = 'none';
     if (mapEl) mapEl.style.opacity = '0.12';
-    // 刷新日历（使用已删除事件恢复后的数据）
     renderCalendar();
+
   } else if (page === 'schedule') {
-    // 项目安排页：只显示表格
-    if (calSec) calSec.style.display = 'none';
-    if (schedSec) schedSec.style.display = 'flex';
-    if (topTabs) topTabs.style.display = 'none';
-    if (searchSec) searchSec.style.display = 'none';
-    if (panel) { panel.style.display = ''; panel.style.width = ''; }
+    // ===== 项目安排页：隐藏左侧面板，footprint-panel 全屏只显示表格 =====
+    if (leftPanel) leftPanel.style.display = 'none';
+    if (fpPanel) {
+      fpPanel.style.position = 'fixed';
+      fpPanel.style.top = '56px';
+      fpPanel.style.left = '0';
+      fpPanel.style.right = '0';
+      fpPanel.style.bottom = '54px';
+      fpPanel.style.width = '100%';
+      fpPanel.style.maxHeight = 'calc(100vh - 110px)';
+      fpPanel.style.zIndex = '99';
+      fpPanel.style.display = '';
+    }
+    // 隐藏 Tab 栏和足迹列表，只显示项目安排表格
+    if (fpTabBar) fpTabBar.style.display = 'none';
+    if (schedContent) schedContent.style.display = 'flex';
+    if (fpContent) fpContent.style.display = 'none';
     if (mapEl) mapEl.style.opacity = '0.12';
-    // 强制重新渲染表格数据
-    var tblWrap = document.getElementById('scheduleTableBody');
-    if (tblWrap) tblWrap.innerHTML = '';
+    // 渲染数据
     setTimeout(function() { renderProjectSchedule(); }, 100);
+
   } else if (page === 'map') {
-    // 地图页：隐藏面板，地图全屏
-    if (panel) panel.style.display = 'none';
+    // ===== 地图页：两个面板都隐藏，地图全屏 =====
+    if (leftPanel) leftPanel.style.display = 'none';
+    if (fpPanel) fpPanel.style.display = 'none';
     if (mapEl) {
       mapEl.style.opacity = '1';
       setTimeout(function() {
         if (typeof map !== 'undefined' && map) {
           map.invalidateSize();
-          // 确保标记图层存在并可见
           renderAllMarkers();
         }
       }, 350);
