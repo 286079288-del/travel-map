@@ -3175,7 +3175,7 @@
 
   <div class="calendar-section" id="calendarSection">
 
-    <div class="calendar-header">
+    <div class="calendar-header" style="position:relative;">
 
       <div class="calendar-nav">
 
@@ -3186,6 +3186,8 @@
         <button class="nav-btn" onclick="changeMonth(1)">›</button>
 
       </div>
+
+      <button class="toolbar-btn" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);opacity:0.5;font-size:11px;padding:2px 8px;" onclick="openCloudSyncModal()" title="云同步">☁️</button>
 
       <button class="today-btn" onclick="goToToday()">今天</button>
 
@@ -3257,9 +3259,9 @@
 
         <button class="toolbar-btn" onclick="openScheduleAddModal()">➕ 添加</button>
         <span style="flex:1"></span>
-        <button class="toolbar-btn" style="opacity:0.5;font-size:11px;padding:4px 8px;" onclick="openCloudSyncModal()" title="云同步">☁️</button>
-        <button class="toolbar-btn" style="opacity:0.5;font-size:11px;padding:4px 8px;" onclick="exportData()" title="导出">📤</button>
-        <button class="toolbar-btn" style="opacity:0.5;font-size:11px;padding:4px 8px;" onclick="document.getElementById('importFileInput').click()" title="导入">📥</button>
+        <button class="toolbar-btn" style="opacity:0.6;font-size:12px;padding:4px 10px;" onclick="openCloudSyncModal()" title="云同步">☁️ 同步</button>
+        <button class="toolbar-btn" style="opacity:0.6;font-size:12px;padding:4px 10px;" onclick="exportData()" title="导出">📤 导出</button>
+        <button class="toolbar-btn" style="opacity:0.6;font-size:12px;padding:4px 10px;" onclick="document.getElementById('importFileInput').click()" title="导入">📥 导入</button>
 
       </div>
 
