@@ -4656,8 +4656,9 @@ async function uploadToGist() {
   const data = {
     footprints: footprints,
     itinerary: itinerary,
+    schedule: scheduleItems,
     syncTime: new Date().toISOString(),
-    version: '2.0'
+    version: '3.0'
   };
 
   try {
@@ -4749,6 +4750,10 @@ async function downloadFromGist() {
       itinerary = data.itinerary;
       localStorage.setItem(ITINERARY_KEY, JSON.stringify(itinerary));
     }
+    if (data.schedule) {
+      scheduleItems = data.schedule;
+      localStorage.setItem(SCHEDULE_KEY, JSON.stringify(scheduleItems));
+    }
 
     localStorage.setItem('last_sync_time', data.syncTime || new Date().toISOString());
 
@@ -4758,6 +4763,7 @@ async function downloadFromGist() {
     renderCalendar();
     renderDayDetail();
     updateItineraryStats();
+    renderProjectSchedule();
     drawRouteLine();
     renderDestinations();
 
