@@ -7862,13 +7862,12 @@ let scheduleItems = [];
 
 
 function loadScheduleItems() {
-
-  // 强制使用默认数据（每次加载都重置，确保数据正确）
-
-  scheduleItems = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));
-
-  saveScheduleItems();
-
+  const stored = localStorage.getItem(SCHEDULE_KEY);
+  if (stored) {
+    try { scheduleItems = JSON.parse(stored); } catch(e) { scheduleItems = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE)); }
+  } else {
+    scheduleItems = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));
+  }
 }
 
 
