@@ -3037,6 +3037,14 @@
 
   </div>
 
+  <div style="display:flex;gap:6px;align-items:center;">
+
+    <button class="toolbar-btn" id="fullscreenBtn" title="全屏" style="background:transparent;border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:14px;padding:4px 10px;">⛶</button>
+
+    <button class="toolbar-btn" id="themeToggleBtn" title="切换亮/暗主题" style="background:transparent;border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:14px;padding:4px 10px;">🌙</button>
+
+  </div>
+
 </div>
 
 
@@ -3155,55 +3163,31 @@
 
   <div class="panel-top-tabs">
 
-    <button class="top-tab" id="tabFootprints" onclick="switchPanelTab('footprints')">📍 我的足迹</button>
-
     <button class="top-tab active" id="tabSchedule" onclick="switchPanelTab('schedule')">📋 项目安排</button>
 
-  </div>
-
-
-
-  <!-- Tab: 我的足迹 -->
-
-  <div class="panel-content" id="panelFootprints" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
-
-    <div class="panel-toolbar">
-
-      <div style="display:flex;gap:6px;flex:1;flex-wrap:wrap;">
-
-        <button class="toolbar-btn" id="cloudSyncBtn" title="云同步">☁️ 同步</button>
-
-        <button class="toolbar-btn" id="exportData" title="导出到文件">📤 导出</button>
-
-        <button class="toolbar-btn" id="importData" title="从文件导入">📥 导入</button>
-
-        <button class="toolbar-btn" id="fullscreenBtn" title="全屏">⛶ 全屏</button>
-
-        <button class="toolbar-btn" id="themeToggleBtn" title="切换亮/暗主题">🌙</button>
-
-        <button class="toolbar-btn danger" id="cleanData" title="清理测试数据">🧹 清理</button>
-
-        <button class="toolbar-btn danger" id="clearAll">🗑️ 清空</button>
-
-      </div>
-
-    </div>
-
-    <div class="footprint-list" id="footprintList"></div>
+    <button class="top-tab" id="tabFootprints" onclick="switchPanelTab('footprints')">📍 我的足迹</button>
 
   </div>
 
 
 
-  <!-- Tab: 项目安排 -->
+  <!-- Tab: 项目安排 (默认显示) -->
 
-  <div class="panel-content" id="panelSchedule" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+  <div class="panel-content" id="panelSchedule" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
 
     <div class="panel-toolbar">
 
-      <div style="display:flex;gap:6px;flex:1;flex-wrap:wrap;">
+      <div style="display:flex;gap:6px;flex:1;flex-wrap:wrap;align-items:center;">
 
         <button class="toolbar-btn" onclick="openScheduleAddModal()">➕ 添加</button>
+
+        <span style="flex:1"></span>
+
+        <button class="toolbar-btn" style="opacity:0.5;font-size:11px;padding:4px 8px;" id="cloudSyncBtn" title="云同步">☁️</button>
+
+        <button class="toolbar-btn" style="opacity:0.5;font-size:11px;padding:4px 8px;" id="exportData" title="导出到文件">📤</button>
+
+        <button class="toolbar-btn" style="opacity:0.5;font-size:11px;padding:4px 8px;" id="importData" title="从文件导入">📥</button>
 
       </div>
 
@@ -3226,6 +3210,16 @@
       </table>
 
     </div>
+
+  </div>
+
+
+
+  <!-- Tab: 我的足迹 -->
+
+  <div class="panel-content" id="panelFootprints" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+
+    <div class="footprint-list" id="footprintList"></div>
 
   </div>
 
@@ -5254,6 +5248,8 @@ function init() {
   renderFootprints();
 
   updateStats();
+
+  renderProjectSchedule();
 
   applyHiddenTypes();
 
@@ -7659,7 +7655,7 @@ function switchMapType(type) {
 
 // ===== Panel Tab Switch =====
 
-let currentPanelTab = 'footprints';
+let currentPanelTab = 'schedule';
 
 function switchPanelTab(tab) {
 
@@ -7674,6 +7670,8 @@ function switchPanelTab(tab) {
   document.getElementById('panelSchedule').style.display = tab === 'schedule' ? 'flex' : 'none';
 
   if (tab === 'schedule') renderProjectSchedule();
+
+  if (tab === 'footprints') renderFootprints();
 
 }
 
