@@ -3789,8 +3789,12 @@ function addFootprintWithReturn(name, address, lnglat, type, visitDate = null, u
 // ===== 加载用户足迹数据 =====
 function loadUserFootprints() {
   // 检查是否已经加载过
-  if (localStorage.getItem('user_footprints_loaded')) return;
-  
+  if (localStorage.getItem('user_footprints_loaded')) {
+    // 已加载过，只刷新日历显示
+    renderCalendar();
+    renderProjectSchedule();
+    return;
+  }
   USER_FOOTPRINTS.forEach(city => {
     const coords = CITY_COORDS[city.name];
     if (coords) {
