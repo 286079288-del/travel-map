@@ -1700,11 +1700,11 @@
       border-radius: 8px;
     }
     .day-number { font-size: 13px; }
-    .day-event { font-size: 0; padding: 0; line-height: 0; height: 0; overflow: hidden; }
-    .day-event-dot { width: 0; height: 0; }
+    .day-event { font-size: 8px !important; padding: 1px 3px !important; line-height: 1.3 !important; height: auto !important; overflow: hidden; }
+    .day-event-dot { width: 4px !important; height: 4px !important; }
     .day-color-dot {
-      width: 6px !important;
-      height: 6px !important;
+      width: 4px !important;
+      height: 4px !important;
       border-radius: 50% !important;
       display: inline-block !important;
       margin: 1px;
@@ -1820,48 +1820,9 @@
       color: #fff;
     }
 
-    /* 底部导航栏 */
-    .mobile-bottom-nav {
-      display: flex !important;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 200;
-      height: 60px;
-      background: var(--bg-panel);
-      backdrop-filter: blur(24px);
-      border-top: 1px solid var(--border-color);
-      box-shadow: 0 -4px 20px var(--shadow-color);
-    }
-    .mobile-nav-btn {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 2px;
-      border: none;
-      background: transparent;
-      color: var(--text-secondary);
-      font-size: 10px;
-      font-family: inherit;
-      cursor: pointer;
-      transition: color 0.2s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .mobile-nav-btn .nav-icon { font-size: 20px; }
-    .mobile-nav-btn.active { color: #00d4ff; }
-
     /* 隐藏桌面端不需要的元素 */
     .map-type-switch { display: none !important; }
     .panel-toolbar .toolbar-btn { padding: 6px 10px; font-size: 12px; }
-
-    /* 地图全屏时 */
-    #mapContainer.fullscreen-map {
-      top: 48px !important;
-      height: calc(100vh - 48px - 60px) !important;
-    }
 
     /* 确保页面body可以滚动 */
     body {
@@ -1873,8 +1834,9 @@
     .stars { position: fixed !important; z-index: 0; }
   }
 
-  /* Mobile bottom nav (hidden on desktop) */
-  .mobile-bottom-nav { display: none; }
+  /* Mobile bottom nav removed */
+  .mobile-bottom-nav { display: none !important; }
+  .mobile-map-fullscreen { display: none !important; }
 </style>
 </head>
 <body>
@@ -2189,8 +2151,6 @@
 <div id="mapContainer"></div>
 
 <!-- 手机端地图全屏按钮 -->
-<button class="mobile-map-fullscreen" id="mobileFullscreenBtn" title="全屏">⛶</button>
-
 <!-- 地图类型切换按钮 -->
 <div class="map-type-switch">
   <button class="map-type-btn active" id="btnVector" onclick="switchMapType('vector')">🗺️ 矢量</button>
@@ -4173,12 +4133,16 @@ function renderProjectSchedule() {
     cardsContainer = document.createElement('div');
     cardsContainer.id = 'scheduleCardsContainer';
     cardsContainer.className = 'schedule-cards';
-    // 插入到 schedule-wrapper 内、schedule-table 之后
-    const wrapper = document.querySelector('.schedule-wrapper');
-    if (wrapper) {
-      const table = wrapper.querySelector('.schedule-table');
+    // 插入到 schedule-table-wrap 内、schedule-table 之后
+    const tableWrap = document.querySelector('.schedule-table-wrap');
+    if (tableWrap) {
+      const table = tableWrap.querySelector('.schedule-table');
       if (table) table.parentNode.insertBefore(cardsContainer, table.nextSibling);
-      else wrapper.appendChild(cardsContainer);
+      else tableWrap.appendChild(cardsContainer);
+    } else {
+      // fallback: 插入到 panelSchedule 内
+      const panel = document.getElementById('panelSchedule');
+      if (panel) panel.appendChild(cardsContainer);
     }
   }
 
@@ -4486,9 +4450,33 @@ function updateStats() {
 
 // ===== 类型可见性控制 =====
 const VISIBILITY_KEY = 'travel_type_visibility';
-window.hiddenTypes = new Set(JSON.parse(localStorage.getItem(VISIBILITY_KEY) || '[]'));
+window.hiddenTypes = new Set(JSON.parse(localStorage.getItem(VISIBILITY_KEY) || '["visited"]'));
+// 默认隐藏"已去过"，需要密码才能开启
+if (!localStorage.getItem('visited_unlocked')) {
+  window.hiddenTypes.add('visited');
+}
 
 function toggleTypeVisibility(type) {
+  // 已去过需要密码
+  if (type === 'visited' && window.hiddenTypes.has('visited')) {
+    const pwd = prompt('显示"已去过"需要输入密码：');
+    if (pwd === '5215181') {
+      localStorage.setItem('visited_unlocked', '1');
+      window.hiddenTypes.delete('visited');
+      footprints.filter(f => f.type === 'visited').forEach(fp => {
+        if (markers[fp.id] && !map.hasLayer(markers[fp.id])) {
+          markers[fp.id].addTo(map);
+        }
+      });
+      localStorage.setItem(VISIBILITY_KEY, JSON.stringify([...window.hiddenTypes]));
+      renderFootprints();
+      showToast('已解锁显示"已去过"', '');
+    } else if (pwd !== null) {
+      showToast('密码错误', 'error');
+    }
+    return;
+  }
+
   if (window.hiddenTypes.has(type)) {
     window.hiddenTypes.delete(type);
     // 显示该类型的所有标记
@@ -4905,60 +4893,11 @@ updateAutoSyncUI();
 setTimeout(silentDownloadFromGist, 2000);
 </script>
 
-<!-- Mobile Bottom Navigation -->
-<div class="mobile-bottom-nav" id="mobileNav">
-  <button class="mobile-nav-btn active" onclick="mobileSwitchView('calendar')">
-    <span class="nav-icon">📅</span><span>日历</span>
-  </button>
-  <button class="mobile-nav-btn" onclick="mobileSwitchView('schedule')">
-    <span class="nav-icon">📋</span><span>项目</span>
-  </button>
-  <button class="mobile-nav-btn" onclick="mobileSwitchView('map')">
-    <span class="nav-icon">🗺️</span><span>地图</span>
-  </button>
-</div>
+<!-- Mobile Bottom Navigation removed -->
 
 <script>
-// Mobile view switching - scroll to section
-function mobileSwitchView(view) {
-  // 更新tab激活状态
-  document.querySelectorAll('.mobile-nav-btn').forEach(btn => btn.classList.remove('active'));
-  event.currentTarget.classList.add('active');
-
-  if (view === 'map') {
-    // 滚动到顶部（地图位置）
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  } else if (view === 'calendar') {
-    const cal = document.querySelector('.calendar-section');
-    if (cal) cal.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  } else if (view === 'schedule') {
-    const panel = document.querySelector('.footprint-panel');
-    if (panel) {
-      switchPanelTab('schedule');
-      panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }
-}
-
-// 地图全屏按钮
+// 地图全屏按钮 removed
 document.addEventListener('DOMContentLoaded', () => {
-  const fsBtn = document.getElementById('mobileFullscreenBtn');
-  const mapEl = document.getElementById('mapContainer');
-  if (fsBtn && mapEl) {
-    fsBtn.addEventListener('click', () => {
-      mapEl.classList.toggle('fullscreen-map');
-      fsBtn.textContent = mapEl.classList.contains('fullscreen-map') ? '✕' : '⛶';
-    });
-  }
-
-// Fix: typo in mobileSwitchView
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
-      this.classList.add('active');
-    });
-  });
   // 阻止浏览器自动填充搜索框
   setTimeout(() => {
     const si = document.getElementById('searchInput');
