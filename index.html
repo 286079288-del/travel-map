@@ -8950,9 +8950,15 @@ function openCloudSyncModal() {
 
   const savedGistId = localStorage.getItem('gist_id');
 
+  // 默认值：如果没有保存过，使用内置默认值
+  const defaultToken = 'ghp_SXJKxFJXgIevjnjFclxYhWEXmYqHXV3JPqEX';
+  const defaultGistId = '8537a1418e2225641e85b15a81ad6c61';
+
   if (savedToken) document.getElementById('githubToken').value = savedToken;
+  else document.getElementById('githubToken').value = defaultToken;
 
   if (savedGistId) document.getElementById('gistId').value = savedGistId;
+  else document.getElementById('gistId').value = defaultGistId;
 
   document.getElementById('cloudSyncModal').classList.add('show');
 
@@ -9250,11 +9256,11 @@ let autoSyncPending = false;
 
 async function silentUploadToGist() {
 
-  const token = localStorage.getItem('github_token');
+  const token = localStorage.getItem('github_token') || 'ghp_SXJKxFJXgIevjnjFclxYhWEXmYqHXV3JPqEX';
 
-  const gistId = localStorage.getItem('gist_id');
+  const gistId = localStorage.getItem('gist_id') || '8537a1418e2225641e85b15a81ad6c61';
 
-  if (!token || !gistId || !autoSyncEnabled) return;
+  if (!autoSyncEnabled) return;
 
 
 
@@ -9324,11 +9330,11 @@ async function silentUploadToGist() {
 
 async function silentDownloadFromGist() {
 
-  const token = localStorage.getItem('github_token');
+  const token = localStorage.getItem('github_token') || 'ghp_SXJKxFJXgIevjnjFclxYhWEXmYqHXV3JPqEX';
 
-  const gistId = localStorage.getItem('gist_id');
+  const gistId = localStorage.getItem('gist_id') || '8537a1418e2225641e85b15a81ad6c61';
 
-  if (!token || !gistId || !autoSyncEnabled) return;
+  if (!autoSyncEnabled) return;
 
 
 
