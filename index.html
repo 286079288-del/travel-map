@@ -18,6 +18,9 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+<!-- Bmob Cloud DB -->
+<script src="https://cdn.bootcdn.net/ajax/libs/bmob-sdk/2.4.1/bmob-min.js"></script>
+
 <style>
 
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
@@ -7713,6 +7716,9 @@ function saveScheduleItems() {
 
   localStorage.setItem(SCHEDULE_KEY, JSON.stringify(scheduleItems));
 
+  // 自动同步到 Bmob 云端
+  cloudSaveSchedule(scheduleItems);
+
   triggerAutoSync();
 
 }
@@ -9139,13 +9145,77 @@ function updateAutoSyncUI() {
 
 
 
-// Start
+// ===== Bmob Cloud Sync =====
+const BMOB_APP_ID = '1649b3d46bcc6935923215c1085b81dd';
+const BMOB_REST_KEY = 'f0ed970f0cad7db990410af0c374b371';
 
+function bmobRequest(method, path, data) {
+  return fetch('https://api2.bmobapp.com/1/classes/' + path, {
+    method: method,
+    headers: {
+      'X-Bmob-Application-Id': BMOB_APP_ID,
+      'X-Bmob-REST-API-Key': BMOB_REST_KEY,
+      'Content-Type': 'application/json'
+    },
+    body: data ? JSON.stringify(data) : undefined
+  }).then(r => r.json());
+}
+
+// Save schedule to cloud
+async function cloudSaveSchedule(items) {
+  try {
+    await bmobRequest('POST', 'TravelSchedule', { items: JSON.stringify(items), updatedAt: new Date().toISOString() });
+    console.log('☁️ Schedule synced to cloud');
+  } catch(e) { console.warn('Cloud save failed:', e); }
+}
+
+// Save calendar events to cloud
+async function cloudSaveCalendar(events) {
+  try {
+    await bmobRequest('POST', 'TravelCalendar', { events: JSON.stringify(events), updatedAt: new Date().toISOString() });
+    console.log('☁️ Calendar synced to cloud');
+  } catch(e) { console.warn('Cloud save failed:', e); }
+}
+
+// Load schedule from cloud
+async function cloudLoadSchedule() {
+  try {
+    const res = await bmobRequest('GET', 'TravelSchedule?limit=1&order=-updatedAt', null);
+    if (res.results && res.results.length > 0) {
+      const items = JSON.parse(res.results[0].items);
+      if (items && items.length > 0) {
+        scheduleItems = items;
+        localStorage.setItem(SCHEDULE_KEY, JSON.stringify(scheduleItems));
+        localStorage.setItem('schedule_inited_v2', 'true');
+        renderProjectSchedule();
+        console.log('☁️ Schedule loaded from cloud:', items.length, 'items');
+        showToast('☁️ 已从云端同步项目安排', 'success');
+      }
+    }
+  } catch(e) { console.warn('Cloud load failed:', e); }
+}
+
+// Load calendar events from cloud
+async function cloudLoadCalendar() {
+  try {
+    const res = await bmobRequest('GET', 'TravelCalendar?limit=1&order=-updatedAt', null);
+    if (res.results && res.results.length > 0) {
+      const events = JSON.parse(res.results[0].events);
+      if (events) {
+        localStorage.setItem('travel_calendar_v2', JSON.stringify(events));
+        console.log('☁️ Calendar loaded from cloud');
+      }
+    }
+  } catch(e) { console.warn('Cloud load failed:', e); }
+}
+
+// Start
 init();
 
 updateAutoSyncUI();
 
-setTimeout(silentDownloadFromGist, 2000);
+// 启动时从云端加载最新数据
+setTimeout(() => { cloudLoadSchedule(); cloudLoadCalendar(); }, 2000);
 
 </script>
 
