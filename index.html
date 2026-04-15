@@ -1583,190 +1583,202 @@
   .mobile-map-fullscreen { display: none; }
 
   @media (max-width: 768px) {
-    /* 隐藏桌面端header */
+    /* 隐藏桌面端元素 */
     .header { display: none !important; }
     .mode-switch { display: none !important; }
     #modeSwitchContainer { display: none !important; }
+    .left-panel { display: none !important; }
+    .footprint-panel { display: none !important; }
+    .map-type-switch { display: none !important; }
 
-    /* 手机端头部 */
+    body {
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      padding-bottom: 64px !important;
+    }
+
+    /* ========== 手机端顶部标题栏 ========== */
     .mobile-header {
       display: flex !important;
       position: fixed;
       top: 0; left: 0; right: 0;
-      height: 48px;
-      background: var(--bg-panel);
-      backdrop-filter: blur(24px);
-      border-bottom: 1px solid var(--border-color);
+      height: 46px;
+      background: linear-gradient(135deg, rgba(14,18,48,0.97), rgba(22,28,58,0.97));
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
       z-index: 300;
       align-items: center;
       justify-content: center;
+      gap: 8px;
     }
     .mobile-header-title {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 700;
-      color: var(--text-primary);
+      color: #e0e6ff;
       letter-spacing: 1px;
     }
+    .mobile-header-icon { font-size: 17px; }
 
-    /* 地图区域 - 40vh */
-    #mapContainer {
+    /* ========== 三页面容器 ========== */
+    .mobile-page {
       position: fixed !important;
-      top: 48px;
-      left: 0;
-      right: 0;
-      height: 40vh !important;
-      width: 100% !important;
-      z-index: 10;
+      top: 46px;
+      left: 0; right: 0;
+      bottom: 64px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      z-index: 50;
+      display: none;
+      background: var(--bg-primary);
     }
+    .mobile-page.active { display: block !important; }
 
-    /* 地图全屏按钮 */
-    .mobile-map-fullscreen {
-      display: flex !important;
-      position: fixed;
-      bottom: calc(60px + 16px);
-      right: 16px;
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      background: var(--bg-panel);
-      backdrop-filter: blur(24px);
-      border: 1px solid var(--border-color);
-      color: var(--text-primary);
-      font-size: 20px;
-      align-items: center;
-      justify-content: center;
-      z-index: 200;
-      cursor: pointer;
-      box-shadow: 0 4px 16px var(--shadow-color);
-      transition: all 0.2s;
-    }
-    .mobile-map-fullscreen:active {
-      transform: scale(0.92);
-      background: var(--accent);
-      color: #fff;
-    }
-
-    /* 左面板 - 变成滚动区域，从地图下方开始 */
-    .left-panel {
+    /* --- 页面1：地图 --- */
+    .page-map { display: none !important; }
+    .page-map.active {
+      display: block !important;
       position: relative !important;
-      top: auto !important;
+      top: 46px !important;
       left: 0 !important;
       right: 0 !important;
-      bottom: auto !important;
+      bottom: 64px !important;
+      overflow: hidden !important;
+    }
+    .page-map.active #mapContainer {
+      position: absolute !important;
+      top: 0; left: 0; right: 0; bottom: 0;
       width: 100% !important;
-      height: auto !important;
-      border-radius: 0 !important;
-      border: none !important;
-      border-top: none !important;
-      z-index: 20 !important;
-      overflow-y: visible !important;
-      background: var(--bg-primary) !important;
-      backdrop-filter: none !important;
-      margin-top: calc(48px + 40vh) !important;
-      padding-bottom: 72px !important;
+      height: 100% !important;
+      z-index: 1;
     }
-    .left-panel.mobile-panel-visible {
-      display: block !important;
-    }
+    .page-map .leaflet-control-container .leaflet-top { top: 8px; }
 
-    /* 搜索区域 */
-    .search-section {
-      margin: 0 !important;
-      padding: 12px 16px !important;
-      border-radius: 0 !important;
-      border: none !important;
-      border-bottom: 1px solid var(--border-color) !important;
-      background: var(--bg-primary) !important;
+    /* --- 页面2：日历 --- */
+    .page-calendar {
+      background: var(--bg-primary);
+      padding-bottom: 16px;
     }
-    .search-input { padding: 10px 14px 10px 38px; font-size: 14px; }
-    .search-btn { padding: 10px 14px; font-size: 13px; }
-
-    /* 日历手机适配 */
-    .calendar-section {
-      margin: 0 !important;
-      padding: 10px 8px !important;
-      border-radius: 0 !important;
-      border: none !important;
-      border-bottom: 1px solid var(--border-color) !important;
-      background: var(--bg-primary) !important;
+    .page-calendar .search-section {
+      margin: 0;
+      padding: 10px 12px;
+      border: none;
+      border-bottom: 1px solid var(--border-color);
+      background: transparent;
     }
-    .calendar-header { margin-bottom: 6px; display:flex; align-items:center; justify-content:space-between; }
-    .calendar-nav { gap:4px; }
-    .calendar-nav .nav-btn { width: 28px; height: 28px; font-size: 16px; border-radius:8px; }
-    .month-label { font-size: 13px; font-weight:600; }
-    .today-btn { padding: 2px 7px; font-size: 11px; border-radius:8px; }
-    .weekday-row span { font-size: 9px; padding:4px 0; }
-    .calendar-grid { gap: 3px !important; }
-    .calendar-day {
-      min-height: 72px;
-      max-height: 90px;
-      padding: 2px 3px;
+    .page-calendar .search-input {
+      padding: 9px 32px 9px 34px; font-size: 13px; border-radius: 10px;
+    }
+    .page-calendar .calendar-section {
+      margin: 0; padding: 8px 4px; border: none; background: transparent;
+    }
+    .page-calendar .calendar-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 6px; padding: 0 4px;
+    }
+    .page-calendar .calendar-nav .nav-btn {
+      width: 30px; height: 30px; font-size: 17px; border-radius: 10px;
+    }
+    .page-calendar .month-label { font-size: 13px; font-weight: 600; }
+    .page-calendar .today-btn { padding: 3px 8px; font-size: 11px; border-radius: 8px; }
+    .page-calendar .weekday-row span { font-size: 10px; padding: 6px 0; }
+    .page-calendar .calendar-grid { gap: 3px !important; }
+    .page-calendar .calendar-day {
+      min-height: 70px;
+      max-height: 85px;
+      padding: 3px 3px;
       border-radius: 8px;
       overflow-y: auto;
     }
-    .day-number { font-size: 13px; font-weight:600; margin-bottom:2px; }
-    /* 显示事件文字 */
-    .day-event { font-size: 8px !important; line-height: 15px !important; padding: 0 2px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width:100%; display:block; }
-    .day-event-dot { width: 5px; height: 5px; flex-shrink:0; }
-    .day-color-dot {
+    .page-calendar .day-number { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+    .page-calendar .day-event {
+      font-size: 8px !important;
+      line-height: 15px !important;
+      padding: 0 2px !important;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      display: block;
+    }
+    .page-calendar .day-event-dot { width: 5px; height: 5px; flex-shrink: 0; }
+    .page-calendar .day-color-dot {
       width: 5px !important;
       height: 5px !important;
       border-radius: 50% !important;
       display: inline-block !important;
       margin: 1px 1px 1px 0;
     }
-
-    /* 日程详情 */
-    .day-detail-section {
-      border-radius: 0 !important;
-      border: none !important;
-      border-bottom: 1px solid var(--border-color) !important;
-      margin: 0 !important;
-      padding: 12px 16px !important;
-      background: var(--bg-primary) !important;
+    .page-calendar .day-detail-section {
+      border: none;
+      border-top: 1px solid var(--border-color);
+      margin: 0;
+      padding: 10px 12px;
+      background: transparent;
     }
 
-    /* 右面板：默认显示在滚动流中 */
-    .footprint-panel {
+    /* --- 页面3：项目安排 --- */
+    .page-schedule {
+      background: var(--bg-primary);
+    }
+    .page-schedule .panel-toolbar {
+      padding: 10px 14px; border-bottom: 1px solid var(--border-color);
+      background: transparent; border-radius: 0;
+    }
+    .page-schedule .toolbar-btn { padding: 7px 12px; font-size: 13px; border-radius: 8px; }
+    .page-schedule .schedule-month-label { font-size: 12px; opacity: 0.6; }
+    .page-schedule .schedule-table-wrap { padding: 0 8px; }
+    .page-schedule .schedule-table {
+      display: table !important;
+      width: 100%; font-size: 12px;
+    }
+    .page-schedule .schedule-table th {
+      padding: 8px 4px; font-size: 11px; position: sticky; top: 0;
+    }
+    .page-schedule .schedule-table td { padding: 8px 4px; font-size: 12px; }
+    .page-schedule .td-seq { width: 28px; font-size: 11px; }
+    .page-schedule .td-person { font-size: 11px; }
+    .page-schedule .td-time { font-size: 10px; white-space: nowrap; }
+    .page-schedule .edit-btn, .page-schedule .del-btn {
+      width: 28px; height: 28px; font-size: 13px;
+    }
+    .page-schedule .schedule-empty-row td {
+      text-align: center; padding: 40px 16px; font-size: 13px;
+    }
+    .page-schedule .schedule-cards { display: none !important; }
+
+    /* ========== 底部导航栏 ========== */
+    .mobile-nav-bar {
       display: flex !important;
-      position: relative !important;
-      top: auto !important;
-      left: 0 !important;
-      right: 0 !important;
-      bottom: auto !important;
-      width: 100% !important;
-      max-height: none !important;
-      height: auto !important;
-      border-radius: 0 !important;
-      border: none !important;
-      border-top: 1px solid var(--border-color) !important;
-      z-index: 20 !important;
-      flex-direction: column !important;
-      background: var(--bg-primary) !important;
-      backdrop-filter: none !important;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 64px;
+      background: linear-gradient(to top, rgba(10,14,38,0.98), rgba(14,18,48,0.96));
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      z-index: 300;
+      align-items: center;
+      justify-content: space-around;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
     }
-
-    /* 项目安排卡片式 */
-    .schedule-wrapper {
-      padding: 12px 16px !important;
-    }
-    .schedule-table {
-      display: none !important;
-    }
-    .schedule-cards {
-      display: flex !important;
+    .mobile-nav-btn {
+      display: flex;
       flex-direction: column;
-      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      min-width: 64px;
+      height: 52px;
+      border: none;
+      background: transparent;
+      color: rgba(150,160,190,0.6);
+      font-size: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      -webkit-tap-highlight-color: transparent;
     }
-    .schedule-card {
-      background: var(--bg-card, var(--bg-panel));
-      border-radius: 12px;
-      padding: 14px;
-      border: 1px solid var(--border-color);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .schedule-card:active {
-      transform: scale(0.98);
+    .mobile-nav-btn .nav-icon { font-size: 22px; }
+    .mobile-nav-btn.active { color: #00d4ff; }
+    .mobile-nav-btn:active { transform: scale(0.92); }
     }
     .schedule-card-main {
       display: flex;
@@ -1968,7 +1980,10 @@
       <!-- 动态生成当天行程 -->
     </div>
   </div>
-</div>
+</div><!-- /page-calendar -->
+
+<!-- 页面3：项目安排 -->
+<div class="mobile-page page-schedule" id="pageSchedule">
 
 <!-- Footprint Panel -->
 <div class="footprint-panel">
@@ -2182,21 +2197,30 @@
     </div>
   </div>
 </div>
+</div><!-- /page-schedule -->
 
 <div class="toast" id="toast"></div>
 
 <!-- 手机端专属头部 -->
 <div class="mobile-header" id="mobileHeader">
-  <div class="mobile-header-title">🗺️ 项目地图</div>
+  <span class="mobile-header-icon">🗺️</span>
+  <div class="mobile-header-title">项目地图</div>
 </div>
 
+<!-- ========== 手机端三页面容器 ========== -->
+<!-- 页面1：地图 -->
+<div class="mobile-page page-map active" id="pageMap">
 <!-- 地图区域 -->
 <div id="mapContainer"></div>
 
 <!-- 手机端地图全屏按钮 -->
 <button class="mobile-map-fullscreen" id="mobileFullscreenBtn" title="全屏">⛶</button>
+</div><!-- /page-map -->
 
-<!-- 地图类型切换按钮 -->
+<!-- 页面2：日历 -->
+<div class="mobile-page page-calendar active" id="pageCalendar">
+
+<!-- Left Panel - 合并搜索和行程 -->
 <div class="map-type-switch">
   <button class="map-type-btn active" id="btnVector" onclick="switchMapType('vector')">🗺️ 矢量</button>
   <button class="map-type-btn" id="btnCycle" onclick="switchMapType('cycle')">🚴 等高线</button>
@@ -4925,38 +4949,46 @@ setTimeout(silentDownloadFromGist, 2000);
 </script>
 
 <!-- Mobile Bottom Navigation -->
-<div class="mobile-bottom-nav" id="mobileNav">
-  <button class="mobile-nav-btn active" onclick="mobileSwitchView('calendar')">
+<div class="mobile-nav-bar" id="mobileNav">
+  <button class="mobile-nav-btn" data-page="calendar" onclick="switchMobilePage('calendar')">
     <span class="nav-icon">📅</span><span>日历</span>
   </button>
-  <button class="mobile-nav-btn" onclick="mobileSwitchView('schedule')">
+  <button class="mobile-nav-btn" data-page="schedule" onclick="switchMobilePage('schedule')">
     <span class="nav-icon">📋</span><span>项目</span>
   </button>
-  <button class="mobile-nav-btn" onclick="mobileSwitchView('map')">
+  <button class="mobile-nav-btn" data-page="map" onclick="switchMobilePage('map')">
     <span class="nav-icon">🗺️</span><span>地图</span>
   </button>
 </div>
 
 <script>
-// Mobile view switching - scroll to section
-function mobileSwitchView(view) {
-  // 更新tab激活状态
-  document.querySelectorAll('.mobile-nav-btn').forEach(btn => btn.classList.remove('active'));
-  event.currentTarget.classList.add('active');
-
-  if (view === 'map') {
-    // 滚动到顶部（地图位置）
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  } else if (view === 'calendar') {
-    const cal = document.querySelector('.calendar-section');
-    if (cal) cal.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  } else if (view === 'schedule') {
-    const panel = document.querySelector('.footprint-panel');
-    if (panel) {
-      switchPanelTab('schedule');
-      panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+// 手机端页面切换 - 三独立页面模式
+let currentPage = 'map';
+function switchMobilePage(page) {
+  currentPage = page;
+  
+  // 更新导航按钮状态
+  document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.page === page);
+  });
+  
+  // 切换页面显示
+  document.querySelectorAll('.mobile-page').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById('page' + page.charAt(0).toUpperCase() + page.slice(1));
+  if (target) target.classList.add('active');
+  
+  // 地图页特殊处理：刷新地图尺寸
+  if (page === 'map' && window.map) {
+    setTimeout(() => { try { map.invalidateSize(); } catch(e){} }, 100);
   }
+}
+
+// 兼容旧函数名
+function mobileSwitchView(view) { switchMobilePage(view); }
+
+// 手机端默认显示地图页
+if (window.innerWidth <= 768) {
+  switchMobilePage('map');
 }
 
 // 地图全屏按钮
