@@ -2674,6 +2674,8 @@ function init() {
   });
 
   applyTheme(currentTheme);
+  // 加载用户足迹数据（在渲染之前调用）
+  loadUserFootprints();
   renderAllMarkers();
   renderFootprints();
   updateStats();
@@ -2683,8 +2685,8 @@ function init() {
   updateItineraryStats();
   renderProjectSchedule();
   
-  // 加载用户足迹数据
-  loadUserFootprints();
+  // 云同步配置初始化
+  initCloudDefaults();
 }
 
 function createStars() {
@@ -3643,51 +3645,36 @@ function addFootprintWithReturn(name, address, lnglat, type, visitDate = null, u
 }
 
 // ===== 加载用户足迹数据 =====
-const FP_LOAD_VERSION = 'fp_v6'; // 升级版本号强制重载
+// 强制加载USER_FOOTPRINTS数据（每次启动都重新加载，确保数据正确）
 function loadUserFootprints() {
-  // 版本变化时强制重载
-  const lastVer = localStorage.getItem('fp_load_version');
-  const needReload = lastVer !== FP_LOAD_VERSION;
+  // 强制清空旧数据
+  localStorage.removeItem('travel_footprints_v5');
+  localStorage.removeItem('user_footprints_loaded');
+  footprints = [];
+  markers = {};
   
-  if (!needReload && localStorage.getItem('user_footprints_loaded')) {
-    // 已经加载过，检查 footprints 是否为空（可能被手动清除了）
-    if (footprints.length > 0) return;
-  }
-  
-  // 版本变化或数据为空，清空旧数据重新加载
-  if (needReload) {
-    localStorage.removeItem('travel_footprints_v5');
-    localStorage.removeItem('user_footprints_loaded');
-    footprints = []; // 同时清空内存
-  }
-  
-  const existingIds = new Set(
-    JSON.parse(localStorage.getItem('travel_footprints_v5') || '[]').map(f => f.id)
-  );
-  let addedCount = 0;
-  
+  // 直接构建footprints数组，不逐个调用addFootprintWithReturn（避免多次save）
   USER_FOOTPRINTS.forEach(fp => {
-    if (!fp.lng || !fp.lat || existingIds.has(fp.id)) return;
-    addFootprintWithReturn(
-      fp.name, fp.address || (fp.name + '市'), [fp.lng, fp.lat],
-      fp.type || 'visited', fp.time || null,
-      fp.unlocked !== undefined ? fp.unlocked : null,
-      fp.person || '', fp.id
-    );
-    addedCount++;
+    if (!fp.lng || !fp.lat) return;
+    const fpo = {
+      id: fp.id || Date.now() + Math.random().toString(36).slice(2),
+      name: fp.name,
+      address: fp.address || (fp.name + '市'),
+      type: fp.type || 'visited',
+      lng: fp.lng,
+      lat: fp.lat,
+      time: fp.time || new Date().toLocaleString('zh-CN'),
+      unlocked: fp.unlocked !== undefined ? fp.unlocked : null
+    };
+    if (fp.person) fpo.person = fp.person;
+    footprints.push(fpo);
   });
   
+  // 一次性保存
+  localStorage.setItem('travel_footprints_v5', JSON.stringify(footprints));
   localStorage.setItem('user_footprints_loaded', 'true');
-  localStorage.setItem('fp_load_version', FP_LOAD_VERSION);
-  if (addedCount > 0) {
-    // 重新渲染地图和列表
-    renderAllMarkers();
-    renderFootprints();
-    updateStats();
-    applyHiddenTypes();
-    renderCalendar();
-    showToast('✅ 已加载 ' + addedCount + ' 个足迹', 'success');
-  }
+  console.log('Loaded ' + footprints.length + ' footprints from USER_FOOTPRINTS');
+  showToast('✅ 已加载 ' + footprints.length + ' 个足迹', 'success');
 }
 
 function removeFootprint(id) {
