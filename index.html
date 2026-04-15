@@ -3081,7 +3081,7 @@
 
         <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
 
-        <input type="text" class="search-input" id="searchInput" placeholder="搜索地点，如：北京故宫">
+        <input type="text" class="search-input" id="searchInput" placeholder="搜索地点，如：北京故宫" autocomplete="off">
 
       </div>
 
@@ -5007,6 +5007,19 @@ function init() {
 
   createStars();
 
+  // 恢复用户删除过的日历事件（从localStorage读取，覆盖硬编码默认值）
+  const savedCalendar = localStorage.getItem('travel_calendar_v2');
+  if (savedCalendar) {
+    try {
+      const parsed = JSON.parse(savedCalendar);
+      // 清空默认数据，用本地保存的版本
+      Object.keys(CALENDAR_EVENTS).forEach(k => delete CALENDAR_EVENTS[k]);
+      Object.assign(CALENDAR_EVENTS, parsed);
+    } catch(e) { /* ignore */ }
+  }
+
+
+
 
 
   // Initialize Leaflet map with dark theme
@@ -6577,6 +6590,9 @@ function removeCalendarEvent(dateKey, title) {
     CALENDAR_EVENTS[dateKey] = CALENDAR_EVENTS[dateKey].filter(e => e.title !== title);
 
     if (CALENDAR_EVENTS[dateKey].length === 0) delete CALENDAR_EVENTS[dateKey];
+
+    // 保存到 localStorage，防止刷新后恢复
+    localStorage.setItem('travel_calendar_v2', JSON.stringify(CALENDAR_EVENTS));
 
     renderCalendar();
 
