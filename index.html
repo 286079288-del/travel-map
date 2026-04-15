@@ -3672,7 +3672,15 @@ function loadUserFootprints() {
   
   localStorage.setItem('user_footprints_loaded', 'true');
   localStorage.setItem('fp_load_version', FP_LOAD_VERSION);
-  if (addedCount > 0) showToast('✅ 已加载 ' + addedCount + ' 个足迹', 'success');
+  if (addedCount > 0) {
+    // 重新渲染地图和列表
+    renderAllMarkers();
+    renderFootprints();
+    updateStats();
+    applyHiddenTypes();
+    renderCalendar();
+    showToast('✅ 已加载 ' + addedCount + ' 个足迹', 'success');
+  }
 }
 
 function removeFootprint(id) {
