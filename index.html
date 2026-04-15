@@ -1939,8 +1939,8 @@
   </div>
 </div>
 
-<!-- Left Panel - 合并搜索和行程 -->
-<div class="left-panel">
+<!-- Left Panel - 合并搜索和行程（桌面端: left-panel / 手机端: page-calendar） -->
+<div class="left-panel mobile-page page-calendar" id="pageCalendar">
   <!-- Search Section -->
   <div class="search-section">
     <div class="search-box">
@@ -2217,16 +2217,6 @@
 <!-- 手机端地图全屏按钮 -->
 <button class="mobile-map-fullscreen" id="mobileFullscreenBtn" title="全屏">⛶</button>
 </div><!-- /page-map -->
-
-<!-- 页面2：日历 -->
-<div class="mobile-page page-calendar" id="pageCalendar">
-
-<!-- Left Panel - 合并搜索和行程 -->
-<div class="map-type-switch">
-  <button class="map-type-btn active" id="btnVector" onclick="switchMapType('vector')">🗺️ 矢量</button>
-  <button class="map-type-btn" id="btnCycle" onclick="switchMapType('cycle')">🚴 等高线</button>
-  <button class="map-type-btn" id="btnTerrain3D" onclick="switchMapType('terrain3d')">🗻 3D地形</button>
-</div>
 
 <script>
 // ===== Config =====
