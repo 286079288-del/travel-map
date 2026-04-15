@@ -2973,6 +2973,173 @@
 
   }
 
+
+  /* ===== Mobile Responsive ===== */
+  @media (max-width: 768px) {
+    /* Header */
+    .header { padding: 10px 16px; }
+    .logo-icon { width: 32px; height: 32px; font-size: 16px; border-radius: 8px; }
+    .logo-text { font-size: 16px; letter-spacing: 1px; }
+    .stats { display: none !important; }
+
+    /* Left panel - full width overlay */
+    .left-panel {
+      position: fixed;
+      top: 56px; left: 0; right: 0;
+      width: 100% !important;
+      height: calc(100vh - 56px - 60px);
+      border-radius: 0;
+      z-index: 200;
+      display: none;
+    }
+    .left-panel.mobile-show { display: flex; }
+
+    /* Right panel - full width overlay */
+    .footprint-panel {
+      position: fixed;
+      top: 56px; left: 0; right: 0;
+      width: 100% !important;
+      max-height: calc(100vh - 56px - 60px);
+      border-radius: 0;
+      z-index: 200;
+      display: none;
+    }
+    .footprint-panel.mobile-show { display: flex; }
+
+    /* Calendar cells smaller on mobile */
+    .calendar-day { height: 44px; }
+    .day-number { font-size: 11px; }
+    .calendar-section { padding: 8px; }
+    .calendar-header { margin-bottom: 8px; }
+    .month-label { font-size: 13px; min-width: 80px; }
+    .weekday-row span { font-size: 9px; }
+
+    /* Search section */
+    .search-section { border-radius: 8px; margin-bottom: 8px; }
+    .search-input { padding: 10px 14px 10px 38px; font-size: 13px; }
+    .search-btn { padding: 10px 14px; font-size: 13px; }
+
+    /* Schedule table - scroll horizontal */
+    .schedule-table-wrap { padding: 6px; }
+    .schedule-table { font-size: 11px; min-width: 500px; }
+    .th-seq, .td-seq { width: 32px; min-width: 32px; }
+    .th-content, .td-content { min-width: 60px; max-width: 100px; }
+    .th-person, .td-person { min-width: 50px; max-width: 60px; }
+    .th-connector, .td-connector { min-width: 50px; max-width: 60px; }
+    .th-time, .td-time { min-width: 70px; max-width: 90px; }
+
+    /* Map type switch - bottom center above nav */
+    .map-type-switch {
+      position: fixed;
+      bottom: 72px;
+      right: 12px;
+      border-radius: 10px;
+    }
+    .map-type-btn { padding: 6px 10px; font-size: 11px; }
+
+    /* Modals */
+    .modal { max-width: 95vw; padding: 18px; border-radius: 16px; }
+    .modal-title { font-size: 16px; margin-bottom: 14px; }
+    .form-input, .form-select { padding: 10px 14px; font-size: 15px; border-radius: 8px; }
+
+    /* Toast */
+    .toast { top: 60px; font-size: 12px; padding: 10px 18px; }
+
+    /* Bottom navigation bar */
+    .mobile-nav {
+      display: flex !important;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 60px;
+      background: rgba(10,14,39,0.92);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      z-index: 999;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0 8px;
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+    .mobile-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      flex: 1;
+      height: 100%;
+      border: none;
+      background: transparent;
+      color: rgba(255,255,255,0.45);
+      font-size: 10px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: color 0.2s;
+      padding: 4px 0;
+    }
+    .mobile-nav-item.active {
+      color: #00d4ff;
+    }
+    .mobile-nav-icon {
+      font-size: 20px;
+      line-height: 1;
+    }
+    .mobile-nav-label {
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+
+    /* Leaflet controls on mobile */
+    .leaflet-control-zoom { margin-bottom: 70px !important; }
+    .leaflet-bottom { bottom: 60px; }
+
+    /* Panel slide animation */
+    .left-panel, .footprint-panel {
+      animation: slideUp 0.25s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Day detail section */
+    .day-detail-section { padding: 10px; margin-top: 8px; border-radius: 10px; }
+
+    /* Panel top tabs */
+    .panel-top-tabs { background: rgba(0,0,0,0.3); }
+    .top-tab { padding: 10px 0; font-size: 12px; }
+  }
+
+  /* ===== Desktop: hide mobile nav ===== */
+  .mobile-nav { display: none; }
+
+  /* ===== Visual Polish ===== */
+  /* Smooth panel transitions */
+  .left-panel, .footprint-panel {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  /* Calendar day hover ripple */
+  .calendar-day { transition: all 0.15s ease; }
+  .calendar-day:active { transform: scale(0.95); }
+
+  /* Button press feedback */
+  .toolbar-btn:active, .nav-btn:active, .map-type-btn:active, .mode-btn:active {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+
+  /* Search result item touch */
+  .search-result-item { transition: background 0.1s ease; }
+  .search-result-item:active { background: var(--bg-card-hover); }
+
+  /* Smooth modal */
+  .modal-overlay.show { animation: fadeIn 0.15s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
 </style>
 
 </head>
@@ -9385,6 +9552,87 @@ syncScheduleToCalendar();
 // 启动时从云端加载最新数据
 setTimeout(() => { cloudLoadSchedule(); cloudLoadCalendar(); }, 2000);
 
+</script>
+
+<!-- Mobile Bottom Navigation -->
+<div class="mobile-nav" id="mobileNav">
+  <button class="mobile-nav-item" id="navCalendar" onclick="toggleMobilePanel('calendar')">
+    <span class="mobile-nav-icon">📅</span>
+    <span class="mobile-nav-label">日历</span>
+  </button>
+  <button class="mobile-nav-item" id="navSchedule" onclick="toggleMobilePanel('schedule')">
+    <span class="mobile-nav-icon">📋</span>
+    <span class="mobile-nav-label">项目</span>
+  </button>
+  <button class="mobile-nav-item active" id="navMap" onclick="toggleMobilePanel('map')">
+    <span class="mobile-nav-icon">🗺️</span>
+    <span class="mobile-nav-label">地图</span>
+  </button>
+  <button class="mobile-nav-item" id="navFootprints" onclick="toggleMobilePanel('footprints')">
+    <span class="mobile-nav-icon">📍</span>
+    <span class="mobile-nav-label">足迹</span>
+  </button>
+  <button class="mobile-nav-item" id="navSync" onclick="toggleMobilePanel('sync')">
+    <span class="mobile-nav-icon">☁️</span>
+    <span class="mobile-nav-label">同步</span>
+  </button>
+</div>
+
+<script>
+// Mobile panel toggle
+function toggleMobilePanel(panel) {
+  const leftPanel = document.querySelector('.left-panel');
+  const rightPanel = document.querySelector('.footprint-panel');
+  const navItems = document.querySelectorAll('.mobile-nav-item');
+  
+  // Remove all active states
+  navItems.forEach(n => n.classList.remove('active'));
+  
+  // Hide all panels first
+  leftPanel.classList.remove('mobile-show');
+  rightPanel.classList.remove('mobile-show');
+  
+  if (panel === 'map') {
+    document.getElementById('navMap').classList.add('active');
+    return;
+  }
+  
+  if (panel === 'calendar') {
+    leftPanel.classList.add('mobile-show');
+    document.getElementById('navCalendar').classList.add('active');
+    return;
+  }
+  
+  if (panel === 'schedule') {
+    rightPanel.classList.add('mobile-show');
+    switchPanelTab('schedule');
+    document.getElementById('navSchedule').classList.add('active');
+    return;
+  }
+  
+  if (panel === 'footprints') {
+    rightPanel.classList.add('mobile-show');
+    switchPanelTab('footprints');
+    document.getElementById('navFootprints').classList.add('active');
+    return;
+  }
+  
+  if (panel === 'sync') {
+    openCloudSyncModal();
+    document.getElementById('navSync').classList.add('active');
+    return;
+  }
+}
+
+// Detect mobile and handle initial state
+(function() {
+  const isMobile = window.innerWidth <= 768;
+  if (isMobile) {
+    // On mobile, panels hidden by default, map shown
+    document.querySelector('.left-panel').classList.remove('mobile-show');
+    document.querySelector('.footprint-panel').classList.remove('mobile-show');
+  }
+})();
 </script>
 
 </body>
