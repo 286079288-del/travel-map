@@ -8949,13 +8949,13 @@ function toggleTheme() {
 
 function openCloudSyncModal() {
 
-  const savedToken = localStorage.getItem('github_token');
+  const savedToken = localStorage.getItem('github_token') || '';
 
-  const savedGistId = localStorage.getItem('gist_id');
+  const savedGistId = localStorage.getItem('gist_id') || '8537a1418e2225641e85b15a81ad6c61';
 
-  if (savedToken) document.getElementById('githubToken').value = savedToken;
+  document.getElementById('githubToken').value = savedToken;
 
-  if (savedGistId) document.getElementById('gistId').value = savedGistId;
+  document.getElementById('gistId').value = savedGistId;
 
   document.getElementById('cloudSyncModal').classList.add('show');
 
@@ -8989,9 +8989,9 @@ function switchSyncTab(tab) {
 
 async function uploadToGist() {
 
-  const token = document.getElementById('githubToken').value.trim();
+  const token = document.getElementById('githubToken').value.trim() || localStorage.getItem('github_token') || '';
 
-  let gistId = document.getElementById('gistId').value.trim();
+  let gistId = document.getElementById('gistId').value.trim() || localStorage.getItem('gist_id') || '8537a1418e2225641e85b15a81ad6c61';
 
 
 
@@ -9119,9 +9119,9 @@ async function uploadToGist() {
 
 async function downloadFromGist() {
 
-  const token = document.getElementById('githubToken').value.trim();
+  const token = document.getElementById('githubToken').value.trim() || localStorage.getItem('github_token') || '';
 
-  const gistId = document.getElementById('gistId').value.trim();
+  const gistId = document.getElementById('gistId').value.trim() || localStorage.getItem('gist_id') || '8537a1418e2225641e85b15a81ad6c61';
 
 
 
@@ -9147,6 +9147,8 @@ async function downloadFromGist() {
 
   try {
 
+    showToast('⏳ 正在从云端下载数据...', 'info');
+
     const headers = token ? { 'Authorization': `token ${token}` } : {};
 
     const response = await fetch(`https://api.github.com/gists/${gistId}`, {
@@ -9159,7 +9161,9 @@ async function downloadFromGist() {
 
     if (!response.ok) {
 
-      throw new Error('下载失败，请检查 Gist ID');
+      const errText = await response.text().catch(() => '');
+
+      throw new Error('HTTP ' + response.status + ': ' + (errText || '请检查 Gist ID 和 Token'));
 
     }
 
@@ -9167,11 +9171,11 @@ async function downloadFromGist() {
 
     const result = await response.json();
 
-    const fileContent = result.files['travel-map-data.json']?.content;
+    const fileInfo = result.files && result.files['travel-map-data.json'];
 
 
 
-    if (!fileContent) {
+    if (!fileInfo) {
 
       const availableFiles = Object.keys(result.files || {}).join(', ');
 
@@ -9181,7 +9185,35 @@ async function downloadFromGist() {
 
 
 
-    const data = JSON.parse(fileContent);
+    // 如果内容被截断（大文件），用 raw_url 重新获取完整内容
+
+    let jsonStr;
+
+    if (fileInfo.truncated) {
+
+      console.log('Gist content truncated, fetching raw URL...');
+
+      const rawResponse = await fetch(fileInfo.raw_url, { headers: headers });
+
+      if (!rawResponse.ok) throw new Error('获取完整数据失败');
+
+      jsonStr = await rawResponse.text();
+
+    } else {
+
+      jsonStr = fileInfo.content;
+
+    }
+
+
+
+    const data = JSON.parse(jsonStr);
+
+
+
+    // 清除首次加载标记，确保下载的数据能正常显示
+
+    localStorage.removeItem('user_footprints_loaded');
 
 
 
@@ -9198,6 +9230,12 @@ async function downloadFromGist() {
       itinerary = data.itinerary;
 
       localStorage.setItem(ITINERARY_KEY, JSON.stringify(itinerary));
+
+    }
+
+    if (data.calendarEvents) {
+
+      localStorage.setItem('calendar_events', JSON.stringify(data.calendarEvents));
 
     }
 
@@ -9225,7 +9263,11 @@ async function downloadFromGist() {
 
 
 
-    showToast('✅ 下载成功！数据已同步', 'success');
+    const fpCount = data.footprints ? data.footprints.length : 0;
+
+    const itCount = data.itinerary ? Object.keys(data.itinerary).length : 0;
+
+    showToast('✅ 下载成功！' + fpCount + ' 个足迹, ' + itCount + ' 条行程', 'success');
 
   } catch (err) {
 
