@@ -2823,6 +2823,7 @@ function init() {
   renderFootprints();
   updateStats();
   applyHiddenTypes();
+  loadScheduleItems(); // 先加载项目安排数据，日历才能显示项目内容
   renderCalendar();
   renderDayDetail();
   updateItineraryStats();
