@@ -5248,17 +5248,9 @@ function init() {
 
   });
 
-  document.getElementById('exportData').addEventListener('click', exportData);
-
-  document.getElementById('importData').addEventListener('click', () => document.getElementById('importFileInput').click());
-
-  document.getElementById('importFileInput').addEventListener('change', importData);
-
   document.getElementById('fullscreenBtn').addEventListener('click', toggleFullscreen);
 
   document.getElementById('themeToggleBtn').addEventListener('click', toggleTheme);
-
-  document.getElementById('cloudSyncBtn').addEventListener('click', openCloudSyncModal);
 
 
 
@@ -5267,12 +5259,6 @@ function init() {
   document.getElementById('planModal').addEventListener('click', (e) => {
 
     if (e.target.id === 'planModal') closePlanModal();
-
-  });
-
-  document.getElementById('cloudSyncModal').addEventListener('click', (e) => {
-
-    if (e.target.id === 'cloudSyncModal') closeCloudSyncModal();
 
   });
 
