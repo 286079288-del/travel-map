@@ -3684,13 +3684,13 @@
 
     <span class="nav-icon">📋</span>
 
-    <span class="nav-text">项目安排</span>
+    <span class="nav-text">项目</span>
 
   </div>
 
   <div class="mobile-nav-item" data-page="map" onclick="switchMobilePage('map')">
 
-    <span class="nav-icon">🗺️</span>
+    <span class="nav-icon">🗺</span>
 
     <span class="nav-text">地图</span>
 
@@ -5125,50 +5125,51 @@ let currentPage = 'calendar';
 function switchMobilePage(page) {
   if (!isMobile()) return;
   currentPage = page;
-  const panel = document.querySelector('.left-panel');
-  const navItems = document.querySelectorAll('.mobile-nav-item');
+  var panel = document.querySelector('.left-panel');
+  var navItems = document.querySelectorAll('.mobile-nav-item');
 
-  // Update nav active state
-  navItems.forEach(item => item.classList.toggle('active', item.dataset.page === page));
+  navItems.forEach(function(item) { item.classList.toggle('active', item.dataset.page === page); });
 
-  // Show/hide sections within left-panel
-  const calSec = document.getElementById('calendarSection');
-  const schedSec = document.getElementById('panelSchedule');   // 项目安排tab内容
-  const fpTab = document.getElementById('tabSchedule');       // Tab按钮
-  const fpTab2 = document.getElementById('tabFootprints');     // Tab按钮
-  const topTabs = document.querySelector('.panel-top-tabs');   // Tab栏
-  const searchSec = document.querySelector('.search-section'); // 搜索区域
-  const mapEl = document.getElementById('map');
+  var calSec = document.getElementById('calendarSection');
+  var schedSec = document.getElementById('panelSchedule');
+  var topTabs = document.querySelector('.panel-top-tabs');
+  var searchSec = document.querySelector('.search-section');
+  var mapEl = document.getElementById('map');
 
   if (page === 'calendar') {
+    // 日历页：显示日历区，隐藏其他
     if (calSec) calSec.style.display = '';
     if (schedSec) schedSec.style.display = 'none';
-    if (topTabs) topTabs.style.display = '';
-    if (fpTab2) { fpTab2.classList.add('active'); fpTab2.click(); }
-    else if (fpTab) fpTab.classList.remove('active');
+    if (topTabs) topTabs.style.display = 'none';
     if (searchSec) searchSec.style.display = '';
-    if (panel) panel.style.display = '';
+    if (panel) { panel.style.display = ''; panel.style.width = ''; }
     if (mapEl) mapEl.style.opacity = '0.12';
+    // 刷新日历（使用已删除事件恢复后的数据）
+    renderCalendar();
   } else if (page === 'schedule') {
+    // 项目安排页：只显示表格
     if (calSec) calSec.style.display = 'none';
-    if (schedSec) { schedSec.style.display = 'flex'; }
+    if (schedSec) schedSec.style.display = 'flex';
     if (topTabs) topTabs.style.display = 'none';
     if (searchSec) searchSec.style.display = 'none';
-    if (panel) panel.style.display = '';
+    if (panel) { panel.style.display = ''; panel.style.width = ''; }
     if (mapEl) mapEl.style.opacity = '0.12';
-    // 确保表格数据渲染
-    setTimeout(function() { renderProjectSchedule(); }, 50);
+    // 强制重新渲染表格数据
+    var tblWrap = document.getElementById('scheduleTableBody');
+    if (tblWrap) tblWrap.innerHTML = '';
+    setTimeout(function() { renderProjectSchedule(); }, 100);
   } else if (page === 'map') {
+    // 地图页：隐藏面板，地图全屏
     if (panel) panel.style.display = 'none';
     if (mapEl) {
       mapEl.style.opacity = '1';
-      // 延迟确保DOM布局完成后再修正尺寸和重绘标记
       setTimeout(function() {
-        if(map) {
+        if (typeof map !== 'undefined' && map) {
           map.invalidateSize();
+          // 确保标记图层存在并可见
           renderAllMarkers();
         }
-      }, 300);
+      }, 350);
     }
   }
 }
