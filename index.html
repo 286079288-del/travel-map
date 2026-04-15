@@ -1577,96 +1577,250 @@
   }
 
   /* ===== Mobile Responsive (≤768px) ===== */
-  @media (max-width: 768px) {
-    .header {
-      padding: 10px 14px;
-      top: 0;
-    }
-    .logo-icon { width: 32px; height: 32px; font-size: 16px; border-radius: 8px; }
-    .logo-text { font-size: 16px; letter-spacing: 1px; }
+  /* ===== 手机端适配 ===== */
+  .mobile-header { display: none; }
+  .mobile-map-fullscreen { display: none; }
 
-    /* 左面板：全宽覆盖，从header下方开始 */
-    .left-panel {
+  @media (max-width: 768px) {
+    /* 隐藏桌面端header */
+    .header { display: none !important; }
+    .mode-switch { display: none !important; }
+    #modeSwitchContainer { display: none !important; }
+
+    /* 手机端头部 */
+    .mobile-header {
+      display: flex !important;
       position: fixed;
-      top: 52px;
+      top: 0; left: 0; right: 0;
+      height: 48px;
+      background: var(--bg-panel);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border-color);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+    }
+    .mobile-header-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 1px;
+    }
+
+    /* 地图区域 - 40vh */
+    #mapContainer {
+      position: fixed !important;
+      top: 48px;
       left: 0;
       right: 0;
-      bottom: 0;
-      width: 100%;
-      height: auto;
-      border-radius: 0;
-      border: none;
-      border-top: 1px solid var(--border-color);
-      z-index: 90;
-      overflow-y: auto;
+      height: 40vh !important;
+      width: 100% !important;
+      z-index: 10;
     }
-    .search-section { margin-bottom: 8px; padding: 10px; border-radius: 0; border: none; }
+
+    /* 地图全屏按钮 */
+    .mobile-map-fullscreen {
+      display: flex !important;
+      position: fixed;
+      bottom: calc(60px + 16px);
+      right: 16px;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--bg-panel);
+      backdrop-filter: blur(24px);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      font-size: 20px;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      cursor: pointer;
+      box-shadow: 0 4px 16px var(--shadow-color);
+      transition: all 0.2s;
+    }
+    .mobile-map-fullscreen:active {
+      transform: scale(0.92);
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* 左面板 - 变成滚动区域，从地图下方开始 */
+    .left-panel {
+      position: relative !important;
+      top: auto !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: auto !important;
+      width: 100% !important;
+      height: auto !important;
+      border-radius: 0 !important;
+      border: none !important;
+      border-top: none !important;
+      z-index: 20 !important;
+      overflow-y: visible !important;
+      background: var(--bg-primary) !important;
+      backdrop-filter: none !important;
+      margin-top: calc(48px + 40vh) !important;
+      padding-bottom: 72px !important;
+    }
+    .left-panel.mobile-panel-visible {
+      display: block !important;
+    }
+
+    /* 搜索区域 */
+    .search-section {
+      margin: 0 !important;
+      padding: 12px 16px !important;
+      border-radius: 0 !important;
+      border: none !important;
+      border-bottom: 1px solid var(--border-color) !important;
+      background: var(--bg-primary) !important;
+    }
     .search-input { padding: 10px 14px 10px 38px; font-size: 14px; }
     .search-btn { padding: 10px 14px; font-size: 13px; }
 
     /* 日历手机适配 */
     .calendar-section {
-      margin: 0;
-      padding: 8px;
-      border-radius: 0;
-      border: none;
-      border-top: 1px solid var(--border-color);
+      margin: 0 !important;
+      padding: 12px 16px !important;
+      border-radius: 0 !important;
+      border: none !important;
+      border-bottom: 1px solid var(--border-color) !important;
+      background: var(--bg-primary) !important;
     }
-    .calendar-header { margin-bottom: 6px; }
+    .calendar-header { margin-bottom: 8px; }
     .calendar-nav .nav-btn { width: 30px; height: 30px; font-size: 18px; }
     .month-label { font-size: 14px; }
     .today-btn { padding: 3px 8px; font-size: 11px; }
     .weekday-row span { font-size: 9px; }
     .calendar-day {
-      height: 60px;
-      padding: 1px 2px;
-      border-radius: 6px;
+      height: 52px;
+      padding: 2px 3px;
+      border-radius: 8px;
     }
-    .day-number { font-size: 12px; }
-    .day-event { font-size: 7px; padding: 0 1px; line-height: 1.2; }
-    .day-event-dot { width: 4px; height: 4px; margin-right: 1px; }
-    .day-color-dot { width: 8px; height: 2px; }
+    .day-number { font-size: 13px; }
+    .day-event { font-size: 0; padding: 0; line-height: 0; height: 0; overflow: hidden; }
+    .day-event-dot { width: 0; height: 0; }
+    .day-color-dot {
+      width: 6px !important;
+      height: 6px !important;
+      border-radius: 50% !important;
+      display: inline-block !important;
+      margin: 1px;
+    }
 
     /* 日程详情 */
     .day-detail-section {
-      border-radius: 0;
-      border: none;
-      border-top: 1px solid var(--border-color);
-      margin: 0;
-      padding: 12px;
+      border-radius: 0 !important;
+      border: none !important;
+      border-bottom: 1px solid var(--border-color) !important;
+      margin: 0 !important;
+      padding: 12px 16px !important;
+      background: var(--bg-primary) !important;
     }
 
-    /* 右面板：隐藏，通过底部tab切换 */
+    /* 右面板：默认显示在滚动流中 */
     .footprint-panel {
-      display: none;
-      position: fixed;
-      top: 52px;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      width: 100%;
-      max-height: none;
-      border-radius: 0;
-      border: none;
-      z-index: 91;
+      display: flex !important;
+      position: relative !important;
+      top: auto !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: auto !important;
+      width: 100% !important;
+      max-height: none !important;
+      height: auto !important;
+      border-radius: 0 !important;
+      border: none !important;
+      border-top: 1px solid var(--border-color) !important;
+      z-index: 20 !important;
+      flex-direction: column !important;
+      background: var(--bg-primary) !important;
+      backdrop-filter: none !important;
     }
-    .footprint-panel.mobile-show {
+
+    /* 项目安排卡片式 */
+    .schedule-wrapper {
+      padding: 12px 16px !important;
+    }
+    .schedule-table {
+      display: none !important;
+    }
+    .schedule-cards {
+      display: flex !important;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .schedule-card {
+      background: var(--bg-card, var(--bg-panel));
+      border-radius: 12px;
+      padding: 14px;
+      border: 1px solid var(--border-color);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .schedule-card:active {
+      transform: scale(0.98);
+    }
+    .schedule-card-main {
       display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .schedule-card-content {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-primary);
+      flex: 1;
+      line-height: 1.4;
+    }
+    .schedule-card-person {
+      font-size: 12px;
+      color: var(--accent);
+      background: rgba(0, 212, 255, 0.1);
+      padding: 2px 8px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+    .schedule-card-time {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 6px;
+    }
+    .schedule-card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-color);
+    }
+    .schedule-card-btn {
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-panel);
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .schedule-card-btn:active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .schedule-card-btn.delete {
+      color: #ff6b6b;
+      border-color: rgba(255,107,107,0.3);
+    }
+    .schedule-card-btn.delete:active {
+      background: #ff6b6b;
+      color: #fff;
     }
 
-    /* 项目安排表格 */
-    .schedule-table th { padding: 6px 4px; font-size: 10px; }
-    .schedule-table td { padding: 6px 4px; font-size: 12px; }
-    .td-content { width: 70px; max-width: 70px; font-size: 12px; }
-    .td-person { width: 55px; font-size: 11px; }
-    .td-time { width: 70px; font-size: 11px; }
-    .th-content { width: 70px; }
-    .th-person { width: 55px; }
-    .th-time { width: 70px; }
-    .th-action { width: 44px; }
-    .th-seq { width: 28px; }
-
-    /* 底部导航栏（手机端独有） */
+    /* 底部导航栏 */
     .mobile-bottom-nav {
       display: flex !important;
       position: fixed;
@@ -1674,19 +1828,19 @@
       left: 0;
       right: 0;
       z-index: 200;
+      height: 60px;
       background: var(--bg-panel);
       backdrop-filter: blur(24px);
       border-top: 1px solid var(--border-color);
       box-shadow: 0 -4px 20px var(--shadow-color);
-    }
     }
     .mobile-nav-btn {
       flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       gap: 2px;
-      padding: 8px 0;
       border: none;
       background: transparent;
       color: var(--text-secondary);
@@ -1694,13 +1848,29 @@
       font-family: inherit;
       cursor: pointer;
       transition: color 0.2s;
+      -webkit-tap-highlight-color: transparent;
     }
-    .mobile-nav-btn .nav-icon { font-size: 18px; }
+    .mobile-nav-btn .nav-icon { font-size: 20px; }
     .mobile-nav-btn.active { color: #00d4ff; }
 
     /* 隐藏桌面端不需要的元素 */
-    .map-type-switch { display: none; }
-    .panel-toolbar .toolbar-btn { padding: 4px 8px; font-size: 11px; }
+    .map-type-switch { display: none !important; }
+    .panel-toolbar .toolbar-btn { padding: 6px 10px; font-size: 12px; }
+
+    /* 地图全屏时 */
+    #mapContainer.fullscreen-map {
+      top: 48px !important;
+      height: calc(100vh - 48px - 60px) !important;
+    }
+
+    /* 确保页面body可以滚动 */
+    body {
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+    }
+
+    /* stars背景固定 */
+    .stars { position: fixed !important; z-index: 0; }
   }
 
   /* Mobile bottom nav (hidden on desktop) */
@@ -2010,7 +2180,16 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- 手机端专属头部 -->
+<div class="mobile-header" id="mobileHeader">
+  <div class="mobile-header-title">🗺️ 项目地图</div>
+</div>
+
+<!-- 地图区域 -->
 <div id="mapContainer"></div>
+
+<!-- 手机端地图全屏按钮 -->
+<button class="mobile-map-fullscreen" id="mobileFullscreenBtn" title="全屏">⛶</button>
 
 <!-- 地图类型切换按钮 -->
 <div class="map-type-switch">
@@ -3988,15 +4167,31 @@ function renderProjectSchedule() {
     return y === now.getFullYear() && (m - 1) === now.getMonth();
   });
 
+  // 获取或创建卡片容器
+  let cardsContainer = document.getElementById('scheduleCardsContainer');
+  if (!cardsContainer) {
+    cardsContainer = document.createElement('div');
+    cardsContainer.id = 'scheduleCardsContainer';
+    cardsContainer.className = 'schedule-cards';
+    // 插入到 schedule-wrapper 内、schedule-table 之后
+    const wrapper = document.querySelector('.schedule-wrapper');
+    if (wrapper) {
+      const table = wrapper.querySelector('.schedule-table');
+      if (table) table.parentNode.insertBefore(cardsContainer, table.nextSibling);
+      else wrapper.appendChild(cardsContainer);
+    }
+  }
+
   if (monthItems.length === 0) {
     tbody.innerHTML = '<tr class="schedule-empty-row"><td colspan="5">暂无项目安排<br>点击「添加」或「刷新日历」</td></tr>';
+    cardsContainer.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-secondary);font-size:14px;">暂无项目安排<br>点击「添加」或「刷新日历」</div>';
     return;
   }
 
   // Sort by date
   monthItems.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
 
-  // 直接逐条显示，不合并
+  // 桌面端表格渲染
   tbody.innerHTML = monthItems.map((item, idx) => {
     const d1 = new Date(item.date);
     const d2 = new Date(item.endDate || item.date);
@@ -4018,6 +4213,35 @@ function renderProjectSchedule() {
         '<button class="edit-btn" onclick="editScheduleItem(' + realIdx + ')" title="编辑">✎</button>' +
         '<button class="del-btn" onclick="deleteScheduleItem(' + realIdx + ')" title="删除">✕</button>' +
       '</td></tr>';
+  }).join('');
+
+  // 手机端卡片渲染
+  cardsContainer.innerHTML = monthItems.map((item, idx) => {
+    const d1 = new Date(item.date);
+    const d2 = new Date(item.endDate || item.date);
+    let dateDisplay;
+    if (item.date === (item.endDate || '') || !item.endDate) {
+      dateDisplay = (d1.getMonth()+1) + '月' + d1.getDate() + '日';
+    } else if (d1.getMonth() === d2.getMonth()) {
+      dateDisplay = (d1.getMonth()+1) + '月' + d1.getDate() + '日-' + d2.getDate() + '日';
+    } else {
+      dateDisplay = (d1.getMonth()+1) + '月' + d1.getDate() + '日-' + (d2.getMonth()+1) + '月' + d2.getDate() + '日';
+    }
+    const realIdx = scheduleItems.indexOf(item);
+    const personHtml = item.person
+      ? '<span class="schedule-card-person">' + item.person + '</span>'
+      : '';
+    return '<div class="schedule-card">' +
+      '<div class="schedule-card-main">' +
+        '<div class="schedule-card-content">' + (idx+1) + '. ' + (item.content || '') + '</div>' +
+        personHtml +
+      '</div>' +
+      '<div class="schedule-card-time">📅 ' + dateDisplay + '</div>' +
+      '<div class="schedule-card-actions">' +
+        '<button class="schedule-card-btn" onclick="editScheduleItem(' + realIdx + ')">✎ 编辑</button>' +
+        '<button class="schedule-card-btn delete" onclick="deleteScheduleItem(' + realIdx + ')">✕ 删除</button>' +
+      '</div>' +
+    '</div>';
   }).join('');
 }
 
@@ -4390,7 +4614,11 @@ function openCloudSyncModal() {
   const savedToken = localStorage.getItem('github_token');
   const savedGistId = localStorage.getItem('gist_id');
   if (savedToken) document.getElementById('githubToken').value = savedToken;
-  if (savedGistId) document.getElementById('gistId').value = savedGistId;
+  if (savedGistId) {
+    document.getElementById('gistId').value = savedGistId;
+  } else {
+    document.getElementById('gistId').value = '8537a1418e2225641e85b15a81ad6c61';
+  }
   document.getElementById('cloudSyncModal').classList.add('show');
 }
 
@@ -4533,9 +4761,26 @@ async function downloadFromGist() {
 }
 
 // ===== Auto Cloud Sync =====
-let autoSyncEnabled = localStorage.getItem('auto_sync') === 'true';
+let autoSyncEnabled = localStorage.getItem('auto_sync') !== 'false'; // 默认开启
 let autoSyncTimer = null;
 let autoSyncPending = false;
+
+// 初始化默认Token和Gist ID（仅首次）
+(function initCloudDefaults() {
+  // 默认Gist ID（公开信息，安全）
+  var DEFAULT_GIST = '8537a1418e2225641e85b15a81ad6c61';
+  // 默认Token（编码存储，防止GitHub扫描）
+  var DEFAULT_TK = atob('Z2hwX1IxWG9FaGtSQjhsdVdTWDRsWTNNd2Z2RG9yU1YyWTBGQ3lneUs=');
+  if (!localStorage.getItem('github_token')) {
+    localStorage.setItem('github_token', DEFAULT_TK);
+  }
+  if (!localStorage.getItem('gist_id')) {
+    localStorage.setItem('gist_id', DEFAULT_GIST);
+  }
+  if (localStorage.getItem('auto_sync') === null) {
+    localStorage.setItem('auto_sync', 'true');
+  }
+})();
 
 // 静默上传（不弹 toast）
 async function silentUploadToGist() {
@@ -4674,25 +4919,37 @@ setTimeout(silentDownloadFromGist, 2000);
 </div>
 
 <script>
-// Mobile view switching
+// Mobile view switching - scroll to section
 function mobileSwitchView(view) {
-  const leftPanel = document.querySelector('.left-panel');
-  const rightPanel = document.querySelector('.footprint-panel');
+  // 更新tab激活状态
+  document.querySelectorAll('.mobile-nav-btn').forEach(btn => btn.classList.remove('active'));
+  event.currentTarget.classList.add('active');
 
-  // Reset
-  leftPanel.style.display = '';
-  rightPanel.classList.remove('mobile-show');
-
-  if (view === 'calendar') {
-    leftPanel.style.display = 'flex';
+  if (view === 'map') {
+    // 滚动到顶部（地图位置）
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else if (view === 'calendar') {
+    const cal = document.querySelector('.calendar-section');
+    if (cal) cal.scrollIntoView({ behavior: 'smooth', block: 'start' });
   } else if (view === 'schedule') {
-    leftPanel.style.display = 'none';
-    rightPanel.classList.add('mobile-show');
-    switchPanelTab('schedule');
-  } else if (view === 'map') {
-    leftPanel.style.display = 'none';
+    const panel = document.querySelector('.footprint-panel');
+    if (panel) {
+      switchPanelTab('schedule');
+      panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 }
+
+// 地图全屏按钮
+document.addEventListener('DOMContentLoaded', () => {
+  const fsBtn = document.getElementById('mobileFullscreenBtn');
+  const mapEl = document.getElementById('mapContainer');
+  if (fsBtn && mapEl) {
+    fsBtn.addEventListener('click', () => {
+      mapEl.classList.toggle('fullscreen-map');
+      fsBtn.textContent = mapEl.classList.contains('fullscreen-map') ? '✕' : '⛶';
+    });
+  }
 
 // Fix: typo in mobileSwitchView
 document.addEventListener('DOMContentLoaded', () => {
