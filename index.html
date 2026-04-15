@@ -3214,6 +3214,8 @@
 
     <button class="toolbar-btn" title="导入数据" style="background:transparent;border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:14px;padding:4px 10px;" onclick="document.getElementById('importFileInput').click()">📥</button>
 
+    <span id="syncIndicator" style="font-size:11px;color:rgba(255,255,255,0.5);margin:0 4px;">☁️</span>
+
     <button class="toolbar-btn" title="云同步" style="background:transparent;border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:14px;padding:4px 10px;" onclick="openCloudSyncModal()">☁️</button>
 
     <button class="toolbar-btn" id="fullscreenBtn" title="全屏" style="background:transparent;border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:14px;padding:4px 10px;">⛶</button>
@@ -3667,84 +3669,20 @@
 
     <div class="modal-title">☁️ 云同步</div>
 
-    <div class="sync-tabs">
-
-      <button class="sync-tab active" onclick="switchSyncTab('gist')">GitHub Gist</button>
-
-      <button class="sync-tab" onclick="switchSyncTab('file')">文件传输</button>
-
-    </div>
-
-
-
-    <!-- GitHub Gist Tab -->
-
-    <div class="sync-content active" id="gistTab">
-
-      <div class="form-group">
-
-        <label class="form-label">GitHub Token <a href="https://github.com/settings/tokens/new" target="_blank" style="color:#00d4ff;font-size:11px;">如何获取?</a></label>
-
-        <input type="password" class="form-input" id="githubToken" placeholder="ghp_xxxxxxxxxxxx">
-
+    <div style="text-align:center;padding:20px;">
+      <div style="font-size:48px;margin-bottom:12px;">☁️</div>
+      <p style="color:var(--text-secondary);margin-bottom:16px;">数据自动同步到云端，无需配置</p>
+      <div id="cloudSyncStatus" style="padding:12px;background:rgba(255,255,255,0.05);border-radius:8px;margin-bottom:16px;font-size:13px;">
+        <div>📡 最后同步：<span id="lastSyncTimeDisplay">从未</span></div>
+        <div>📊 足迹数量：<span id="cloudFpCount">0</span></div>
       </div>
-
-      <div class="form-group">
-
-        <label class="form-label">Gist ID (可选，留空则创建新的)</label>
-
-        <input type="text" class="form-input" id="gistId" placeholder="例如：a1b2c3d4e5f6...">
-
+      <div class="form-actions" style="flex-direction:column;gap:8px;">
+        <button class="form-btn" style="width:100%;background:linear-gradient(135deg,#00ff88,#00d4aa);color:var(--text-primary);" onclick="cloudSaveFootprints(); showToast('⏳ 正在上传...','info');">⬆️ 立即上传到云端</button>
+        <button class="form-btn primary" style="width:100%;" onclick="cloudLoadFootprints()">⬇️ 从云端下载</button>
+        <button class="form-btn secondary" style="width:100%;" onclick="exportData()">💾 导出到文件</button>
+        <button class="form-btn secondary" style="width:100%;" onclick="document.getElementById('importFileInput').click()">📂 从文件导入</button>
+        <button class="form-btn secondary" style="width:100%;" onclick="closeCloudSyncModal()">关闭</button>
       </div>
-
-      <div class="sync-info">
-
-        <p>💡 使用 GitHub Gist 免费存储数据，可在多台电脑同步</p>
-
-        <p>🔒 Token 只保存在本地浏览器</p>
-
-      </div>
-
-      <div style="margin-bottom: 12px;">
-
-        <button id="autoSyncBtn" class="form-btn" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);" onclick="toggleAutoSync()">自动同步: 关</button>
-
-      </div>
-
-      <div class="form-actions">
-
-        <button class="form-btn secondary" onclick="closeCloudSyncModal()">取消</button>
-
-        <button class="form-btn" style="background: linear-gradient(135deg, #00ff88, #00d4aa); color: var(--text-primary);" onclick="uploadToGist()">⬆️ 上传到云端</button>
-
-        <button class="form-btn primary" onclick="downloadFromGist()">⬇️ 从云端下载</button>
-
-      </div>
-
-    </div>
-
-
-
-    <!-- File Transfer Tab -->
-
-    <div class="sync-content" id="fileTab">
-
-      <div class="sync-info">
-
-        <p>📁 导出数据文件，通过邮件/微信/网盘等方式传输到其他电脑</p>
-
-      </div>
-
-      <div class="form-actions">
-
-        <button class="form-btn secondary" onclick="closeCloudSyncModal()">关闭</button>
-
-        <button class="form-btn" style="background: linear-gradient(135deg, #00d4ff, #7b2ff7); color: var(--text-primary);" onclick="exportData(); closeCloudSyncModal();">💾 导出到文件</button>
-
-        <button class="form-btn primary" onclick="document.getElementById('importFileInput').click(); closeCloudSyncModal();">📂 从文件导入</button>
-
-      </div>
-
     </div>
 
   </div>
@@ -5466,6 +5404,9 @@ function init() {
   // 加载用户足迹数据
 
   loadUserFootprints();
+
+  // 自动从云端同步最新数据
+  setTimeout(() => { cloudLoadFootprints(); }, 2000);
 
 }
 
@@ -7436,7 +7377,8 @@ function save() {
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(footprints));
 
-  triggerAutoSync();
+  // 自动云同步（不需要Token，Bmob后端）
+  cloudSaveFootprints();
 
 }
 
@@ -8947,13 +8889,11 @@ function toggleTheme() {
 
 function openCloudSyncModal() {
 
-  const savedToken = localStorage.getItem('github_token') || '';
-
-  const savedGistId = localStorage.getItem('gist_id') || '8537a1418e2225641e85b15a81ad6c61';
-
-  document.getElementById('githubToken').value = savedToken;
-
-  document.getElementById('gistId').value = savedGistId;
+  const lastSync = localStorage.getItem('last_cloud_sync');
+  const el1 = document.getElementById('lastSyncTimeDisplay');
+  if (el1) el1.textContent = lastSync ? new Date(lastSync).toLocaleString('zh-CN') : '从未';
+  const el2 = document.getElementById('cloudFpCount');
+  if (el2) el2.textContent = footprints.length;
 
   document.getElementById('cloudSyncModal').classList.add('show');
 
@@ -9524,10 +9464,123 @@ function bmobRequest(method, path, data) {
   }).then(r => r.json());
 }
 
+// ===== 足迹云同步 =====
+let _cloudSaveTimer = null;
+
+function cloudSaveFootprints() {
+  // 防抖：3秒内多次save只触发一次上传
+  if (_cloudSaveTimer) clearTimeout(_cloudSaveTimer);
+  _cloudSaveTimer = setTimeout(async () => {
+    try {
+      // 先查询是否已有记录
+      const res = await bmobRequest('GET', 'TravelFootprints?limit=1&order=-updatedAt', null);
+      if (res.results && res.results.length > 0) {
+        // 更新已有记录
+        const objectId = res.results[0].objectId;
+        await fetch('https://api2.bmobapp.com/1/classes/TravelFootprints/' + objectId, {
+          method: 'PUT',
+          headers: {
+            'X-Bmob-Application-Id': BMOB_APP_ID,
+            'X-Bmob-REST-API-Key': BMOB_REST_KEY,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            footprints: JSON.stringify(footprints),
+            itinerary: JSON.stringify(itinerary),
+            updatedAt: new Date().toISOString()
+          })
+        });
+      } else {
+        // 创建新记录
+        await bmobRequest('POST', 'TravelFootprints', {
+          footprints: JSON.stringify(footprints),
+          itinerary: JSON.stringify(itinerary),
+          updatedAt: new Date().toISOString()
+        });
+      }
+      localStorage.setItem('last_cloud_sync', new Date().toISOString());
+      updateSyncIndicator('✅ 已同步');
+      console.log('☁️ Footprints synced to cloud');
+    } catch(e) {
+      console.warn('Cloud save failed:', e);
+      updateSyncIndicator('⚠️ 同步失败');
+    }
+  }, 3000);
+}
+
+// 从云端下载足迹数据
+async function cloudLoadFootprints() {
+  try {
+    updateSyncIndicator('⏳ 同步中...');
+    const res = await bmobRequest('GET', 'TravelFootprints?limit=1&order=-updatedAt', null);
+    if (res.results && res.results.length > 0) {
+      const cloudData = res.results[0];
+      const cloudTime = new Date(cloudData.updatedAt);
+      const localTime = new Date(localStorage.getItem('last_cloud_sync') || '2000-01-01');
+
+      // 只在云端数据更新时才覆盖
+      if (cloudTime > localTime) {
+        const cloudFootprints = JSON.parse(cloudData.footprints);
+        const cloudItinerary = JSON.parse(cloudData.itinerary || '{}');
+
+        localStorage.removeItem('user_footprints_loaded');
+        footprints = cloudFootprints;
+        itinerary = cloudItinerary;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(footprints));
+        localStorage.setItem(ITINERARY_KEY, JSON.stringify(itinerary));
+        localStorage.setItem('last_cloud_sync', cloudData.updatedAt);
+
+        renderAllMarkers();
+        renderFootprints();
+        updateStats();
+        try { renderCalendar(); } catch(e) {}
+        try { renderDayDetail(); } catch(e) {}
+        updateItineraryStats();
+        drawRouteLine();
+        renderDestinations();
+
+        showToast('☁️ 已从云端同步 ' + cloudFootprints.length + ' 个足迹', 'success');
+      } else {
+        updateSyncIndicator('✅ 已是最新');
+        console.log('☁️ Local data is newer, skip download');
+      }
+    } else {
+      updateSyncIndicator('✅ 本地数据');
+      // 云端无数据，把本地上传上去
+      if (footprints.length > 0) {
+        cloudSaveFootprints();
+      }
+    }
+  } catch(e) {
+    console.warn('Cloud load failed:', e);
+    updateSyncIndicator('⚠️ 离线');
+  }
+}
+
+// 同步状态指示器
+function updateSyncIndicator(text) {
+  const el = document.getElementById('syncIndicator');
+  if (el) el.textContent = text;
+}
+
 // Save schedule to cloud
 async function cloudSaveSchedule(items) {
   try {
-    await bmobRequest('POST', 'TravelSchedule', { items: JSON.stringify(items), updatedAt: new Date().toISOString() });
+    const res = await bmobRequest('GET', 'TravelSchedule?limit=1&order=-updatedAt', null);
+    if (res.results && res.results.length > 0) {
+      const objectId = res.results[0].objectId;
+      await fetch('https://api2.bmobapp.com/1/classes/TravelSchedule/' + objectId, {
+        method: 'PUT',
+        headers: {
+          'X-Bmob-Application-Id': BMOB_APP_ID,
+          'X-Bmob-REST-API-Key': BMOB_REST_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ items: JSON.stringify(items), updatedAt: new Date().toISOString() })
+      });
+    } else {
+      await bmobRequest('POST', 'TravelSchedule', { items: JSON.stringify(items), updatedAt: new Date().toISOString() });
+    }
     console.log('☁️ Schedule synced to cloud');
   } catch(e) { console.warn('Cloud save failed:', e); }
 }
@@ -9535,7 +9588,21 @@ async function cloudSaveSchedule(items) {
 // Save calendar events to cloud
 async function cloudSaveCalendar(events) {
   try {
-    await bmobRequest('POST', 'TravelCalendar', { events: JSON.stringify(events), updatedAt: new Date().toISOString() });
+    const res = await bmobRequest('GET', 'TravelCalendar?limit=1&order=-updatedAt', null);
+    if (res.results && res.results.length > 0) {
+      const objectId = res.results[0].objectId;
+      await fetch('https://api2.bmobapp.com/1/classes/TravelCalendar/' + objectId, {
+        method: 'PUT',
+        headers: {
+          'X-Bmob-Application-Id': BMOB_APP_ID,
+          'X-Bmob-REST-API-Key': BMOB_REST_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ events: JSON.stringify(events), updatedAt: new Date().toISOString() })
+      });
+    } else {
+      await bmobRequest('POST', 'TravelCalendar', { events: JSON.stringify(events), updatedAt: new Date().toISOString() });
+    }
     console.log('☁️ Calendar synced to cloud');
   } catch(e) { console.warn('Cloud save failed:', e); }
 }
@@ -9574,8 +9641,6 @@ async function cloudLoadCalendar() {
 
 // Start
 init();
-
-updateAutoSyncUI();
 
 // 启动时同步项目安排到日历面板
 syncScheduleToCalendar();
