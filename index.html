@@ -5151,16 +5151,25 @@ function switchMobilePage(page) {
     if (mapEl) mapEl.style.opacity = '0.12';
   } else if (page === 'schedule') {
     if (calSec) calSec.style.display = 'none';
-    if (schedSec) schedSec.style.display = 'flex';
-    if (topTabs) topTabs.style.display = '';
-    if (fpTab) { fpTab.classList.add('active'); fpTab.click(); }
-    else if (fpTab2) fpTab2.classList.remove('active');
+    if (schedSec) { schedSec.style.display = 'flex'; }
+    if (topTabs) topTabs.style.display = 'none';
     if (searchSec) searchSec.style.display = 'none';
     if (panel) panel.style.display = '';
     if (mapEl) mapEl.style.opacity = '0.12';
+    // 确保表格数据渲染
+    setTimeout(function() { renderProjectSchedule(); }, 50);
   } else if (page === 'map') {
     if (panel) panel.style.display = 'none';
-    if (mapEl) { mapEl.style.opacity = '1'; setTimeout(function() { if(map) map.invalidateSize(); }, 250); }
+    if (mapEl) {
+      mapEl.style.opacity = '1';
+      // 延迟确保DOM布局完成后再修正尺寸和重绘标记
+      setTimeout(function() {
+        if(map) {
+          map.invalidateSize();
+          renderAllMarkers();
+        }
+      }, 300);
+    }
   }
 }
 
