@@ -3647,12 +3647,18 @@ const FP_LOAD_VERSION = 'fp_v6'; // 升级版本号强制重载
 function loadUserFootprints() {
   // 版本变化时强制重载
   const lastVer = localStorage.getItem('fp_load_version');
-  if (lastVer === FP_LOAD_VERSION && localStorage.getItem('user_footprints_loaded')) return;
+  const needReload = lastVer !== FP_LOAD_VERSION;
   
-  // 版本变化，清空旧数据重新加载
-  if (lastVer !== FP_LOAD_VERSION) {
+  if (!needReload && localStorage.getItem('user_footprints_loaded')) {
+    // 已经加载过，检查 footprints 是否为空（可能被手动清除了）
+    if (footprints.length > 0) return;
+  }
+  
+  // 版本变化或数据为空，清空旧数据重新加载
+  if (needReload) {
     localStorage.removeItem('travel_footprints_v5');
     localStorage.removeItem('user_footprints_loaded');
+    footprints = []; // 同时清空内存
   }
   
   const existingIds = new Set(
