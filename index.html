@@ -7882,7 +7882,7 @@ function saveScheduleItems() {
   localStorage.setItem(SCHEDULE_KEY, JSON.stringify(scheduleItems));
 
   // 自动同步到 Bmob 云端
-  cloudSaveSchedule(scheduleItems);
+  cloudSaveFootprints();
 
   // 同步项目安排到日历面板（itinerary）
   syncScheduleToCalendar();
@@ -9487,6 +9487,7 @@ function cloudSaveFootprints() {
           body: JSON.stringify({
             footprints: JSON.stringify(footprints),
             itinerary: JSON.stringify(itinerary),
+            schedule: JSON.stringify(scheduleItems),
             updatedAt: new Date().toISOString()
           })
         });
@@ -9495,6 +9496,7 @@ function cloudSaveFootprints() {
         await bmobRequest('POST', 'TravelFootprints', {
           footprints: JSON.stringify(footprints),
           itinerary: JSON.stringify(itinerary),
+          schedule: JSON.stringify(scheduleItems),
           updatedAt: new Date().toISOString()
         });
       }
@@ -9522,10 +9524,15 @@ async function cloudLoadFootprints() {
       if (cloudTime > localTime) {
         const cloudFootprints = JSON.parse(cloudData.footprints);
         const cloudItinerary = JSON.parse(cloudData.itinerary || '{}');
+        const cloudSchedule = cloudData.schedule ? JSON.parse(cloudData.schedule) : null;
 
         localStorage.removeItem('user_footprints_loaded');
         footprints = cloudFootprints;
         itinerary = cloudItinerary;
+        if (cloudSchedule && cloudSchedule.length > 0) {
+          scheduleItems = cloudSchedule;
+          localStorage.setItem(SCHEDULE_KEY, JSON.stringify(scheduleItems));
+        }
         localStorage.setItem(STORAGE_KEY, JSON.stringify(footprints));
         localStorage.setItem(ITINERARY_KEY, JSON.stringify(itinerary));
         localStorage.setItem('last_cloud_sync', cloudData.updatedAt);
@@ -9538,6 +9545,7 @@ async function cloudLoadFootprints() {
         updateItineraryStats();
         drawRouteLine();
         renderDestinations();
+        try { loadScheduleItems(); renderScheduleTable(); } catch(e) {}
 
         showToast('☁️ 已从云端同步 ' + cloudFootprints.length + ' 个足迹', 'success');
       } else {
