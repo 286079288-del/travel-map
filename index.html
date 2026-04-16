@@ -8152,19 +8152,26 @@ function renderProjectSchedule() {
     const startDate = new Date(item.date).toISOString().slice(0,10);
     const endDate = new Date(item.endDate || item.date).toISOString().slice(0,10);
     const isToday = todayStr >= startDate && todayStr <= endDate;
-    const todayClass = isToday ? ' is-today' : '';
 
-    return '<tr class="' + todayClass.trim() + '">' +
+    // Today row: prominent inline style (no CSS dependency)
+    const todayStyle = isToday ?
+      'background:linear-gradient(90deg,rgba(0,212,255,0.28),rgba(123,47,247,0.15))!important;border-left:4px solid #00d4ff!important;' : '';
+    const seqStyle = isToday ? 'color:#00d4ff;font-weight:700;font-size:16px;' : '';
+    const contentStyle = isToday ? 'color:#fff;font-weight:600;' : '';
+    const timeStyle = isToday ? 'color:#00d4ff;font-weight:600;' : '';
+    const todayBadge = isToday ? ' <span style="background:linear-gradient(90deg,#00d4ff,#7b2ff7);color:#000;font-size:9px;padding:1px 6px;border-radius:8px;font-weight:700;white-space:nowrap;">📅今天</span>' : '';
 
-      '<td class="td-seq">' + (idx + 1) + '</td>' +
+    return '<tr style="' + todayStyle + '">' +
 
-      '<td class="td-content" onclick="editScheduleItem(' + realIdx + ')">' + (item.content || '') + '</td>' +
+      '<td class="td-seq" style="' + seqStyle + '">' + (idx + 1) + todayBadge + '</td>' +
+
+      '<td class="td-content" onclick="editScheduleItem(' + realIdx + ')" style="' + contentStyle + '">' + (item.content || '') + '</td>' +
 
       '<td class="td-person">' + (item.person || '-') + '</td>' +
 
       '<td class="td-connector">' + (item.connector || '-') + '</td>' +
 
-      '<td class="td-time">' + dateDisplay + '</td>' +
+      '<td class="td-time" style="' + timeStyle + '">' + dateDisplay + '</td>' +
 
       '<td class="td-action">' +
 
