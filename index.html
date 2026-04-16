@@ -265,13 +265,11 @@
   /* ===== Header ===== */
 
   .header {
-
-    position: fixed; top:0; left:0; right:0; z-index:100; padding:16px 30px;
-
-    background: linear-gradient(to bottom, var(--header-gradient) 0%, var(--header-gradient-end) 70%, transparent 100%);
-
-    display: flex; justify-content: space-between; align-items: center; pointer-events: none;
-
+    position: fixed; top:0; left:0; right:0; z-index:100; padding:12px 24px;
+    background: linear-gradient(180deg, rgba(10,14,39,0.96) 0%, rgba(10,14,39,0.88) 70%, rgba(10,14,39,0.4) 100%);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    display: flex; justify-content: space-between; align-items: center;
+    pointer-events: auto; border-bottom: 1px solid rgba(255,255,255,0.06);
   }
 
   .header > * { pointer-events: auto; }
@@ -939,47 +937,26 @@
   }
 
   .calendar-day {
-
     height: 110px;
-
-    padding: 2px 3px;
-
-    border-radius: 8px;
-
+    padding: 3px 4px;
+    border-radius: 10px;
     cursor: pointer;
-
-    transition: all 0.15s;
-
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 0;
-
-    background: var(--bg-card);
-
-    overflow: hidden;
-
-    box-sizing: border-box;
-
+    transition: all 0.18s ease;
+    display: flex; flex-direction: column; gap: 0;
+    background: var(--bg-card); overflow: hidden; box-sizing: border-box;
+    border: 1px solid transparent;
   }
-
   .calendar-day:hover {
-
     background: var(--bg-card-hover);
-
+    border-color: rgba(255,255,255,0.08);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
   }
-
-  .calendar-day.other-month {
-
-    opacity: 0.25;
-
-  }
-
+  .calendar-day.other-month { opacity: 0.22; }
   .calendar-day.today {
-
-    background: rgba(0,212,255,0.12);
-
+    background: rgba(0,212,255,0.14);
+    border-color: rgba(0,212,255,0.3);
+    box-shadow: 0 0 16px rgba(0,212,255,0.08);
   }
 
   .calendar-day.today .day-number {
@@ -1849,18 +1826,14 @@
   }
 
   .toolbar-btn {
-
-    padding: 5px 10px; border: 1px solid var(--border-color); border-radius: 6px;
-
-    background: var(--bg-card); color: var(--text-primary);
-
-    font-size: 12px; cursor: pointer; transition: all 0.2s; font-family: inherit;
-
-    white-space: nowrap;
-
+    padding: 6px 12px; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
+    background: rgba(255,255,255,0.06); color: var(--text-primary);
+    font-size: 13px; cursor: pointer; transition: all 0.2s ease; font-family: inherit;
+    white-space: nowrap; backdrop-filter: blur(4px);
+    display: inline-flex; align-items: center; justify-content: center;
   }
-
-  .toolbar-btn:hover { background: var(--border-color); color: var(--text-primary); }
+  .toolbar-btn:hover { background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.25); transform: translateY(-1px); }
+  .toolbar-btn:active { transform: translateY(0) scale(0.96); }
 
   .toolbar-btn.danger { border-color: var(--danger-bg); }
 
@@ -2986,7 +2959,7 @@
       position: fixed;
       top: 56px; left: 0; right: 0;
       width: 100% !important;
-      height: calc(100vh - 56px - 60px);
+      height: calc(100vh - 56px);
       border-radius: 0;
       z-index: 200;
       display: none;
@@ -2998,7 +2971,7 @@
       position: fixed;
       top: 56px; left: 0; right: 0;
       width: 100% !important;
-      max-height: calc(100vh - 56px - 60px);
+      max-height: calc(100vh - 56px);
       border-radius: 0;
       z-index: 200;
       display: none;
@@ -3006,12 +2979,12 @@
     .footprint-panel.mobile-show { display: flex; }
 
     /* Calendar cells smaller on mobile */
-    .calendar-day { height: 44px; }
-    .day-number { font-size: 11px; }
-    .calendar-section { padding: 8px; }
-    .calendar-header { margin-bottom: 8px; }
+    .calendar-day { height: 56px; min-height: 56px; }
+    .day-number { font-size: 12px; }
+    .calendar-section { padding: 8px; max-height: calc(100vh - 130px); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .calendar-header { margin-bottom: 6px; }
     .month-label { font-size: 13px; min-width: 80px; }
-    .weekday-row span { font-size: 9px; }
+    .weekday-row span { font-size: 10px; }
 
     /* Search section */
     .search-section { border-radius: 8px; margin-bottom: 8px; }
@@ -3049,35 +3022,29 @@
       display: flex !important;
       position: fixed;
       bottom: 0; left: 0; right: 0;
-      height: 60px;
-      background: rgba(10,14,39,0.92);
-      backdrop-filter: blur(20px);
+      height: 58px;
+      background: rgba(8,12,32,0.96);
+      backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
       border-top: 1px solid rgba(255,255,255,0.08);
       z-index: 999;
       justify-content: space-around;
       align-items: center;
-      padding: 0 8px;
+      padding: 0 4px;
       padding-bottom: env(safe-area-inset-bottom, 0);
     }
     .mobile-nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 2px;
-      flex: 1;
-      height: 100%;
-      border: none;
-      background: transparent;
-      color: rgba(255,255,255,0.45);
-      font-size: 10px;
-      font-family: inherit;
-      cursor: pointer;
-      transition: color 0.2s;
-      padding: 4px 0;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 2px; flex: 1; height: 100%;
+      border: none; background: transparent;
+      color: rgba(255,255,255,0.4); font-size: 10px; font-family: inherit;
+      cursor: pointer; transition: all 0.2s ease; padding: 4px 0;
+      position: relative;
     }
-    .mobile-nav-item.active {
-      color: #00d4ff;
+    .mobile-nav-item.active { color: #00d4ff; }
+    .mobile-nav-item.active::before {
+      content: '';
+      position: absolute; top: 4px; left: 50%; transform: translateX(-50%);
+      width: 20px; height: 3px; border-radius: 3px; background: #00d4ff;
     }
     .mobile-nav-icon {
       font-size: 20px;
@@ -3214,8 +3181,6 @@
     <button class="toolbar-btn" title="导入数据" style="background:transparent;border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:14px;padding:4px 10px;" onclick="document.getElementById('importFileInput').click()">📥</button>
 
     <span id="syncIndicator" style="font-size:12px;color:#00ff88;margin:0 6px;cursor:pointer;white-space:nowrap;" onclick="cloudLoadFootprints()" title="点击手动同步">☁️ 同步</span>
-
-    <button class="toolbar-btn" title="云同步" style="background:transparent;border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:14px;padding:4px 10px;" onclick="openCloudSyncModal()">☁️</button>
 
     <button class="toolbar-btn" id="fullscreenBtn" title="全屏" style="background:transparent;border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:14px;padding:4px 10px;">⛶</button>
 
@@ -9468,14 +9433,42 @@ function supaRequest(method, path, data) {
   }).then(r => r.json());
 }
 
-// ===== 足迹云同步 =====
+// ===== 足迹云同步（带密码保护） =====
+const UPLOAD_PASSWORD = 'cd2026'; // 上传密码，可自定义
 let _cloudSaveTimer = null;
+let _uploadAuthorized = false; // 本次会话是否已验证过密码
 
-function cloudSaveFootprints() {
+// 验证上传密码
+function askUploadPassword() {
+  return new Promise((resolve) => {
+    const pwd = prompt('🔒 上传数据到云端\n请输入上传密码：');
+    if (pwd === UPLOAD_PASSWORD) {
+      _uploadAuthorized = true;
+      resolve(true);
+    } else if (pwd !== null) {
+      alert('❌ 密码错误！');
+      resolve(false);
+    } else {
+      resolve(false);
+    }
+  });
+}
+
+async function cloudSaveFootprints() {
   // 防抖：3秒内多次save只触发一次上传
   if (_cloudSaveTimer) clearTimeout(_cloudSaveTimer);
   _cloudSaveTimer = setTimeout(async () => {
     try {
+      // 检查是否已授权（本次会话）
+      if (!_uploadAuthorized) {
+        const ok = await askUploadPassword();
+        if (!ok) {
+          updateSyncIndicator('🔒 未授权');
+          console.log('☁️ Upload cancelled: not authorized');
+          return;
+        }
+      }
+      
       // 查询是否有记录
       const res = await supaRequest('GET', 'travel_footprints?limit=1&order=updated_at.desc', null);
       if (res && res.length > 0) {
