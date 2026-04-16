@@ -1887,6 +1887,19 @@
 
   .schedule-table tr:hover td { background: var(--bg-card); }
 
+  /* Today highlight in schedule table */
+  .schedule-table tr.is-today td {
+    background: rgba(0,212,255,0.12) !important;
+    border-bottom: 1px solid rgba(0,212,255,0.3);
+    position: relative;
+  }
+  .schedule-table tr.is-today::before {
+    content: '📅';
+    position: absolute; left: 2px; top: 50%; transform: translateY(-50%);
+    font-size: 10px; opacity: 0.6;
+  }
+  .schedule-table tr.is-today .td-seq { color: #00d4ff; font-weight: 700; }
+
   .th-seq { width: 40px; text-align: center; }
 
   .th-person { width: 75px; }
@@ -3025,6 +3038,12 @@
     .th-person, .td-person { min-width: 50px; max-width: 60px; }
     .th-connector, .td-connector { min-width: 50px; max-width: 60px; }
     .th-time, .td-time { min-width: 70px; max-width: 90px; }
+
+    /* Today row highlight on mobile */
+    .schedule-table tr.is-today td {
+      background: rgba(0,212,255,0.18) !important;
+      border-left: 3px solid #00d4ff;
+    }
 
     /* Map type switch - bottom center above nav */
     .map-type-switch {
@@ -8115,7 +8134,14 @@ function renderProjectSchedule() {
 
     const realIdx = item._indices[0];
 
-    return '<tr>' +
+    // Check if this row's date range includes today
+    const todayStr = new Date().toISOString().slice(0,10);
+    const startDate = new Date(item.date).toISOString().slice(0,10);
+    const endDate = new Date(item.endDate || item.date).toISOString().slice(0,10);
+    const isToday = todayStr >= startDate && todayStr <= endDate;
+    const todayClass = isToday ? ' is-today' : '';
+
+    return '<tr class="' + todayClass.trim() + '">' +
 
       '<td class="td-seq">' + (idx + 1) + '</td>' +
 
@@ -9556,17 +9582,33 @@ async function cloudLoadFootprints() {
         localStorage.setItem(ITINERARY_KEY, JSON.stringify(itinerary));
         localStorage.setItem('last_cloud_sync', cloudData.updated_at);
 
+        // 也同步云端日历事件
+        if (cloudData.calendar_events) {
+          try {
+            const calEvents = JSON.parse(cloudData.calendar_events);
+            if (calEvents) {
+              localStorage.setItem('travel_calendar_v2', JSON.stringify(calEvents));
+              // 覆盖内存中的日历事件
+              Object.keys(CALENDAR_EVENTS).forEach(k => delete CALENDAR_EVENTS[k]);
+              Object.assign(CALENDAR_EVENTS, calEvents);
+            }
+          } catch(e2) { console.warn('Calendar events parse error:', e2); }
+        }
+
+        // 完整重绘所有UI
         renderAllMarkers();
         renderFootprints();
         updateStats();
-        try { renderCalendar(); } catch(e) {}
-        try { renderDayDetail(); } catch(e) {}
+        applyHiddenTypes();
+        renderCalendar();       // 日历必须最后渲染（依赖最新的 itinerary + CALENDAR_EVENTS）
+        renderDayDetail();
         updateItineraryStats();
         drawRouteLine();
         renderDestinations();
-        try { loadScheduleItems(); renderScheduleTable(); } catch(e) {}
+        loadScheduleItems();
+        renderProjectSchedule();
 
-        showToast('☁️ 已从云端同步 ' + cloudFootprints.length + ' 个足迹', 'success');
+        showToast('☁️ 已从云端同步 (' + cloudFootprints.length + '个足迹)', 'success');
       } else {
         updateSyncIndicator('✅ 已是最新');
         console.log('☁️ Local data is newer, skip download');
