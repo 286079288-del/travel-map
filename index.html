@@ -2982,7 +2982,7 @@
     .footprint-panel.mobile-show { display: flex; }
 
     /* Calendar cells bigger on mobile - show full events */
-    .calendar-day { height: 88px; min-height: 88px; }
+    .calendar-day { height: 120px; min-height: 120px; }
     .day-number { font-size: 12px; }
     .calendar-section { padding: 8px; margin-bottom: 0; border-radius: 0; border-left: none; border-right: none; border-top: none; }
     .calendar-header { margin-bottom: 6px; }
@@ -3003,6 +3003,14 @@
     .day-event-dot { width: 7px; height: 7px; }
     /* Show more events per cell before "+N more" */
     .day-events { gap: 2px; }
+
+    /* Hide unnecessary toolbar buttons on mobile */
+    .toolbar-btn[onclick*="exportData"],
+    .toolbar-btn[title*="导入"],
+    #syncIndicator,
+    #uploadBtn,
+    #fullscreenBtn,
+    #themeToggleBtn { display: none !important; }
 
     /* Search section */
     .search-section { border-radius: 8px; margin-bottom: 8px; }
@@ -9712,11 +9720,11 @@ setTimeout(() => { cloudLoadSchedule(); cloudLoadCalendar(); }, 2000);
     <span class="mobile-nav-icon">🗺️</span>
     <span class="mobile-nav-label">地图</span>
   </button>
-  <button class="mobile-nav-item" id="navFootprints" onclick="toggleMobilePanel('footprints')">
+  <button class="mobile-nav-item" id="navFootprints" onclick="toggleMobilePanel('footprints')" style="display:none;">
     <span class="mobile-nav-icon">📍</span>
     <span class="mobile-nav-label">足迹</span>
   </button>
-  <button class="mobile-nav-item" id="navSync" onclick="toggleMobilePanel('sync')">
+  <button class="mobile-nav-item" id="navSync" onclick="toggleMobilePanel('sync')" style="display:none;">
     <span class="mobile-nav-icon">☁️</span>
     <span class="mobile-nav-label">同步</span>
   </button>
