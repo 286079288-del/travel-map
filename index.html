@@ -2982,7 +2982,7 @@
     .footprint-panel.mobile-show { display: flex; }
 
     /* Calendar cells bigger on mobile - show full events */
-    .calendar-day { height: 72px; min-height: 72px; }
+    .calendar-day { height: 88px; min-height: 88px; }
     .day-number { font-size: 12px; }
     .calendar-section { padding: 8px; margin-bottom: 0; border-radius: 0; border-left: none; border-right: none; border-top: none; }
     .calendar-header { margin-bottom: 6px; }
@@ -5668,7 +5668,7 @@ function createDayElement(day, isOtherMonth, isToday, plans, isSelected, dateObj
 
   const dateKey = formatDateKey(dateObj);
 
-  const displayItems = allItems.slice(0, 5);
+  const displayItems = allItems.slice(0, 6);
 
   const totalCount = allItems.length;
 
@@ -5722,9 +5722,9 @@ function createDayElement(day, isOtherMonth, isToday, plans, isSelected, dateObj
 
     });
 
-    if (totalCount > 5) {
+    if (totalCount > 6) {
 
-      eventsHtml += `<div class="day-event more">+${totalCount - 5} 更多</div>`;
+      eventsHtml += `<div class="day-event more">+${totalCount - 6} 更多</div>`;
 
     }
 
