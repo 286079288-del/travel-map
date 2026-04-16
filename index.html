@@ -3180,7 +3180,9 @@
 
     <button class="toolbar-btn" title="导入数据" style="background:transparent;border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:14px;padding:4px 10px;" onclick="document.getElementById('importFileInput').click()">📥</button>
 
-    <span id="syncIndicator" style="font-size:12px;color:#00ff88;margin:0 6px;cursor:pointer;white-space:nowrap;" onclick="cloudLoadFootprints()" title="点击手动同步">☁️ 同步</span>
+    <span id="syncIndicator" style="font-size:12px;color:#00ff88;margin:0 6px;cursor:pointer;white-space:nowrap;" onclick="cloudLoadFootprints()" title="点击从云端下载">☁️ 下载</span>
+
+    <button class="toolbar-btn" id="uploadBtn" title="上传数据到云端（需要密码）" style="background:linear-gradient(135deg,#00d4ff22,#7b2ff722);border-color:rgba(0,212,255,0.3);color:#00d4ff;font-size:13px;padding:5px 14px;" onclick="manualUpload()">⬆️ 上传</button>
 
     <button class="toolbar-btn" id="fullscreenBtn" title="全屏" style="background:transparent;border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:14px;padding:4px 10px;">⛶</button>
 
@@ -7341,8 +7343,7 @@ function save() {
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(footprints));
 
-  // 自动云同步（Supabase 后端）
-  cloudSaveFootprints();
+  // 不再自动上传，需要用户手动点「⬆️ 上传」按钮
 
 }
 
@@ -7845,8 +7846,7 @@ function saveScheduleItems() {
 
   localStorage.setItem(SCHEDULE_KEY, JSON.stringify(scheduleItems));
 
-  // 自动同步到 Supabase 云端
-  cloudSaveFootprints();
+  // 不再自动上传，需要用户手动点「⬆️ 上传」按钮
 
   // 同步项目安排到日历面板（itinerary）
   syncScheduleToCalendar();
@@ -9545,11 +9545,8 @@ async function cloudLoadFootprints() {
         console.log('☁️ Local data is newer, skip download');
       }
     } else {
-      updateSyncIndicator('✅ 本地数据');
-      // 云端无数据，把本地上传上去
-      if (footprints.length > 0) {
-        cloudSaveFootprints();
-      }
+      updateSyncIndicator('☁️ 空白');
+      // 云端无数据，需要手动上传
     }
   } catch(e) {
     console.warn('Cloud load failed:', e);
@@ -9561,6 +9558,49 @@ async function cloudLoadFootprints() {
 function updateSyncIndicator(text) {
   const el = document.getElementById('syncIndicator');
   if (el) el.textContent = text;
+}
+
+// ===== 手动上传（需密码）=====
+async function manualUpload() {
+  const pwd = prompt('🔒 上传数据到云端\n请输入上传密码：');
+  if (pwd !== UPLOAD_PASSWORD) {
+    if (pwd !== null) alert('❌ 密码错误！');
+    return;
+  }
+  
+  try {
+    updateSyncIndicator('⏳ 上传中...');
+    
+    // 查询是否有记录
+    const res = await supaRequest('GET', 'travel_footprints?limit=1&order=updated_at.desc', null);
+    if (res && res.length > 0) {
+      await fetch(SUPABASE_URL + '/rest/v1/travel_footprints?id=eq.' + res[0].id, {
+        method: 'PATCH',
+        headers: supaHeaders(),
+        body: JSON.stringify({
+          footprints: JSON.stringify(footprints),
+          itinerary: JSON.stringify(itinerary),
+          schedule: JSON.stringify(scheduleItems),
+          updated_at: new Date().toISOString()
+        })
+      });
+    } else {
+      await supaRequest('POST', 'travel_footprints', {
+        footprints: JSON.stringify(footprints),
+        itinerary: JSON.stringify(itinerary),
+        schedule: JSON.stringify(scheduleItems),
+        updated_at: new Date().toISOString()
+      });
+    }
+    
+    localStorage.setItem('last_cloud_sync', new Date().toISOString());
+    updateSyncIndicator('✅ 已上传');
+    showToast('✅ 数据已上传到云端 (' + footprints.length + '个足迹)', 'success');
+  } catch(e) {
+    console.warn('Upload failed:', e);
+    updateSyncIndicator('⚠️ 失败');
+    alert('❌ 上传失败：' + e.message);
+  }
 }
 
 // Save schedule to cloud
