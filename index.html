@@ -2954,15 +2954,18 @@
     .logo-text { font-size: 16px; letter-spacing: 1px; }
     .stats { display: none !important; }
 
-    /* Left panel - full width overlay */
+    /* Left panel - full width overlay, unified scroll on mobile */
     .left-panel {
       position: fixed;
-      top: 56px; left: 0; right: 0;
+      top: 56px; left: 0; right: 0; bottom: 60px;
       width: 100% !important;
-      height: calc(100vh - 56px);
+      height: auto !important;
+      max-height: calc(100vh - 116px);
       border-radius: 0;
       z-index: 200;
       display: none;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
     .left-panel.mobile-show { display: flex; }
 
@@ -2978,13 +2981,28 @@
     }
     .footprint-panel.mobile-show { display: flex; }
 
-    /* Calendar cells smaller on mobile */
-    .calendar-day { height: 56px; min-height: 56px; }
+    /* Calendar cells bigger on mobile - show full events */
+    .calendar-day { height: 72px; min-height: 72px; }
     .day-number { font-size: 12px; }
-    .calendar-section { padding: 8px; max-height: calc(100vh - 130px); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .calendar-section { padding: 8px; margin-bottom: 0; border-radius: 0; border-left: none; border-right: none; border-top: none; }
     .calendar-header { margin-bottom: 6px; }
     .month-label { font-size: 13px; min-width: 80px; }
     .weekday-row span { font-size: 10px; }
+
+    /* Day detail - always visible in scroll flow on mobile */
+    .day-detail-section {
+      display: block !important;
+      padding: 10px;
+      margin-top: 0;
+      border-radius: 0;
+      border-left: none; border-right: none; border-bottom: none;
+    }
+
+    /* Day event text bigger on mobile for readability */
+    .day-event { font-size: 10px; line-height: 1.5; }
+    .day-event-dot { width: 7px; height: 7px; }
+    /* Show more events per cell before "+N more" */
+    .day-events { gap: 2px; }
 
     /* Search section */
     .search-section { border-radius: 8px; margin-bottom: 8px; }
@@ -5650,7 +5668,7 @@ function createDayElement(day, isOtherMonth, isToday, plans, isSelected, dateObj
 
   const dateKey = formatDateKey(dateObj);
 
-  const displayItems = allItems.slice(0, 4);
+  const displayItems = allItems.slice(0, 5);
 
   const totalCount = allItems.length;
 
@@ -5704,9 +5722,9 @@ function createDayElement(day, isOtherMonth, isToday, plans, isSelected, dateObj
 
     });
 
-    if (totalCount > 4) {
+    if (totalCount > 5) {
 
-      eventsHtml += `<div class="day-event more">+${totalCount - 4} 更多</div>`;
+      eventsHtml += `<div class="day-event more">+${totalCount - 5} 更多</div>`;
 
     }
 
