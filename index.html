@@ -9531,15 +9531,16 @@ async function cloudSaveFootprints() {
 // 从云端下载足迹数据
 async function cloudLoadFootprints() {
   try {
-    updateSyncIndicator('⏳ 同步中...');
+    console.log('☁️ 开始从云端下载数据...');
     const res = await supaRequest('GET', 'travel_footprints?limit=1&order=updated_at.desc', null);
     if (res && res.length > 0) {
       const cloudData = res[0];
       const cloudTime = new Date(cloudData.updated_at);
       const localTime = new Date(localStorage.getItem('last_cloud_sync') || '2000-01-01');
+      console.log('☁️ 云端时间:', cloudTime.toISOString(), '| 本地时间:', localTime.toISOString());
 
-      // 只在云端数据更新时才覆盖
-      if (cloudTime > localTime) {
+      // 只在云端数据更新时才覆盖（或首次使用时本地无数据）
+      if (cloudTime > localTime || !localStorage.getItem(STORAGE_KEY) || localStorage.getItem(STORAGE_KEY) === '[]' || JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]').length < 10) {
         const cloudFootprints = JSON.parse(cloudData.footprints);
         const cloudItinerary = JSON.parse(cloudData.itinerary || '{}');
         const cloudSchedule = cloudData.schedule ? JSON.parse(cloudData.schedule) : null;
@@ -9724,7 +9725,7 @@ setTimeout(() => { cloudLoadSchedule(); cloudLoadCalendar(); }, 2000);
     <span class="mobile-nav-icon">📍</span>
     <span class="mobile-nav-label">足迹</span>
   </button>
-  <button class="mobile-nav-item" id="navSync" onclick="toggleMobilePanel('sync')" style="display:none;">
+  <button class="mobile-nav-item" id="navSync" onclick="toggleMobilePanel('sync')">
     <span class="mobile-nav-icon">☁️</span>
     <span class="mobile-nav-label">同步</span>
   </button>
@@ -9770,7 +9771,8 @@ function toggleMobilePanel(panel) {
   }
   
   if (panel === 'sync') {
-    openCloudSyncModal();
+    // Mobile: 直接从云端下载数据
+    cloudLoadFootprints();
     document.getElementById('navSync').classList.add('active');
     return;
   }
