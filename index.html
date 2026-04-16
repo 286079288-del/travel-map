@@ -1889,16 +1889,26 @@
 
   /* Today highlight in schedule table */
   .schedule-table tr.is-today td {
-    background: rgba(0,212,255,0.12) !important;
-    border-bottom: 1px solid rgba(0,212,255,0.3);
+    background: linear-gradient(90deg, rgba(0,212,255,0.22), rgba(123,47,247,0.12)) !important;
+    border-bottom: 1px solid rgba(0,212,255,0.5);
+    border-top: 1px solid rgba(0,212,255,0.25);
     position: relative;
   }
-  .schedule-table tr.is-today::before {
-    content: '📅';
-    position: absolute; left: 2px; top: 50%; transform: translateY(-50%);
-    font-size: 10px; opacity: 0.6;
+  .schedule-table tr.is-today td:first-child {
+    border-left: 3px solid #00d4ff;
   }
-  .schedule-table tr.is-today .td-seq { color: #00d4ff; font-weight: 700; }
+  .schedule-table tr.is-today .td-seq {
+    color: #00d4ff !important; font-weight: 700 !important; font-size: 14px !important;
+  }
+  .schedule-table tr.is-today .td-content {
+    color: #fff !important; font-weight: 600 !important;
+  }
+  .schedule-table tr.is-today .td-time {
+    color: #00d4ff !important; font-weight: 600 !important;
+  }
+  .schedule-table tr.is-today .td-person {
+    color: #7b9cff !important; font-weight: 500 !important;
+  }
 
   .th-seq { width: 40px; text-align: center; }
 
@@ -3039,11 +3049,14 @@
     .th-connector, .td-connector { min-width: 50px; max-width: 60px; }
     .th-time, .td-time { min-width: 70px; max-width: 90px; }
 
-    /* Today row highlight on mobile */
+    /* Today row highlight on mobile - very prominent */
     .schedule-table tr.is-today td {
-      background: rgba(0,212,255,0.18) !important;
-      border-left: 3px solid #00d4ff;
+      background: linear-gradient(90deg, rgba(0,212,255,0.3), rgba(123,47,247,0.15)) !important;
+      border-left: 4px solid #00d4ff !important;
+      border-top: 1px solid rgba(0,212,255,0.4);
+      border-bottom: 1px solid rgba(0,212,255,0.4);
     }
+    .schedule-table tr.is-today .td-seq { font-size: 14px !important; }
 
     /* Map type switch - bottom center above nav */
     .map-type-switch {
