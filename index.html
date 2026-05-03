@@ -2051,6 +2051,10 @@
 
   .list-section-title.upcoming-title { color: rgba(255,215,0,0.5); }
 
+  .list-section-title.completed-title { color: rgba(46,213,115,0.7); }
+
+  .list-section-title.completed-title .section-count { background: rgba(46,213,115,0.12); color: rgba(46,213,115,0.85); }
+
   .list-section-title.project-title { color: rgba(255,71,87,0.6); }
 
   .list-section-title .section-count {
@@ -3397,7 +3401,7 @@
 
     <button class="top-tab active" id="tabSchedule" onclick="switchPanelTab('schedule')">📋 项目安排</button>
 
-    <button class="top-tab" id="tabFootprints" onclick="switchPanelTab('footprints')">📍 我的足迹</button>
+    <button class="top-tab" id="tabFootprints" onclick="switchPanelTab('footprints')">📍 行程标记</button>
 
   </div>
 
@@ -3625,7 +3629,7 @@
 
   <div class="modal">
 
-    <div class="modal-title" id="editFpModalTitle">✎ 编辑足迹</div>
+    <div class="modal-title" id="editFpModalTitle">✎ 编辑行程标记</div>
 
     <input type="hidden" id="editFpId">
 
@@ -3728,7 +3732,7 @@
       <p style="color:var(--text-secondary);margin-bottom:16px;">数据自动同步到云端，无需配置</p>
       <div id="cloudSyncStatus" style="padding:12px;background:rgba(255,255,255,0.05);border-radius:8px;margin-bottom:16px;font-size:13px;">
         <div>📡 最后同步：<span id="lastSyncTimeDisplay">从未</span></div>
-        <div>📊 足迹数量：<span id="cloudFpCount">0</span></div>
+        <div>📊 行程数量：<span id="cloudFpCount">0</span></div>
       </div>
       <div class="form-actions" style="flex-direction:column;gap:8px;">
         <button class="form-btn" style="width:100%;background:linear-gradient(135deg,#00ff88,#00d4aa);color:var(--text-primary);" onclick="cloudSaveFootprints(); showToast('⏳ 正在上传...','info');">⬆️ 立即上传到云端</button>
@@ -6506,7 +6510,7 @@ function openEditFootprintModal(fpId) {
 
   // 更新弹窗标题
 
-  const typeTitles = { visited: '✎ 编辑足迹', upcoming: '✎ 编辑CGC项目', project: '✎ 编辑近期项目' };
+  const typeTitles = { visited: '✎ 编辑行程标记', upcoming: '✎ 编辑CGC项目', project: '✎ 编辑近期项目' };
 
   document.getElementById('editFpModalTitle').textContent = typeTitles[fp.type];
 
@@ -7252,7 +7256,7 @@ function loadUserFootprints() {
     USER_FOOTPRINTS_RAW.forEach(fp => {
       addFootprint(fp.name, fp.address, [fp.lng, fp.lat], fp.type || 'visited', fp.time, fp.unlocked || 0);
     });
-    showToast(`✅ 已加载 ${USER_FOOTPRINTS_RAW.length} 个足迹`, 'success');
+    showToast(`✅ 已加载 ${USER_FOOTPRINTS_RAW.length} 个行程`, 'success');
   }
   localStorage.setItem('user_footprints_loaded', 'true');
 }
@@ -7749,17 +7753,17 @@ function addMarker(fp) {
 
 
 
-const COMPLETED_PASSWORD = '5215181';
-let completedUnlocked = false;
+const VISITED_PASSWORD = '5215181';
+let visitedUnlocked = false;
 
-function unlockCompleted() {
-  if (completedUnlocked) return true;
+function unlockVisited() {
+  if (visitedUnlocked) return true;
   const pwd = prompt('🔒 完成项目需要密码才能显示\n请输入密码：');
-  if (pwd === COMPLETED_PASSWORD) {
-    completedUnlocked = true;
-    window.hiddenTypes.delete('completed');
+  if (pwd === VISITED_PASSWORD) {
+    visitedUnlocked = true;
+    window.hiddenTypes.delete('visited');
     renderAllMarkers();
-    showToast('✅ 完成项目已解锁', 'completed');
+    showToast('📍 已去过已解锁', 'visited');
     return true;
   } else if (pwd !== null) {
     alert('❌ 密码错误！');
@@ -7774,7 +7778,7 @@ function renderAllMarkers() {
   markers = {};
 
   footprints.forEach(fp => {
-    if (fp.type === 'completed' && !completedUnlocked) return;
+    if (fp.type === 'visited' && !visitedUnlocked) return;
     addMarker(fp);
   });
 
@@ -8480,13 +8484,13 @@ function renderFootprints() {
 
   const projects = footprints.filter(f => f.type === 'project' && !isDraft(f));
 
-  const wishlist = footprints.filter(f => f.type === 'wishlist' && !isDraft(f));
+  const completed = footprints.filter(f => f.type === 'completed' && !isDraft(f));
 
 
 
-  if (visited.length === 0 && upcoming.length === 0 && projects.length === 0 && wishlist.length === 0) {
+  if (visited.length === 0 && upcoming.length === 0 && projects.length === 0 && wishlist.length === 0 && completed.length === 0) {
 
-    list.innerHTML = '<div style="padding:30px;text-align:center;color:rgba(255,255,255,0.2);font-size:13px;">还没有足迹<br>搜索地点或点击地图开始记录 ✨</div>';
+    list.innerHTML = '<div style="padding:30px;text-align:center;color:rgba(255,255,255,0.2);font-size:13px;">还没有行程标记<br>搜索地点或点击地图开始记录 ✨</div>';
 
     return;
 
@@ -8496,7 +8500,7 @@ function renderFootprints() {
 
   if (!window.sectionCollapsed) {
 
-    window.sectionCollapsed = { project: true, upcoming: true, visited: true, wishlist: true };
+    window.sectionCollapsed = { project: true, upcoming: true, completed: true, visited: true, wishlist: true };
 
   }
 
@@ -8521,6 +8525,15 @@ function renderFootprints() {
   if (wishlist.length > 0) {
 
     renderSection(list, 'wishlist', '🌟 想去', wishlist, 'wishlist-title');
+
+  }
+
+
+
+  // 完成项目始终显示
+  if (completed.length >= 0) {
+
+    renderSection(list, 'completed', '✅ 完成项目', completed, 'completed-title');
 
   }
 
@@ -8768,13 +8781,13 @@ function updateStats() {
 const VISIBILITY_KEY = 'travel_type_visibility';
 
 window.hiddenTypes = new Set(JSON.parse(localStorage.getItem(VISIBILITY_KEY) || '[]'));
-if (!window.hiddenTypes.has('completed')) window.hiddenTypes.add('completed');
+if (!window.hiddenTypes.has('visited')) window.hiddenTypes.add('visited');
 
 
 
 function toggleTypeVisibility(type) {
-  if (type === 'completed' && window.hiddenTypes.has('completed') && !completedUnlocked) {
-    unlockCompleted();
+  if (type === 'visited' && window.hiddenTypes.has('visited') && !visitedUnlocked) {
+    unlockVisited();
     return;
   }
   if (window.hiddenTypes.has(type)) {
@@ -9109,7 +9122,7 @@ async function uploadToGist() {
 
     const body = JSON.stringify({
 
-      description: 'Travel Map Data - 旅行足迹数据备份',
+      description: 'Travel Map Data - 旅行行程数据备份',
 
       public: false,
 
@@ -9326,7 +9339,7 @@ async function downloadFromGist() {
 
     const itCount = data.itinerary ? Object.keys(data.itinerary).length : 0;
 
-    showToast('✅ 下载成功！' + fpCount + ' 个足迹, ' + itCount + ' 条行程', 'success');
+    showToast('✅ 下载成功！' + fpCount + ' 个行程, ' + itCount + ' 条行程', 'success');
 
   } catch (err) {
 
@@ -9394,7 +9407,7 @@ async function silentUploadToGist() {
 
       body: JSON.stringify({
 
-        description: 'Travel Map Data - 旅行足迹数据备份',
+        description: 'Travel Map Data - 旅行行程数据备份',
 
         public: false,
 
@@ -9724,7 +9737,7 @@ async function cloudLoadFootprints() {
         loadScheduleItems();
         renderProjectSchedule();
 
-        showToast('☁️ 已从云端同步 (' + cloudFootprints.length + '个足迹)', 'success');
+        showToast('☁️ 已从云端同步 (' + cloudFootprints.length + '个行程)', 'success');
       } else {
         updateSyncIndicator('✅ 已是最新');
         console.log('☁️ Local data is newer, skip download');
@@ -9780,7 +9793,7 @@ async function manualUpload() {
     
     localStorage.setItem('last_cloud_sync', new Date().toISOString());
     updateSyncIndicator('✅ 已上传');
-    showToast('✅ 数据已上传到云端 (' + footprints.length + '个足迹)', 'success');
+    showToast('✅ 数据已上传到云端 (' + footprints.length + '个行程)', 'success');
   } catch(e) {
     console.warn('Upload failed:', e);
     updateSyncIndicator('⚠️ 失败');
@@ -9881,7 +9894,7 @@ setTimeout(() => { cloudLoadSchedule(); cloudLoadCalendar(); }, 2000);
   </button>
   <button class="mobile-nav-item" id="navFootprints" onclick="toggleMobilePanel('footprints')" style="display:none;">
     <span class="mobile-nav-icon">📍</span>
-    <span class="mobile-nav-label">足迹</span>
+    <span class="mobile-nav-label">行程</span>
   </button>
   <button class="mobile-nav-item" id="navSync" onclick="toggleMobilePanel('sync')">
     <span class="mobile-nav-icon">☁️</span>
