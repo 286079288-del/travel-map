@@ -320,6 +320,13 @@
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 
   }
+  .stat-value.completed {
+
+    background: linear-gradient(135deg, #2ed573, #7bed9f);
+
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+
+  }
 
   .stat-label { font-size: 10px; color: var(--text-secondary); letter-spacing: 2px; margin-top: 4px; }
 
@@ -372,8 +379,15 @@
     box-shadow: inset 0 -2px 0 #ff4757;
 
   }
+  .mode-btn.active-completed {
 
-  .mode-btn:hover:not(.active-visited):not(.active-upcoming):not(.active-project) { color: var(--text-primary); }
+    background: rgba(46,213,115,0.15); color: #2ed573;
+
+    box-shadow: inset 0 -2px 0 #2ed573;
+
+  }
+
+  .mode-btn:hover:not(.active-visited):not(.active-upcoming):not(.active-project):not(.active-completed) { color: var(--text-primary); }
 
 
 
@@ -2440,6 +2454,7 @@
   .marker-dot.upcoming-dot { background: linear-gradient(135deg, #ffd700, #ffaa00); box-shadow: 0 0 20px rgba(255,215,0,0.5); }
 
   .marker-dot.project-dot { background: linear-gradient(135deg, #ff4757, #ff6b81); box-shadow: 0 0 24px rgba(255,71,87,0.6); }
+  .marker-dot.completed-dot { background: linear-gradient(135deg, #2ed573, #7bed9f); box-shadow: 0 0 20px rgba(46,213,115,0.5); }
 
   .marker-ring {
 
@@ -2456,6 +2471,7 @@
   .marker-ring.upcoming-ring { border: 2px solid rgba(255,215,0,0.4); }
 
   .marker-ring.project-ring { border: 2px solid rgba(255,71,87,0.5); animation: projectPulse1 1.5s ease-out infinite; }
+  .marker-ring.completed-ring { border: 2px solid rgba(46,213,115,0.4); }
 
   .marker-ring2 {
 
@@ -2472,6 +2488,7 @@
   .marker-ring2.upcoming-ring2 { border: 1px solid rgba(255,170,0,0.3); }
 
   .marker-ring2.project-ring2 { border: 1px solid rgba(255,107,129,0.3); animation: projectPulse2 1.5s 0.5s ease-out infinite; }
+  .marker-ring2.completed-ring2 { border: 1px solid rgba(46,213,115,0.3); }
 
 
 
@@ -3231,6 +3248,14 @@
 
     </div>
 
+    <div class="stat-item">
+
+      <div class="stat-value completed" id="completedCount">0</div>
+
+      <div class="stat-label">完成项目</div>
+
+    </div>
+
   </div>
 
   <div style="display:flex;gap:6px;align-items:center;">
@@ -3264,6 +3289,8 @@
     <button class="mode-btn" id="modeUpcoming" onclick="switchMode('upcoming')">CGC项目</button>
 
     <button class="mode-btn" id="modeProject" onclick="switchMode('project')">近期项目</button>
+
+    <button class="mode-btn" id="modeCompleted" onclick="switchMode('completed')">完成项目</button>
 
   </div>
 
@@ -3645,6 +3672,8 @@
         <option value="upcoming">CGC项目</option>
 
         <option value="project">近期项目</option>
+
+        <option value="completed">✅ 完成项目</option>
 
       </select>
 
@@ -5122,7 +5151,7 @@ const COUNTY_COORDS = {
 
 let map;
 
-let currentMode = 'visited';
+let currentMode = 'project';
 
 let footprints = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
 
@@ -7150,6 +7179,8 @@ function switchMode(mode) {
   uBtn.className = mode === 'upcoming' ? 'mode-btn active-upcoming' : 'mode-btn';
 
   pBtn.className = mode === 'project' ? 'mode-btn active-project' : 'mode-btn';
+  const cBtn = document.getElementById('modeCompleted');
+  if (cBtn) cBtn.className = mode === 'completed' ? 'mode-btn active-completed' : 'mode-btn';
 
 }
 
@@ -7294,7 +7325,9 @@ function convertFootprint(id, targetType) {
 
     upcoming: `「${fp.name}」已标记为CGC项目`,
 
-    project: `「${fp.name}」已标记为近期项目`
+    project: `「${fp.name}」已标记为近期项目`,
+
+    completed: `✅「${fp.name}」已标记为完成项目`
 
   };
 
@@ -7310,7 +7343,7 @@ function clearAll(type) {
 
   if (items.length === 0) return;
 
-  const labels = { visited: '已去过', upcoming: 'CGC项目', project: '近期项目' };
+  const labels = { visited: '已去过', upcoming: 'CGC项目', project: '近期项目', completed: '完成项目' };
 
   if (!confirm(`确定要清空所有「${labels[type]}」的地点吗？`)) return;
 
@@ -7464,6 +7497,18 @@ function addMarker(fp) {
 
       `;
 
+    } else if (fp.type === 'completed') {
+
+      markerContent.innerHTML = `
+
+        <div class="marker-dot completed-dot" style="width:10px;height:10px;margin:5px 0;"></div>
+
+        <div class="marker-ring completed-ring" style="width:20px;height:20px;top:0;border-width:1px;"></div>
+
+        <div class="marker-ring2 completed-ring2" style="width:20px;height:20px;top:0;border-width:1px;"></div>
+
+      `;
+
     } else {
 
       markerContent.innerHTML = `
@@ -7518,6 +7563,26 @@ function addMarker(fp) {
 
     `;
 
+  } else if (fp.type === 'completed') {
+
+    const personInline = fp.person ? `<span class="label-person">${fp.person}</span>` : '';
+
+    const dateHtml = fp.time ? `<div class="marker-date completed-date">${fp.time.split(' ')[0].replace(/\s*点亮\s*$/, '')}</div>` : '';
+
+    markerContent.innerHTML = `
+
+      <div class="marker-dot completed-dot"></div>
+
+      <div class="marker-ring completed-ring"></div>
+
+      <div class="marker-ring2 completed-ring2"></div>
+
+      <div class="marker-label completed-label"><span class="label-city">${displayName}</span>${personInline}</div>
+
+      ${dateHtml}
+
+    `;
+
   } else {
 
     markerContent.innerHTML = `
@@ -7538,7 +7603,7 @@ function addMarker(fp) {
 
   // 草稿标记和正常标记使用不同的尺寸和锚点
 
-  const showExtra = (fp.type === 'project' || fp.type === 'upcoming') && (fp.person || fp.time);
+  const showExtra = (fp.type === 'project' || fp.type === 'upcoming' || fp.type === 'completed') && (fp.person || fp.time);
 
   const icon = isDraft ? L.divIcon({
 
@@ -7574,19 +7639,19 @@ function addMarker(fp) {
 
 
 
-  const popupClasses = { visited: 'visited-popup', upcoming: 'upcoming-popup', project: 'project-popup' };
+  const popupClasses = { visited: 'visited-popup', upcoming: 'upcoming-popup', project: 'project-popup', completed: 'completed-popup' };
 
-  const badgeClasses = { visited: 'visited', upcoming: 'upcoming', project: 'project' };
+  const badgeClasses = { visited: 'visited', upcoming: 'upcoming', project: 'project', completed: 'completed' };
 
-  const badgeTexts = { visited: '✓ 已去过', upcoming: 'CGC项目', project: '近期项目' };
+  const badgeTexts = { visited: '✓ 已去过', upcoming: 'CGC项目', project: '近期项目', completed: '完成项目' };
 
 
 
-  const otherTypes = ['visited', 'upcoming', 'project'].filter(t => t !== fp.type);
+  const otherTypes = ['visited', 'upcoming', 'project', 'completed'].filter(t => t !== fp.type);
 
   const convertButtons = otherTypes.map(t => {
 
-    const btnTexts = { visited: '✓ 改为去过', upcoming: '改为CGC项目', project: '改为近期项目' };
+    const btnTexts = { visited: '✓ 改为去过', upcoming: '改为CGC项目', project: '改为近期项目', completed: '✅ 改为完成项目' };
 
     return `<button class="popup-btn convert" onclick="convertFootprint('${fp.id}', '${t}'); map.closePopup();">${btnTexts[t]}</button>`;
 
@@ -7684,13 +7749,38 @@ function addMarker(fp) {
 
 
 
+// 完成项目密码验证
+const COMPLETED_PASSWORD = '5215181';
+let completedUnlocked = false;
+
+function unlockCompleted() {
+  if (completedUnlocked) return true;
+  const pwd = prompt('🔒 完成项目需要密码才能显示\n请输入密码：');
+  if (pwd === COMPLETED_PASSWORD) {
+    completedUnlocked = true;
+    window.hiddenTypes.delete('completed');
+    renderAllMarkers();
+    showToast('✅ 完成项目已解锁', 'completed');
+    return true;
+  } else if (pwd !== null) {
+    alert('❌ 密码错误！');
+  }
+  return false;
+}
+
 function renderAllMarkers() {
 
   Object.values(markers).forEach(m => map.removeLayer(m));
 
   markers = {};
 
-  footprints.forEach(fp => addMarker(fp));
+  footprints.forEach(fp => {
+  
+  if (fp.type === 'completed' && !completedUnlocked) return;
+  
+  addMarker(fp);
+  
+  });
 
 }
 
@@ -7706,15 +7796,17 @@ function updateMarkerPopup(fpId) {
 
   
 
-  const badgeClasses = { visited: 'visited-badge', upcoming: 'upcoming-badge', project: 'project-badge' };
+  const badgeClasses = { visited: 'visited-badge', upcoming: 'upcoming-badge', project: 'project-badge', completed: 'completed-badge' };
 
-  const badgeTexts = { visited: '✓ 去过', upcoming: 'CGC项目', project: '近期项目' };
+  const badgeTexts = { visited: '✓ 去过', upcoming: 'CGC项目', project: '近期项目', completed: '完成项目' };
 
 
 
-  const otherTypes = ['visited', 'upcoming', 'project'].filter(t => t !== fp.type);
+  const otherTypes = ['visited', 'upcoming', 'project', 'completed'].filter(t => t !== fp.type);
 
   const convertButtons = otherTypes.map(t => {
+    const icons = { visited: '✓', upcoming: '●', project: '●', completed: '✅' };
+    const labels = { visited: '去过', upcoming: 'CGC项目', project: '近期项目', completed: '完成项目' };
 
     const icons = { visited: '✓', upcoming: '●', project: '●' };
 
@@ -8556,9 +8648,11 @@ function createFootprintCard(fp, num) {
 
 
 
-  const otherTypes = ['visited', 'upcoming', 'project'].filter(t => t !== fp.type);
+  const otherTypes = ['visited', 'upcoming', 'project', 'completed'].filter(t => t !== fp.type);
 
   const convertButtons = otherTypes.map(t => {
+    const icons = { visited: '✓', upcoming: '●', project: '●', completed: '✅' };
+    const labels = { visited: '去过', upcoming: 'CGC项目', project: '近期项目', completed: '完成项目' };
 
     const icons = { visited: '✓', upcoming: '●', project: '●' };
 
@@ -8671,6 +8765,7 @@ function updateStats() {
   document.getElementById('upcomingCount').textContent = footprints.filter(f => f.type === 'upcoming').length;
 
   document.getElementById('projectCount').textContent = footprints.filter(f => f.type === 'project').length;
+  document.getElementById('completedCount').textContent = footprints.filter(f => f.type === 'completed').length;
 
 }
 
@@ -8681,11 +8776,17 @@ function updateStats() {
 const VISIBILITY_KEY = 'travel_type_visibility';
 
 window.hiddenTypes = new Set(JSON.parse(localStorage.getItem(VISIBILITY_KEY) || '[]'));
+// 完成项目默认隐藏，需要密码才能显示
+if (!window.hiddenTypes.has('completed')) window.hiddenTypes.add('completed');
 
 
 
 function toggleTypeVisibility(type) {
-
+  // 完成项目需要密码
+  if (type === 'completed' && window.hiddenTypes.has('completed') && !completedUnlocked) {
+    unlockCompleted();
+    return;
+  }
   if (window.hiddenTypes.has(type)) {
 
     window.hiddenTypes.delete(type);
