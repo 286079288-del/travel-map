@@ -1,4 +1,4 @@
-<!-- version: v5-completed-2026-05-03-15:20 -->
+<!-- v6-completed-2026-05-03 -->
 <!DOCTYPE html>
 
 <html lang="zh-CN">
@@ -7749,7 +7749,6 @@ function addMarker(fp) {
 
 
 
-// 完成项目密码验证
 const COMPLETED_PASSWORD = '5215181';
 let completedUnlocked = false;
 
@@ -7775,11 +7774,8 @@ function renderAllMarkers() {
   markers = {};
 
   footprints.forEach(fp => {
-  
-  if (fp.type === 'completed' && !completedUnlocked) return;
-  
-  addMarker(fp);
-  
+    if (fp.type === 'completed' && !completedUnlocked) return;
+    addMarker(fp);
   });
 
 }
@@ -7805,12 +7801,10 @@ function updateMarkerPopup(fpId) {
   const otherTypes = ['visited', 'upcoming', 'project', 'completed'].filter(t => t !== fp.type);
 
   const convertButtons = otherTypes.map(t => {
+
     const icons = { visited: '✓', upcoming: '●', project: '●', completed: '✅' };
+
     const labels = { visited: '去过', upcoming: 'CGC项目', project: '近期项目', completed: '完成项目' };
-
-    const icons = { visited: '✓', upcoming: '●', project: '●' };
-
-    const labels = { visited: '去过', upcoming: 'CGC项目', project: '近期项目' };
 
     return `<button class="popup-btn" onclick="convertFootprint('${fp.id}', '${t}'); map.closePopup();">${icons[t]} 改为${labels[t]}</button>`;
 
@@ -8648,11 +8642,9 @@ function createFootprintCard(fp, num) {
 
 
 
-  const otherTypes = ['visited', 'upcoming', 'project', 'completed'].filter(t => t !== fp.type);
+  const otherTypes = ['visited', 'upcoming', 'project'].filter(t => t !== fp.type);
 
   const convertButtons = otherTypes.map(t => {
-    const icons = { visited: '✓', upcoming: '●', project: '●', completed: '✅' };
-    const labels = { visited: '去过', upcoming: 'CGC项目', project: '近期项目', completed: '完成项目' };
 
     const icons = { visited: '✓', upcoming: '●', project: '●' };
 
@@ -8776,13 +8768,11 @@ function updateStats() {
 const VISIBILITY_KEY = 'travel_type_visibility';
 
 window.hiddenTypes = new Set(JSON.parse(localStorage.getItem(VISIBILITY_KEY) || '[]'));
-// 完成项目默认隐藏，需要密码才能显示
 if (!window.hiddenTypes.has('completed')) window.hiddenTypes.add('completed');
 
 
 
 function toggleTypeVisibility(type) {
-  // 完成项目需要密码
   if (type === 'completed' && window.hiddenTypes.has('completed') && !completedUnlocked) {
     unlockCompleted();
     return;
