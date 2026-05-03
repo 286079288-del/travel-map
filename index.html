@@ -2091,19 +2091,25 @@
 
   .visibility-toggle {
 
-    margin-left: auto; margin-right: 6px; font-size: 11px; opacity: 0.3;
+    margin-left: auto; margin-right: 6px; font-size: 10px; font-weight: 500;
 
-    cursor: pointer; transition: opacity 0.2s; padding: 2px 4px; border-radius: 4px;
+    cursor: pointer; transition: all 0.2s; padding: 3px 10px; border-radius: 12px;
 
-    background: none; border: none; line-height: 1;
+    background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);
+
+    line-height: 1; letter-spacing: 1px; white-space: nowrap;
 
   }
 
-  .visibility-toggle:hover { opacity: 0.7; }
+  .visibility-toggle:hover {
 
-  .visibility-toggle.hidden { opacity: 0.15; text-decoration: line-through; }
+    color: var(--text-primary); border-color: var(--text-secondary); background: rgba(255,255,255,0.04);
 
-  .list-section-title.collapsed .visibility-toggle { display: none; }
+  }
+
+  .visibility-toggle.hidden { opacity: 0.4; background: rgba(255,255,255,0.03); }
+
+  /* 折叠时仍然显示开关 */
 
 
 
@@ -8551,7 +8557,7 @@ function renderSection(list, type, titleText, items, titleClass) {
 
   title.className = `list-section-title ${titleClass} ${window.sectionCollapsed?.[type] ? 'collapsed' : ''}`;
 
-  title.innerHTML = `${titleText} <span class="section-count">${items.length}</span><button class="visibility-toggle ${isHidden ? 'hidden' : ''}" title="${isHidden ? '显示地图标注' : '隐藏地图标注'}" onclick="event.stopPropagation(); toggleTypeVisibility('${type}');">${isHidden ? '🙈' : '👁️'}</button><span class="collapse-icon">▼</span>`;
+  title.innerHTML = `${titleText} <span class="section-count">${items.length}</span><button class="visibility-toggle ${isHidden ? 'hidden' : ''}" title="${isHidden ? '显示地图标注' : '隐藏地图标注'}" onclick="event.stopPropagation(); toggleTypeVisibility('${type}');">${isHidden ? '隐藏' : '显示'}</button><span class="collapse-icon">▼</span>`;
 
   list.appendChild(title);
 
