@@ -8490,7 +8490,7 @@ function renderFootprints() {
 
 
 
-  if (visited.length === 0 && upcoming.length === 0 && projects.length === 0 && wishlist.length === 0 && completed.length === 0) {
+  if (visited.length === 0 && upcoming.length === 0 && projects.length === 0 && completed.length === 0) {
 
     list.innerHTML = '<div style="padding:30px;text-align:center;color:rgba(255,255,255,0.2);font-size:13px;">还没有行程标记<br>搜索地点或点击地图开始记录 ✨</div>';
 
@@ -8502,7 +8502,7 @@ function renderFootprints() {
 
   if (!window.sectionCollapsed) {
 
-    window.sectionCollapsed = { project: true, upcoming: true, completed: true, visited: true, wishlist: true };
+    window.sectionCollapsed = { project: true, upcoming: true, completed: true, visited: true };
 
   }
 
@@ -8519,14 +8519,6 @@ function renderFootprints() {
   if (upcoming.length > 0) {
 
     renderSection(list, 'upcoming', '🟡 CGC项目', upcoming, 'upcoming-title');
-
-  }
-
-
-
-  if (wishlist.length > 0) {
-
-    renderSection(list, 'wishlist', '🌟 想去', wishlist, 'wishlist-title');
 
   }
 
