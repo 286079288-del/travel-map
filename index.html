@@ -2923,10 +2923,12 @@
     display: flex; flex-direction: column; align-items: center; justify-content: center;
 
     transition: opacity 0.8s ease, visibility 0.8s ease;
+    animation: forceHideLoading 0.5s 6s forwards;
 
   }
+  @keyframes forceHideLoading { to { opacity: 0; visibility: hidden; } }
 
-  .loading-overlay.hidden { opacity: 0; visibility: hidden; }
+  .loading-overlay.hidden { opacity: 0; visibility: hidden; animation: none; }
 
   .loading-spinner { width: 50px; height: 50px; border: 3px solid transparent; border-top-color: #00d4ff; border-right-color: #7b2ff7; border-radius: 50%; animation: spin 0.8s linear infinite; }
 
