@@ -1157,8 +1157,8 @@ function animate(time) {
 // ============ 启动 ============
 resize();
 
-// 线上：多源加载 gzip 模型（主CDN + 备用）
-const GZ_URL = 'https://gh-proxy.com/https://github.com/286079288-del/travel-map/releases/download/exhibit-v1/lens.glb.gz';
+// 线上：GitHub API 加载模型（api.github.com 国内可达）
+const GZ_URL = 'https://api.github.com/repos/286079288-del/travel-map/releases/assets/411919983';
 const GZ_FALLBACK = 'https://github.com/286079288-del/travel-map/releases/download/exhibit-v1/lens.glb.gz';
 console.log('Load:', GZ_URL);
 loadGzippedGLB(GZ_URL, '无人机 · 黑色版');
