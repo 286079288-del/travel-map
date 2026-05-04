@@ -580,18 +580,18 @@ renderer.toneMappingExposure = 1.2;
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-camera.position.set(5, 4, 8);
+camera.position.set(8, 7, 14);
 
 // OrbitControls
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.08;
-controls.minDistance = 2;
-controls.maxDistance = 25;
+controls.minDistance = 4;
+controls.maxDistance = 40;
 controls.maxPolarAngle = Math.PI * 0.9;
 controls.autoRotate = true;
 controls.autoRotateSpeed = 1.2;
-controls.target.set(0, 2, 0);
+controls.target.set(0, 3, 0);
 controls.update();
 
 // ============ 光照 ============
@@ -869,7 +869,7 @@ function loadGLTFModel(url, fileName = '') {
       const center = box.getCenter(new THREE.Vector3());
       const size = box.getSize(new THREE.Vector3());
       const maxDim = Math.max(size.x, size.y, size.z);
-      const scale = 4.0 / maxDim;  // 初始更大
+      const scale = 16.0 / maxDim;  // 4倍放大
 
       // XZ 严格居中
       model.position.set(-center.x * scale, 0, -center.z * scale);
