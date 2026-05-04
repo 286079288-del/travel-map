@@ -805,42 +805,36 @@ function hideLoading() {
   loadingEl.classList.remove('active');
 }
 
-// gzip 模型加载（主URL + 备用URL）
-async function loadGzippedGLB(gzUrl, fileName) {
+// jsdelivr CDN 分片加载模型（国内直连）
+const CDN_BASE = 'https://cdn.jsdelivr.net/gh/286079288-del/travel-map@main/chunks/';
+const CHUNK_NAMES = ['c_aa','c_ab','c_ac','c_ad','c_ae','c_af','c_ag','c_ah','c_ai','c_aj'];
+
+async function loadModelFromCDN(fileName) {
   showLoading('加载模型中...');
-  let url = gzUrl;
-  for (let attempt = 0; attempt < 2; attempt++) {
-    try {
-      if (attempt === 1) url = GZ_FALLBACK;
+  try {
+    const allChunks = new Uint8Array(51986058); // 52MB total
+    let offset = 0;
+    for (let i = 0; i < CHUNK_NAMES.length; i++) {
+      const url = CDN_BASE + CHUNK_NAMES[i];
       const resp = await fetch(url);
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const total = +resp.headers.get('Content-Length') || 0;
-      const reader = resp.body.getReader();
-      const chunks = [];
-      let loaded = 0;
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        chunks.push(value);
-        loaded += value.length;
-        if (total) loadingText.textContent = `下载中... ${Math.round(loaded/total*100)}%`;
-      }
-      loadingText.textContent = '解压中...';
-      const blob = new Blob(chunks);
-      const ds = new DecompressionStream('gzip');
-      const decompressed = blob.stream().pipeThrough(ds);
-      const decompressedBlob = await new Response(decompressed).blob();
-      loadingText.textContent = '解析中...';
-      loadGLTFModel(URL.createObjectURL(decompressedBlob), fileName);
-      return;
-    } catch (err) {
-      if (attempt === 1) {
-        console.warn('模型加载失败:', err.message);
-        hideLoading();
-        createDemoModel();
-        modelNameEl.textContent = '模型加载失败 · 请刷新重试';
-      }
+      if (!resp.ok) throw new Error(`Chunk ${i} HTTP ${resp.status}`);
+      const buf = await resp.arrayBuffer();
+      allChunks.set(new Uint8Array(buf), offset);
+      offset += buf.byteLength;
+      loadingText.textContent = `加载中... ${Math.round((i+1)/CHUNK_NAMES.length*100)}%`;
     }
+    loadingText.textContent = '解压中...';
+    const blob = new Blob([allChunks]);
+    const ds = new DecompressionStream('gzip');
+    const decompressed = blob.stream().pipeThrough(ds);
+    const decompressedBlob = await new Response(decompressed).blob();
+    loadingText.textContent = '解析中...';
+    loadGLTFModel(URL.createObjectURL(decompressedBlob), fileName);
+  } catch (err) {
+    console.warn('CDN加载失败:', err.message);
+    hideLoading();
+    createDemoModel();
+    modelNameEl.textContent = '模型加载失败 · 请刷新重试';
   }
 }
 
@@ -1152,11 +1146,8 @@ function animate(time) {
 // ============ 启动 ============
 resize();
 
-// 线上：GitHub API 加载模型（api.github.com 国内可达）
-const GZ_URL = 'https://api.github.com/repos/286079288-del/travel-map/releases/assets/411919983';
-const GZ_FALLBACK = 'https://github.com/286079288-del/travel-map/releases/download/exhibit-v1/lens.glb.gz';
-console.log('Load:', GZ_URL);
-loadGzippedGLB(GZ_URL, '无人机 · 黑色版');
+// 线上：jsdelivr CDN 分片加载
+loadModelFromCDN('无人机 · 黑色版');
 
 animate(0);
 
