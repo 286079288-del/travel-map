@@ -673,24 +673,14 @@ for (let n = 8; n < 1024; n += 8) {
   gctx.beginPath(); gctx.moveTo(0, n); gctx.lineTo(1024, n); gctx.stroke();
 }
 
-// 极缓渐变蒙版：只在最边缘消退
-const mask = gctx.createRadialGradient(512, 512, 0, 512, 512, 512);
-mask.addColorStop(0, 'rgba(255,255,255,1)');
-mask.addColorStop(0.82, 'rgba(255,255,255,0.85)');
-mask.addColorStop(0.94, 'rgba(255,255,255,0.3)');
-mask.addColorStop(1, 'rgba(255,255,255,0)');
-gctx.globalCompositeOperation = 'destination-in';
-gctx.fillStyle = mask;
-gctx.fillRect(0, 0, 1024, 1024);
-
 const groundTex = new THREE.CanvasTexture(gndCanvas);
 groundTex.minFilter = THREE.NearestFilter;
 groundTex.magFilter = THREE.NearestFilter;
 
 const groundGeo = new THREE.PlaneGeometry(groundSize, groundSize);
-const groundMat = new THREE.MeshStandardMaterial({
-  map: groundTex, roughness: 0.95, metalness: 0,
-  side: THREE.FrontSide,
+const groundMat = new THREE.MeshBasicMaterial({
+  map: groundTex,
+  side: THREE.DoubleSide,
 });
 const ground = new THREE.Mesh(groundGeo, groundMat);
 ground.rotation.x = -Math.PI / 2;
