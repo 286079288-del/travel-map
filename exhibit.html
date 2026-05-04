@@ -117,7 +117,8 @@
   .fullscreen-btn {
     position: absolute;
     top: 20px;
-    right: 20px;
+    right: auto;
+    left: 20px;
     z-index: 10;
     width: 40px;
     height: 40px;
@@ -144,7 +145,7 @@
     right: 16px;
     bottom: 16px;
     width: 380px;
-    background: rgba(255,255,255,0.85);
+    background: rgba(255,255,255,0.55);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(59,130,246,0.15);
@@ -576,18 +577,18 @@ renderer.toneMappingExposure = 1.2;
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-camera.position.set(12, 9, 20);
+camera.position.set(5, 4, 9);
 
 // OrbitControls
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.08;
-controls.minDistance = 6;
-controls.maxDistance = 50;
+controls.minDistance = 2;
+controls.maxDistance = 30;
 controls.maxPolarAngle = Math.PI * 0.9;
 controls.autoRotate = true;
 controls.autoRotateSpeed = 1.2;
-controls.target.set(0, 1.5, 0);
+controls.target.set(0, 1, 0);
 controls.update();
 
 // ============ 光照 ============
@@ -638,21 +639,7 @@ const gctx = gndCanvas.getContext('2d');
 gctx.fillStyle = '#b4bcc8';
 gctx.fillRect(0, 0, 1024, 1024);
 
-// 网格 32px (灰色)
-gctx.strokeStyle = 'rgba(120,120,130,0.08)';
-gctx.lineWidth = 0.4;
-for (let n = 32; n < 1024; n += 32) {
-  gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 1024); gctx.stroke();
-  gctx.beginPath(); gctx.moveTo(0, n); gctx.lineTo(1024, n); gctx.stroke();
-}
-
-// 网格 8px
-gctx.strokeStyle = 'rgba(120,120,130,0.04)';
-gctx.lineWidth = 0.2;
-for (let n = 8; n < 1024; n += 8) {
-  gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 1024); gctx.stroke();
-  gctx.beginPath(); gctx.moveTo(0, n); gctx.lineTo(1024, n); gctx.stroke();
-}
+// 极淡网格 (几乎不可见)
 
 // 极缓渐变蒙版：只在最边缘消退
 const mask = gctx.createRadialGradient(512, 512, 0, 512, 512, 512);
@@ -865,7 +852,7 @@ function loadGLTFModel(url, fileName = '') {
       const center = box.getCenter(new THREE.Vector3());
       const size = box.getSize(new THREE.Vector3());
       const maxDim = Math.max(size.x, size.y, size.z);
-      const scale = 16.0 / maxDim;  // 4倍放大
+      const scale = 4.0 / maxDim;  // 缩小
 
       // XZ 严格居中
       model.position.set(-center.x * scale, 0, -center.z * scale);
