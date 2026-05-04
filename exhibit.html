@@ -595,7 +595,7 @@
 
       <!-- 幻灯片 -->
       <div class="slideshow-section">
-        <h3>📷 作品图集 <button class="fs-slideshow" id="slide-fs-btn">全屏播放</button></h3>
+        <h3>📷 产品图集 <button class="fs-slideshow" id="slide-fs-btn">全屏播放</button></h3>
         <div class="slideshow" id="slideshow">
           <div class="slides-track" id="slides-track">
             <!-- 幻灯片由 JS 动态生成 -->
@@ -1029,11 +1029,16 @@ document.querySelectorAll('.accordion-header').forEach(header => {
 
 // ============ 幻灯片 ============
 const slideData = [
-  { type: 'placeholder', color1: '#1a1a2e', color2: '#16213e', label: '正面视图', caption: '反无人机装置 5-10 正面 — 多层复合结构' },
-  { type: 'placeholder', color1: '#2d1b2e', color2: '#1a1a3e', label: '侧面视图', caption: '侧面 — 碳板加固与散热槽设计' },
-  { type: 'placeholder', color1: '#1e2d1b', color2: '#0f1a2e', label: '材质细节', caption: '黑色哑光表面 + 粗糙灰色材质搭配' },
-  { type: 'placeholder', color1: '#2e1b1b', color2: '#1a1a3e', label: '结构分解', caption: '核心组件 — 探测模块 / 碳板 / 外壳' },
-  { type: 'placeholder', color1: '#1b1b2e', color2: '#16213e', label: '部署场景', caption: '反无人机装置在哨站中的部署示意' },
+  { type: 'image', src: 'img/img_01.png', caption: '反无人机装置 5-10 · 展示图一' },
+  { type: 'image', src: 'img/img_02.png', caption: '反无人机装置 5-10 · 展示图二' },
+  { type: 'image', src: 'img/img_03.png', caption: '反无人机装置 5-10 · 展示图三' },
+  { type: 'image', src: 'img/img_04.png', caption: '反无人机装置 5-10 · 展示图四' },
+  { type: 'image', src: 'img/img_05.png', caption: '反无人机装置 5-10 · 展示图五' },
+  { type: 'image', src: 'img/img_06.png', caption: '反无人机装置 5-10 · 展示图六' },
+  { type: 'image', src: 'img/img_07.png', caption: '反无人机装置 5-10 · 展示图七' },
+  { type: 'image', src: 'img/img_08.png', caption: '反无人机装置 5-10 · 展示图八' },
+  { type: 'image', src: 'img/img_09.png', caption: '反无人机装置 5-10 · 展示图九' },
+  { type: 'image', src: 'img/img_10.png', caption: '反无人机装置 5-10 · 展示图十' },
 ];
 
 const slidesTrack = document.getElementById('slides-track');
@@ -1048,18 +1053,26 @@ function renderSlides() {
     const slideEl = document.createElement('div');
     slideEl.className = 'slide';
 
-    const placeholder = document.createElement('div');
-    placeholder.className = 'slide-placeholder';
-    placeholder.style.background = `linear-gradient(135deg, ${slide.color1}, ${slide.color2})`;
-    placeholder.innerHTML = `
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.6">
-        <rect x="3" y="3" width="18" height="18" rx="2"/>
-        <circle cx="8.5" cy="8.5" r="1.5"/>
-        <polyline points="21 15 16 10 5 21"/>
-      </svg>
-      <span>${slide.label}</span>
-    `;
-    slideEl.appendChild(placeholder);
+    if (slide.type === 'image' && slide.src) {
+      const img = document.createElement('img');
+      img.src = slide.src;
+      img.alt = slide.caption || '';
+      img.loading = 'lazy';
+      slideEl.appendChild(img);
+    } else {
+      const placeholder = document.createElement('div');
+      placeholder.className = 'slide-placeholder';
+      placeholder.style.background = `linear-gradient(135deg, ${slide.color1}, ${slide.color2})`;
+      placeholder.innerHTML = `
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.6">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+        <span>${slide.label || ''}</span>
+      `;
+      slideEl.appendChild(placeholder);
+    }
 
     if (slide.caption) {
       const caption = document.createElement('div');
@@ -1152,11 +1165,18 @@ function openFullscreenSlideshow() {
   slideData.forEach(s => {
     const el = document.createElement('div');
     el.className = 'slide';
-    const ph = document.createElement('div');
-    ph.className = 'slide-placeholder';
-    ph.style.background = `linear-gradient(135deg, ${s.color1}, ${s.color2})`;
-    ph.innerHTML = `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span style="margin-top:12px">${s.label}</span>`;
-    el.appendChild(ph);
+    if (s.type === 'image' && s.src) {
+      const img = document.createElement('img');
+      img.src = s.src;
+      img.alt = s.caption || '';
+      el.appendChild(img);
+    } else {
+      const ph = document.createElement('div');
+      ph.className = 'slide-placeholder';
+      ph.style.background = `linear-gradient(135deg, ${s.color1 || '#1a1a2e'}, ${s.color2 || '#16213e'})`;
+      ph.innerHTML = `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span style="margin-top:12px">${s.label || ''}</span>`;
+      el.appendChild(ph);
+    }
     fsTrack.appendChild(el);
   });
   updateFS();
