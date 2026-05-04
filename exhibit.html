@@ -631,47 +631,42 @@ scene.add(rimLight);
 scene.background = new THREE.Color('#0a0a10');
 scene.fog = new THREE.Fog('#0a0a10', 20, 60);
 
-// ============ 地面（极暗 + 平滑渐变 + 细网格） ============
+// ============ 地面（网格可见 + 边缘自然消退） ============
 const groundSize = 50;
 const gndCanvas = document.createElement('canvas');
-gndCanvas.width = 2048;
-gndCanvas.height = 2048;
+gndCanvas.width = 1024;
+gndCanvas.height = 1024;
 const gctx = gndCanvas.getContext('2d');
 
-gctx.fillStyle = '#18182a';
-gctx.fillRect(0, 0, 2048, 2048);
+// 基底：深蓝灰
+gctx.fillStyle = '#1a1a2e';
+gctx.fillRect(0, 0, 1024, 1024);
 
-// 粗网格 (每格 64px)
-gctx.strokeStyle = 'rgba(180,175,165,0.15)';
-gctx.lineWidth = 1.2;
-for (let n = 64; n < 2048; n += 64) {
-  gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 2048); gctx.stroke();
-  gctx.beginPath(); gctx.moveTo(0, n); gctx.lineTo(2048, n); gctx.stroke();
+// 粗网格 64px
+gctx.strokeStyle = 'rgba(200,195,185,0.22)';
+gctx.lineWidth = 1.5;
+for (let n = 64; n < 1024; n += 64) {
+  gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 1024); gctx.stroke();
+  gctx.beginPath(); gctx.moveTo(0, n); gctx.lineTo(1024, n); gctx.stroke();
 }
 
-// 细网格 (每格 16px)
-gctx.strokeStyle = 'rgba(180,175,165,0.07)';
-gctx.lineWidth = 0.6;
-for (let n = 16; n < 2048; n += 16) {
-  gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 2048); gctx.stroke();
-  gctx.beginPath(); gctx.moveTo(0, n); gctx.lineTo(2048, n); gctx.stroke();
+// 细网格 16px
+gctx.strokeStyle = 'rgba(200,195,185,0.10)';
+gctx.lineWidth = 0.7;
+for (let n = 16; n < 1024; n += 16) {
+  gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 1024); gctx.stroke();
+  gctx.beginPath(); gctx.moveTo(0, n); gctx.lineTo(1024, n); gctx.stroke();
 }
 
-// 用像素级三次方曲线做透明渐变（无环状线）
-const maskData = gctx.createImageData(2048, 2048);
-for (let py = 0; py < 2048; py++) {
-  for (let px = 0; px < 2048; px++) {
-    const dx = (px - 1024) / 1024;
-    const dy = (py - 1024) / 1024;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    // 三次方曲线：中心完全保持，边缘快速衰减
-    const alpha = dist < 1 ? Math.max(0, 1 - Math.pow(dist, 3.5)) : 0;
-    const idx = (py * 2048 + px) * 4;
-    maskData.data[idx + 3] = Math.round(alpha * 255);
-  }
-}
+// 简单径向渐变蒙版：中心清晰，边缘渐隐
+const mask = gctx.createRadialGradient(512, 512, 100, 512, 512, 512);
+mask.addColorStop(0, 'rgba(255,255,255,1)');
+mask.addColorStop(0.7, 'rgba(255,255,255,0.7)');
+mask.addColorStop(0.9, 'rgba(255,255,255,0.25)');
+mask.addColorStop(1, 'rgba(255,255,255,0)');
 gctx.globalCompositeOperation = 'destination-in';
-gctx.putImageData(maskData, 0, 0);
+gctx.fillStyle = mask;
+gctx.fillRect(0, 0, 1024, 1024);
 
 const groundTex = new THREE.CanvasTexture(gndCanvas);
 groundTex.anisotropy = 4;
