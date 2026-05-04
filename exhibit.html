@@ -54,40 +54,8 @@
     height: 100%;
   }
 
-  /* 上传区域 */
-  .upload-zone {
-    position: absolute;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-    display: flex;
-    gap: 10px;
-  }
-
-  .upload-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 30px;
-    color: var(--text);
-    font-size: 14px;
-    cursor: pointer;
-    transition: var(--transition);
-    backdrop-filter: blur(10px);
-    white-space: nowrap;
-  }
-  .upload-btn:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-    box-shadow: 0 0 20px var(--accent-glow);
-  }
-  .upload-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
-
-  .file-input { display: none; }
+  /* 上传区域 (已隐藏) */
+  .upload-zone, .upload-btn, .file-input { display: none; }
 
   /* 加载提示 */
   .loading-overlay {
@@ -168,23 +136,6 @@
     color: var(--accent);
   }
   .fullscreen-btn svg { width: 18px; height: 18px; }
-
-  /* 拖放高亮 */
-  .viewer.drag-over::after {
-    content: '释放以上传模型';
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(201, 169, 110, 0.15);
-    border: 3px dashed var(--accent);
-    border-radius: 0;
-    font-size: 24px;
-    color: var(--accent);
-    z-index: 30;
-    pointer-events: none;
-  }
 
   /* ============ 侧边面板（半透明悬浮） ============ */
   .side-panel {
@@ -453,26 +404,6 @@
   <div class="viewer" id="viewer">
     <canvas id="three-canvas"></canvas>
 
-    <!-- 上传按钮 -->
-    <div class="upload-zone">
-      <label class="upload-btn" for="model-input" title="上传 3D 模型" id="upload-label">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-          <polyline points="17 8 12 3 7 8"/>
-          <line x1="12" y1="3" x2="12" y2="15"/>
-        </svg>
-        <span id="upload-text">上传模型</span>
-      </label>
-      <input type="file" class="file-input" id="model-input" accept=".glb,.gltf,.obj,.fbx,.stl">
-      <button class="upload-btn" id="reset-btn" title="重置视角">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="1 4 1 10 7 10"/>
-          <path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>
-        </svg>
-        重置
-      </button>
-    </div>
-
     <!-- 加载遮罩 -->
     <div class="loading-overlay" id="loading">
       <div class="loader-ring"></div>
@@ -635,9 +566,7 @@ const viewerEl = document.getElementById('viewer');
 const canvas = document.getElementById('three-canvas');
 const loadingEl = document.getElementById('loading');
 const loadingText = document.getElementById('loading-text');
-const modelInput = document.getElementById('model-input');
 const modelNameEl = document.getElementById('model-name');
-const resetBtn = document.getElementById('reset-btn');
 const fsBtn = document.getElementById('fs-btn');
 
 // ============ Three.js 初始化 ============
@@ -651,7 +580,7 @@ renderer.toneMappingExposure = 1.2;
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-camera.position.set(5, 6, 9);
+camera.position.set(5, 4, 8);
 
 // OrbitControls
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -662,7 +591,7 @@ controls.maxDistance = 25;
 controls.maxPolarAngle = Math.PI * 0.9;
 controls.autoRotate = true;
 controls.autoRotateSpeed = 1.2;
-controls.target.set(0, 3.5, 0);
+controls.target.set(0, 2, 0);
 controls.update();
 
 // ============ 光照 ============
@@ -702,38 +631,38 @@ scene.add(rimLight);
 scene.background = new THREE.Color('#0a0a10');
 scene.fog = new THREE.Fog('#0a0a10', 20, 60);
 
-// ============ 地面（暗色 + 单面，仰视不遮挡） ============
+// ============ 地面（极暗 + 平滑渐变 + 细网格） ============
 const groundSize = 50;
 const gndCanvas = document.createElement('canvas');
 gndCanvas.width = 2048;
 gndCanvas.height = 2048;
 const gctx = gndCanvas.getContext('2d');
 
-// 基底：极暗
-gctx.fillStyle = '#06060a';
+gctx.fillStyle = '#030306';
 gctx.fillRect(0, 0, 2048, 2048);
 
-// 大网格
-gctx.strokeStyle = 'rgba(80,75,70,0.04)';
-gctx.lineWidth = 1;
-for (let x = 128; x < 2048; x += 128) {
-  gctx.beginPath(); gctx.moveTo(x, 0); gctx.lineTo(x, 2048); gctx.stroke();
-  gctx.beginPath(); gctx.moveTo(0, x); gctx.lineTo(2048, x); gctx.stroke();
-}
-
-// 小网格
-gctx.strokeStyle = 'rgba(80,75,70,0.015)';
-gctx.lineWidth = 0.5;
-for (let n = 32; n < 2048; n += 32) {
+// 细网格 (每格 64px)
+gctx.strokeStyle = 'rgba(60,55,50,0.025)';
+gctx.lineWidth = 0.8;
+for (let n = 64; n < 2048; n += 64) {
   gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 2048); gctx.stroke();
   gctx.beginPath(); gctx.moveTo(0, n); gctx.lineTo(2048, n); gctx.stroke();
 }
 
-// 径向渐变蒙版
-const maskGrad = gctx.createRadialGradient(1024, 1024, 350, 1024, 1024, 1024);
+// 超细网格 (每格 16px)
+gctx.strokeStyle = 'rgba(60,55,50,0.012)';
+gctx.lineWidth = 0.3;
+for (let n = 16; n < 2048; n += 16) {
+  gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 2048); gctx.stroke();
+  gctx.beginPath(); gctx.moveTo(0, n); gctx.lineTo(2048, n); gctx.stroke();
+}
+
+// 平滑径向渐变：中心不透明，自然过渡到边缘透明（无圆形波纹）
+const maskGrad = gctx.createRadialGradient(1024, 1024, 200, 1024, 1024, 1024);
 maskGrad.addColorStop(0, 'rgba(0,0,0,1)');
-maskGrad.addColorStop(0.5, 'rgba(0,0,0,0.85)');
-maskGrad.addColorStop(0.78, 'rgba(0,0,0,0.3)');
+maskGrad.addColorStop(0.35, 'rgba(0,0,0,0.95)');
+maskGrad.addColorStop(0.65, 'rgba(0,0,0,0.6)');
+maskGrad.addColorStop(0.85, 'rgba(0,0,0,0.15)');
 maskGrad.addColorStop(1, 'rgba(0,0,0,0)');
 gctx.globalCompositeOperation = 'destination-in';
 gctx.fillStyle = maskGrad;
@@ -745,13 +674,45 @@ groundTex.anisotropy = 4;
 const groundGeo = new THREE.PlaneGeometry(groundSize, groundSize);
 const groundMat = new THREE.MeshBasicMaterial({
   map: groundTex, transparent: true, depthWrite: false,
-  side: THREE.FrontSide,  // 从下往上看时地面消失
+  side: THREE.FrontSide,
 });
 const ground = new THREE.Mesh(groundGeo, groundMat);
 ground.rotation.x = -Math.PI / 2;
 ground.position.y = -0.05;
-ground.name = 'ground';
 scene.add(ground);
+
+// ============ 3D 山体（低多边形，微微隆起） ============
+const mountains = new THREE.Group();
+mountains.name = 'mountains';
+const mountainMat = new THREE.MeshStandardMaterial({
+  color: '#0a0a12', roughness: 0.95, metalness: 0.1,
+  flatShading: true, depthWrite: true,
+});
+
+// 散布多个小山
+const hillData = [
+  { x: 6, z: 4, r: 1.2, h: 0.5, seg: 5 },
+  { x: -5, z: -3, r: 1.0, h: 0.4, seg: 4 },
+  { x: 4, z: -5, r: 1.4, h: 0.55, seg: 6 },
+  { x: -7, z: 2, r: 0.9, h: 0.35, seg: 4 },
+  { x: 7, z: -2, r: 1.1, h: 0.45, seg: 5 },
+  { x: -3, z: 6, r: 1.3, h: 0.5, seg: 5 },
+  { x: -6, z: -6, r: 0.8, h: 0.3, seg: 4 },
+  { x: 2, z: -7, r: 1.0, h: 0.4, seg: 4 },
+  { x: -4, z: 5, r: 1.15, h: 0.48, seg: 5 },
+  { x: 8, z: 3, r: 0.95, h: 0.38, seg: 4 },
+];
+
+hillData.forEach(d => {
+  const geo = new THREE.ConeGeometry(d.r, d.h, d.seg, 1);
+  const hill = new THREE.Mesh(geo, mountainMat);
+  hill.position.set(d.x, -0.05 + d.h / 2, d.z);
+  hill.castShadow = true;
+  hill.receiveShadow = true;
+  mountains.add(hill);
+});
+
+scene.add(mountains);
 
 // 粒子
 const particlesGeo = new THREE.BufferGeometry();
@@ -899,8 +860,7 @@ async function loadGzippedGLB(gzUrl, fileName) {
     console.warn('gzip加载失败:', err.message);
     hideLoading();
     createDemoModel();
-    modelNameEl.textContent = '网络不通 · 点击上传模型';
-    setTimeout(() => modelInput.click(), 800);
+    modelNameEl.textContent = '模型加载失败 · 请刷新重试';
   }
 }
 
@@ -927,8 +887,8 @@ function loadGLTFModel(url, fileName = '') {
       model.position.set(-center.x * scale, 0, -center.z * scale);
       model.scale.setScalar(scale);
 
-      // 抬高 3 倍高度
-      model.position.y += size.y * scale * 3;
+      // 抬高 0.8 倍高度
+      model.position.y += size.y * scale * 0.8;
 
       // 遍历设置阴影
       model.traverse((child) => {
@@ -949,7 +909,6 @@ function loadGLTFModel(url, fileName = '') {
       // 更新显示名称
       if (fileName) {
         modelNameEl.textContent = fileName.toUpperCase();
-        document.getElementById('upload-text').textContent = '更换模型';
       }
 
       // 自动旋转开启
@@ -974,76 +933,6 @@ function loadGLTFModel(url, fileName = '') {
     }
   );
 }
-
-// 处理文件上传
-function handleFileUpload(file) {
-  if (!file) return;
-  const ext = file.name.split('.').pop().toLowerCase();
-  if (!['glb', 'gltf', 'obj', 'fbx', 'stl'].includes(ext)) {
-    alert('请上传 GLB、GLTF、OBJ、FBX 或 STL 格式的 3D 模型文件');
-    return;
-  }
-
-  if (ext === 'obj' || ext === 'fbx' || ext === 'stl') {
-    alert(`暂不支持 ${ext.toUpperCase()} 格式的在线预览，请转换为 GLB 或 GLTF 格式后上传。\n推荐使用 Blender 导出为 GLB 格式。`);
-    return;
-  }
-
-  const url = URL.createObjectURL(file);
-  loadGLTFModel(url, file.name.replace(/\.[^/.]+$/, ''));
-}
-
-modelInput.addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  handleFileUpload(file);
-});
-
-// ============ 拖放上传 ============
-viewerEl.addEventListener('dragover', (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  viewerEl.classList.add('drag-over');
-});
-
-viewerEl.addEventListener('dragleave', (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  viewerEl.classList.remove('drag-over');
-});
-
-viewerEl.addEventListener('drop', (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  viewerEl.classList.remove('drag-over');
-  const file = e.dataTransfer.files[0];
-  handleFileUpload(file);
-});
-
-// ============ 重置按钮 ============
-resetBtn.addEventListener('click', () => {
-  // 平滑动画到默认视角
-  const targetPos = new THREE.Vector3(5, 6, 9);
-  const targetLook = new THREE.Vector3(0, 3.5, 0);
-  const startPos = camera.position.clone();
-  const startTarget = controls.target.clone();
-  const startTime = performance.now();
-  const duration = 1000;
-
-  function animateReset(time) {
-    const elapsed = time - startTime;
-    const t = Math.min(elapsed / duration, 1);
-    // easeInOutCubic
-    const ease = t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
-    camera.position.lerpVectors(startPos, targetPos, ease);
-    controls.target.lerpVectors(startTarget, targetLook, ease);
-    controls.update();
-    if (t < 1) {
-      requestAnimationFrame(animateReset);
-    }
-  }
-  requestAnimationFrame(animateReset);
-  controls.autoRotate = true;
-});
 
 // ============ 全屏 ============
 fsBtn.addEventListener('click', () => {
@@ -1273,9 +1162,10 @@ function animate(time) {
   requestAnimationFrame(animate);
   controls.update();
 
-  // 粒子缓慢旋转
+  // 粒子 + 山体缓慢旋转
   particles.rotation.y += 0.0003;
   particles.rotation.x += 0.0001;
+  mountains.rotation.y += 0.00015;
 
   renderer.render(scene, camera);
 }
@@ -1300,9 +1190,6 @@ document.addEventListener('fullscreenchange', () => {
 // ============ 键盘快捷键 ============
 document.addEventListener('keydown', (e) => {
   switch(e.key.toLowerCase()) {
-    case 'r':
-      resetBtn.click();
-      break;
     case 'f':
       fsBtn.click();
       break;
@@ -1314,7 +1201,7 @@ document.addEventListener('keydown', (e) => {
 
 console.log('🖼️ 反无人机装置 5-10 · 3D 展品展示');
 console.log('  - 鼠标拖拽: 旋转 | 滚轮: 缩放 | 右键拖拽: 平移');
-console.log('  - 键盘: R=重置 F=全屏 A=自动旋转');
+console.log('  - 键盘: F=全屏 A=自动旋转');
 console.log('  - 可通过上传按钮替换其他模型');
 </script>
 
