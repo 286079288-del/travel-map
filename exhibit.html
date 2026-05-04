@@ -805,24 +805,38 @@ function hideLoading() {
   loadingEl.classList.remove('active');
 }
 
-// jsdelivr CDN 分片加载模型（国内直连）
+// jsdelivr CDN 并行分片加载（10 线并发，国内直连）
 const CDN_BASE = 'https://cdn.jsdelivr.net/gh/286079288-del/travel-map@main/chunks/';
 const CHUNK_NAMES = ['c_aa','c_ab','c_ac','c_ad','c_ae','c_af','c_ag','c_ah','c_ai','c_aj'];
 
 async function loadModelFromCDN(fileName) {
   showLoading('加载模型中...');
   try {
-    const allChunks = new Uint8Array(51986058); // 52MB total
+    // 并行下载所有分片
+    let done = 0;
+    const promises = CHUNK_NAMES.map((name, i) =>
+      fetch(CDN_BASE + name).then(async resp => {
+        if (!resp.ok) throw new Error(`Chunk ${i} ${resp.status}`);
+        const buf = await resp.arrayBuffer();
+        done++;
+        loadingText.textContent = `下载中... ${Math.round(done/CHUNK_NAMES.length*100)}%`;
+        return { index: i, data: new Uint8Array(buf) };
+      })
+    );
+    const results = await Promise.all(promises);
+    results.sort((a, b) => a.index - b.index);
+
+    // 拼接
+    loadingText.textContent = '拼接中...';
+    const totalSize = results.reduce((s, r) => s + r.data.length, 0);
+    const allChunks = new Uint8Array(totalSize);
     let offset = 0;
-    for (let i = 0; i < CHUNK_NAMES.length; i++) {
-      const url = CDN_BASE + CHUNK_NAMES[i];
-      const resp = await fetch(url);
-      if (!resp.ok) throw new Error(`Chunk ${i} HTTP ${resp.status}`);
-      const buf = await resp.arrayBuffer();
-      allChunks.set(new Uint8Array(buf), offset);
-      offset += buf.byteLength;
-      loadingText.textContent = `加载中... ${Math.round((i+1)/CHUNK_NAMES.length*100)}%`;
+    for (const r of results) {
+      allChunks.set(r.data, offset);
+      offset += r.data.length;
     }
+
+    // 解压
     loadingText.textContent = '解压中...';
     const blob = new Blob([allChunks]);
     const ds = new DecompressionStream('gzip');
