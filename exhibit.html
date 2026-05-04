@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>反无人机装置 5-10 · 3D 展品展示</title>
+<style>
+  :root {
+    --bg: #0d0d0f;
+    --panel-bg: #16161a;
+    --card-bg: #1e1e24;
+    --text: #e4e4e7;
+    --text-dim: #9898a0;
+    --accent: #c9a96e;
+    --accent-glow: rgba(201, 169, 110, 0.3);
+    --border: #2a2a32;
+    --radius: 12px;
+    --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* ============ 主布局 ============ */
+  .app {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* ============ 3D 查看器 ============ */
+  .viewer {
+    flex: 1;
+    position: relative;
+    background: radial-gradient(ellipse at center, #1a1a24 0%, #0a0a10 100%);
+    cursor: grab;
+    min-width: 0;
+  }
+  .viewer:active { cursor: grabbing; }
+  .viewer.dragging { cursor: grabbing; }
+
+  #three-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* 上传区域 */
+  .upload-zone {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    gap: 10px;
+  }
+
+  .upload-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    color: var(--text);
+    font-size: 14px;
+    cursor: pointer;
+    transition: var(--transition);
+    backdrop-filter: blur(10px);
+    white-space: nowrap;
+  }
+  .upload-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 20px var(--accent-glow);
+  }
+  .upload-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+  .file-input { display: none; }
+
+  /* 加载提示 */
+  .loading-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(13, 13, 15, 0.85);
+    z-index: 20;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .loading-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+  .loader-ring {
+    width: 50px;
+    height: 50px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loader-text {
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+
+  /* 控制提示 */
+  .controls-hint {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 16px;
+    padding: 10px 18px;
+    background: rgba(22, 22, 26, 0.8);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    z-index: 10;
+  }
+  .hint-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .hint-item svg { width: 16px; height: 16px; opacity: 0.7; }
+
+  /* 全屏按钮 */
+  .fullscreen-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .fullscreen-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .fullscreen-btn svg { width: 18px; height: 18px; }
+
+  /* 拖放高亮 */
+  .viewer.drag-over::after {
+    content: '释放以上传模型';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(201, 169, 110, 0.15);
+    border: 3px dashed var(--accent);
+    border-radius: 0;
+    font-size: 24px;
+    color: var(--accent);
+    z-index: 30;
+    pointer-events: none;
+  }
+
+  /* ============ 侧边面板（半透明悬浮） ============ */
+  .side-panel {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    bottom: 16px;
+    width: 380px;
+    background: rgba(18, 18, 24, 0.72);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 5;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+  }
+
+  .panel-header {
+    padding: 28px 28px 20px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .panel-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    background: linear-gradient(135deg, var(--text), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .panel-header .subtitle {
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-top: 6px;
+    letter-spacing: 1px;
+  }
+
+  .panel-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 16px 16px;
+    scroll-behavior: smooth;
+  }
+  .panel-scroll::-webkit-scrollbar { width: 4px; }
+  .panel-scroll::-webkit-scrollbar-track { background: transparent; }
+  .panel-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* 展开卡片 */
+  .accordion {
+    margin-top: 12px;
+  }
+  .accordion-item {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: var(--transition);
+  }
+  .accordion-item:hover {
+    border-color: #3a3a44;
+  }
+  .accordion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    transition: var(--transition);
+    user-select: none;
+  }
+  .accordion-header:hover {
+    color: var(--accent);
+  }
+  .accordion-icon {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+  }
+  .accordion-item.open .accordion-icon {
+    transform: rotate(180deg);
+  }
+  .accordion-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, padding 0.4s ease;
+  }
+  .accordion-item.open .accordion-body {
+    max-height: 500px;
+  }
+  .accordion-content {
+    padding: 0 20px 20px;
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text-dim);
+  }
+  .accordion-content p { margin-bottom: 10px; }
+  .accordion-content p:last-child { margin-bottom: 0; }
+  .tag {
+    display: inline-block;
+    padding: 3px 10px;
+    margin: 2px 4px 2px 0;
+    background: rgba(201, 169, 110, 0.15);
+    color: var(--accent);
+    border-radius: 12px;
+    font-size: 12px;
+  }
+
+  /* ============ 幻灯片（支持全屏） ============ */
+  .slideshow-section {
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 16px 0 0;
+    flex-shrink: 0;
+  }
+  .slideshow-section h3 {
+    font-size: 13px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .slideshow-section h3 .fs-slideshow {
+    font-size: 11px;
+    color: var(--accent);
+    cursor: pointer;
+    letter-spacing: 1px;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+    background: none;
+    border: 1px solid var(--accent);
+    padding: 4px 10px;
+    border-radius: 12px;
+  }
+  .slideshow-section h3 .fs-slideshow:hover { opacity: 1; }
+  .slideshow {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius);
+    aspect-ratio: 16/10;
+    background: var(--card-bg);
+    margin: 0 12px 8px;
+  }
+  .slides-track {
+    display: flex;
+    height: 100%;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .slide {
+    min-width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .slide img { width: 100%; height: 100%; object-fit: cover; }
+  .slide-placeholder {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: var(--text-dim); font-size: 14px; gap: 8px;
+  }
+  .slide-caption {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 12px 16px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    font-size: 13px; color: #fff;
+  }
+
+  /* 全屏幻灯片 */
+  .slideshow-fullscreen {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(0,0,0,0.95);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    animation: fadeIn 0.3s;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .slideshow-fullscreen .slides-track-wrap {
+    width: 90vw; height: 70vh;
+    overflow: hidden; border-radius: 12px;
+  }
+  .slideshow-fullscreen .slides-track { height: 100%; }
+  .slideshow-fullscreen .slide { background: #111; }
+  .slideshow-fullscreen .close-fs {
+    position: absolute; top: 24px; right: 24px;
+    width: 44px; height: 44px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 50%; color: #fff; cursor: pointer;
+    font-size: 20px; display: flex; align-items: center; justify-content: center;
+    transition: background 0.3s;
+    z-index: 101;
+  }
+  .slideshow-fullscreen .close-fs:hover { background: rgba(255,255,255,0.2); }
+  .slideshow-fullscreen .fs-caption {
+    color: rgba(255,255,255,0.7); margin-top: 16px; font-size: 15px;
+  }
+  .slideshow-fullscreen .fs-nav {
+    display: flex; align-items: center; gap: 16px; margin-top: 20px;
+  }
+  .slideshow-fullscreen .fs-nav button {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff; padding: 10px 16px; border-radius: 8px;
+    cursor: pointer; font-size: 14px; transition: background 0.3s;
+  }
+  .slideshow-fullscreen .fs-nav button:hover { background: rgba(255,255,255,0.2); }
+  .slideshow-fullscreen .fs-counter { color: rgba(255,255,255,0.5); font-size: 13px; }
+
+  /* 幻灯片导航 */
+  .slideshow-nav {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; padding: 4px 12px 10px;
+  }
+  .slide-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--border); cursor: pointer;
+    transition: var(--transition); border: none; padding: 0;
+  }
+  .slide-dot.active { background: var(--accent); width: 20px; border-radius: 4px; }
+  .slide-arrow {
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    background: none; border: 1px solid var(--border);
+    border-radius: 50%; color: var(--text-dim); cursor: pointer;
+    transition: var(--transition); flex-shrink: 0;
+  }
+  .slide-arrow:hover { border-color: var(--accent); color: var(--accent); }
+  .slide-arrow svg { width: 14px; height: 14px; }
+
+  /* ============ 响应式 ============ */
+  @media (max-width: 900px) {
+    .side-panel {
+      top: auto; right: 8px; bottom: 8px; left: 8px;
+      width: auto; height: 42vh;
+      border-radius: 16px 16px 0 0;
+    }
+    .panel-header { padding: 14px 18px 10px; }
+    .panel-header h1 { font-size: 18px; }
+    .panel-scroll { padding: 0 8px 8px; }
+    .upload-zone { top: 10px; }
+    .upload-btn { padding: 8px 14px; font-size: 12px; }
+    .controls-hint { bottom: 8px; padding: 6px 12px; gap: 10px; }
+    .controls-hint { bottom: 8px; padding: 6px 12px; gap: 10px; }
+    .hint-item { font-size: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ============ 3D 查看器 ============ -->
+  <div class="viewer" id="viewer">
+    <canvas id="three-canvas"></canvas>
+
+    <!-- 上传按钮 -->
+    <div class="upload-zone">
+      <label class="upload-btn" for="model-input" title="上传 3D 模型" id="upload-label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <span id="upload-text">上传模型</span>
+      </label>
+      <input type="file" class="file-input" id="model-input" accept=".glb,.gltf,.obj,.fbx,.stl">
+      <button class="upload-btn" id="reset-btn" title="重置视角">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="1 4 1 10 7 10"/>
+          <path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>
+        </svg>
+        重置
+      </button>
+    </div>
+
+    <!-- 加载遮罩 -->
+    <div class="loading-overlay" id="loading">
+      <div class="loader-ring"></div>
+      <span class="loader-text" id="loading-text">加载模型中...</span>
+    </div>
+
+    <!-- 操作提示 -->
+    <div class="controls-hint">
+      <span class="hint-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+        拖拽旋转
+      </span>
+      <span class="hint-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><line x1="12" y1="5" x2="12" y2="1"/><line x1="17" y1="7" x2="20" y2="4"/></svg>
+        滚轮缩放
+      </span>
+      <span class="hint-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>
+        右键平移
+      </span>
+    </div>
+
+    <!-- 全屏按钮 -->
+    <button class="fullscreen-btn" id="fs-btn" title="全屏">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 3 21 3 21 9"/>
+        <polyline points="9 21 3 21 3 15"/>
+        <line x1="21" y1="3" x2="14" y2="10"/>
+        <line x1="3" y1="21" x2="10" y2="14"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- ============ 侧边面板 ============ -->
+  <div class="side-panel" id="side-panel">
+    <div class="panel-header">
+      <h1>反无人机装置 5-10</h1>
+      <p class="subtitle" id="model-name">ANTI-DRONE SYSTEM · 黑色版</p>
+    </div>
+
+    <div class="panel-scroll">
+      <!-- 展开介绍 -->
+      <div class="accordion" id="accordion">
+        <!-- 产品概述 -->
+        <div class="accordion-item open">
+          <div class="accordion-header" data-target="intro">
+            <span>📖 产品概述</span>
+            <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+          <div class="accordion-body">
+            <div class="accordion-content">
+              <p>反无人机装置 5-10 是一款专为低空防御设计的高性能反制设备。采用多层复合结构设计，集成光电探测与干扰模块，可有效应对各类小型无人机的威胁。</p>
+              <p>黑色版本采用哑光表面处理，减少反光特征，适合隐蔽部署与全天候作战环境。整体设计兼顾轻量化与结构强度。</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 设计特点 -->
+        <div class="accordion-item">
+          <div class="accordion-header" data-target="background">
+            <span>🎨 设计特点</span>
+            <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+          <div class="accordion-body">
+            <div class="accordion-content">
+              <p><strong>材质组合：</strong>主体采用柔软光泽塑料（Soft Shiny Black）与粗糙灰色材质（Cloudy Rough Grey 3mm）搭配，兼顾外观质感与抗冲击性能。</p>
+              <p><strong>碳板加固：</strong>关键结构部位使用碳纤维板，在轻量化同时确保高强度，满足严苛环境下的部署需求。</p>
+              <p><strong>散热设计：</strong>多层散热槽结构，有效导出持续工作产生的热量，保证电子系统稳定运行。</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 技术规格 -->
+        <div class="accordion-item">
+          <div class="accordion-header" data-target="specs">
+            <span>⚙️ 技术规格</span>
+            <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+          <div class="accordion-body">
+            <div class="accordion-content">
+              <p><strong>型号：</strong>反无人机装置 5-10</p>
+              <p><strong>颜色：</strong>黑色（哑光）</p>
+              <p><strong>模型格式：</strong>GLB 二进制（158MB）</p>
+              <p><strong>材质系统：</strong>PBR（物理渲染）</p>
+              <p><strong>渲染引擎：</strong>Three.js WebGL 实时渲染</p>
+              <p>
+                <span class="tag">反无人机</span>
+                <span class="tag">低空防御</span>
+                <span class="tag">碳纤维</span>
+                <span class="tag">PBR</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 应用场景 -->
+        <div class="accordion-item">
+          <div class="accordion-header" data-target="artist">
+            <span>📍 应用场景</span>
+            <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+          <div class="accordion-body">
+            <div class="accordion-content">
+              <p>• 重点区域低空防御</p>
+              <p>• 机场 / 监狱 / 军事禁区无人机管控</p>
+              <p>• 大型活动安保无人机反制</p>
+              <p>• 固定哨站与移动巡逻平台</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 幻灯片 -->
+      <div class="slideshow-section">
+        <h3>📷 作品图集 <button class="fs-slideshow" id="slide-fs-btn">全屏播放</button></h3>
+        <div class="slideshow" id="slideshow">
+          <div class="slides-track" id="slides-track">
+            <!-- 幻灯片由 JS 动态生成 -->
+          </div>
+        </div>
+        <div class="slideshow-nav" id="slides-nav">
+          <button class="slide-arrow" id="slide-prev">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <div id="slide-dots"></div>
+          <button class="slide-arrow" id="slide-next">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Three.js Import Map -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+// ============ DOM 元素 ============
+const viewerEl = document.getElementById('viewer');
+const canvas = document.getElementById('three-canvas');
+const loadingEl = document.getElementById('loading');
+const loadingText = document.getElementById('loading-text');
+const modelInput = document.getElementById('model-input');
+const modelNameEl = document.getElementById('model-name');
+const resetBtn = document.getElementById('reset-btn');
+const fsBtn = document.getElementById('fs-btn');
+
+// ============ Three.js 初始化 ============
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+camera.position.set(5, 5, 8);
+
+// OrbitControls
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 2;
+controls.maxDistance = 25;
+controls.maxPolarAngle = Math.PI * 0.85;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 1.2;
+controls.target.set(0, 3, 0);
+controls.update();
+
+// ============ 光照 ============
+const ambientLight = new THREE.AmbientLight('#b8c5d6', 2.0);
+scene.add(ambientLight);
+
+const hemiLight = new THREE.HemisphereLight('#e8f0ff', '#3a2a1a', 0.8);
+scene.add(hemiLight);
+
+// 主方向光 (带阴影)
+const keyLight = new THREE.DirectionalLight('#ffffff', 5);
+keyLight.position.set(5, 10, 5);
+keyLight.castShadow = true;
+keyLight.shadow.mapSize.width = 2048;
+keyLight.shadow.mapSize.height = 2048;
+keyLight.shadow.camera.near = 0.5;
+keyLight.shadow.camera.far = 50;
+keyLight.shadow.camera.left = -10;
+keyLight.shadow.camera.right = 10;
+keyLight.shadow.camera.top = 10;
+keyLight.shadow.camera.bottom = -10;
+keyLight.shadow.bias = -0.0001;
+keyLight.shadow.normalBias = 0.02;
+scene.add(keyLight);
+
+// 补光
+const fillLight = new THREE.DirectionalLight('#c9a96e', 1.5);
+fillLight.position.set(-3, 3, -2);
+scene.add(fillLight);
+
+// ============ 场景环境 ============
+scene.background = new THREE.Color('#0a0a10');
+scene.fog = new THREE.Fog('#0a0a10', 20, 60);
+
+// ============ 地面（大平面 + 径向渐变边缘透明） ============
+const groundSize = 50;
+// 用 Canvas 生成径向渐变地面纹理：中心深色网格，边缘透明
+const gndCanvas = document.createElement('canvas');
+gndCanvas.width = 2048;
+gndCanvas.height = 2048;
+const gctx = gndCanvas.getContext('2d');
+
+// 基底：深灰色
+gctx.fillStyle = '#1a1a24';
+gctx.fillRect(0, 0, 2048, 2048);
+
+// 大网格 (128px 一格)
+gctx.strokeStyle = 'rgba(150,140,120,0.1)';
+gctx.lineWidth = 1.5;
+for (let x = 128; x < 2048; x += 128) {
+  gctx.beginPath(); gctx.moveTo(x, 0); gctx.lineTo(x, 2048); gctx.stroke();
+}
+for (let y = 128; y < 2048; y += 128) {
+  gctx.beginPath(); gctx.moveTo(0, y); gctx.lineTo(2048, y); gctx.stroke();
+}
+
+// 小网格 (32px)
+gctx.strokeStyle = 'rgba(150,140,120,0.04)';
+gctx.lineWidth = 0.5;
+for (let x = 32; x < 2048; x += 32) {
+  gctx.beginPath(); gctx.moveTo(x, 0); gctx.lineTo(x, 2048); gctx.stroke();
+}
+for (let y = 32; y < 2048; y += 32) {
+  gctx.beginPath(); gctx.moveTo(0, y); gctx.lineTo(2048, y); gctx.stroke();
+}
+
+// 径向渐变蒙版：中心不透明，边缘全透明
+const maskGrad = gctx.createRadialGradient(1024, 1024, 400, 1024, 1024, 1024);
+maskGrad.addColorStop(0, 'rgba(0,0,0,1)');
+maskGrad.addColorStop(0.6, 'rgba(0,0,0,0.8)');
+maskGrad.addColorStop(0.85, 'rgba(0,0,0,0.3)');
+maskGrad.addColorStop(1, 'rgba(0,0,0,0)');
+gctx.globalCompositeOperation = 'destination-in';
+gctx.fillStyle = maskGrad;
+gctx.fillRect(0, 0, 2048, 2048);
+
+const groundTex = new THREE.CanvasTexture(gndCanvas);
+groundTex.anisotropy = 4;
+
+const groundGeo = new THREE.PlaneGeometry(groundSize, groundSize);
+const groundMat = new THREE.MeshBasicMaterial({
+  map: groundTex,
+  transparent: true,
+  depthWrite: false,
+  side: THREE.DoubleSide,
+});
+const ground = new THREE.Mesh(groundGeo, groundMat);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -0.05;
+ground.name = 'ground';
+scene.add(ground);
+
+// 粒子
+const particlesGeo = new THREE.BufferGeometry();
+const pc = 120;
+const posArr = new Float32Array(pc * 3);
+for (let i = 0; i < pc; i++) {
+  posArr[i*3] = (Math.random()-0.5) * 20;
+  posArr[i*3+1] = Math.random() * 10;
+  posArr[i*3+2] = (Math.random()-0.5) * 16;
+}
+particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
+const particlesMat = new THREE.PointsMaterial({
+  color: '#c9a96e', size: 0.025, transparent: true, opacity: 0.35,
+  blending: THREE.AdditiveBlending, depthWrite: false,
+});
+const particles = new THREE.Points(particlesGeo, particlesMat);
+particles.name = 'particles';
+scene.add(particles);
+
+// ============ 默认演示模型 (几何体) ============
+let currentModel = null;
+const modelGroup = new THREE.Group();
+modelGroup.name = 'modelGroup';
+scene.add(modelGroup);
+
+function createDemoModel() {
+  // 清除旧模型
+  while (modelGroup.children.length > 0) {
+    modelGroup.remove(modelGroup.children[0]);
+  }
+
+  // 主体：Icosahedron + 细分
+  const mainGeo = new THREE.IcosahedronGeometry(1, 4);
+  // 随机微调顶点产生有机感
+  const pos = mainGeo.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+    const len = Math.sqrt(x*x + y*y + z*z);
+    const noise = 1 + Math.sin(x*5) * Math.cos(y*5) * Math.sin(z*5) * 0.15;
+    pos.setXYZ(i, x / len * noise, y / len * noise, z / len * noise);
+  }
+  mainGeo.computeVertexNormals();
+
+  const mainMat = new THREE.MeshStandardMaterial({
+    color: '#c9a96e',
+    roughness: 0.25,
+    metalness: 0.7,
+  });
+  const mainMesh = new THREE.Mesh(mainGeo, mainMat);
+  mainMesh.castShadow = true;
+  mainMesh.receiveShadow = true;
+  modelGroup.add(mainMesh);
+
+  // 内层球体
+  const innerGeo = new THREE.SphereGeometry(0.5, 32, 32);
+  const innerMat = new THREE.MeshStandardMaterial({
+    color: '#1a1a2e',
+    roughness: 0.4,
+    metalness: 0.3,
+    emissive: '#c9a96e',
+    emissiveIntensity: 0.15,
+  });
+  const innerMesh = new THREE.Mesh(innerGeo, innerMat);
+  modelGroup.add(innerMesh);
+
+  // 环绕线框
+  const wireGeo = new THREE.IcosahedronGeometry(1.15, 2);
+  const wireMat = new THREE.MeshBasicMaterial({
+    color: '#c9a96e',
+    wireframe: true,
+    transparent: true,
+    opacity: 0.15,
+    depthWrite: false,
+  });
+  const wireMesh = new THREE.Mesh(wireGeo, wireMat);
+  modelGroup.add(wireMesh);
+
+  // 外光环
+  const haloGeo = new THREE.TorusGeometry(1.25, 0.01, 16, 64);
+  const haloMat = new THREE.MeshStandardMaterial({
+    color: '#c9a96e',
+    roughness: 0.2,
+    metalness: 0.9,
+    emissive: '#c9a96e',
+    emissiveIntensity: 0.4,
+  });
+  const halo1 = new THREE.Mesh(haloGeo, haloMat);
+  halo1.rotation.x = Math.PI / 2;
+  modelGroup.add(halo1);
+
+  const halo2 = new THREE.Mesh(haloGeo, haloMat);
+  halo2.rotation.x = Math.PI / 3;
+  halo2.rotation.y = Math.PI / 3;
+  modelGroup.add(halo2);
+
+  const halo3 = new THREE.Mesh(haloGeo, haloMat);
+  halo3.rotation.x = -Math.PI / 3;
+  halo3.rotation.y = -Math.PI / 3;
+  modelGroup.add(halo3);
+
+  currentModel = modelGroup;
+}
+
+// ============ 模型加载 ============
+const gltfLoader = new GLTFLoader();
+
+function showLoading(text = '加载模型中...') {
+  loadingText.textContent = text;
+  loadingEl.classList.add('active');
+}
+
+function hideLoading() {
+  loadingEl.classList.remove('active');
+}
+
+function loadGLTFModel(url, fileName = '') {
+  showLoading();
+  gltfLoader.load(
+    url,
+    (gltf) => {
+      // 清除旧模型
+      while (modelGroup.children.length > 0) {
+        modelGroup.remove(modelGroup.children[0]);
+      }
+
+      const model = gltf.scene;
+
+      // 计算包围盒并居中
+      const box = new THREE.Box3().setFromObject(model);
+      const center = box.getCenter(new THREE.Vector3());
+      const size = box.getSize(new THREE.Vector3());
+      const maxDim = Math.max(size.x, size.y, size.z);
+      const scale = 2.2 / maxDim;
+
+      model.position.sub(center.multiplyScalar(scale));
+      model.scale.setScalar(scale);
+
+      // 模型底部对齐 y=0，再抬高 3 倍模型高度
+      const bottomOffset = (size.y * scale) / 2 - center.y * scale;
+      model.position.y += bottomOffset + size.y * scale * 3;
+
+      // 遍历设置阴影
+      model.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          // 优化材质
+          if (child.material && child.material.roughness === undefined) {
+            child.material.roughness = 0.5;
+            child.material.metalness = 0.3;
+          }
+        }
+      });
+
+      modelGroup.add(model);
+      currentModel = modelGroup;
+
+      // 更新显示名称
+      if (fileName) {
+        modelNameEl.textContent = fileName.toUpperCase();
+        document.getElementById('upload-text').textContent = '更换模型';
+      }
+
+      // 自动旋转开启
+      controls.autoRotate = true;
+
+      hideLoading();
+    },
+    (progress) => {
+      if (progress.total > 0) {
+        const pct = Math.round((progress.loaded / progress.total) * 100);
+        loadingText.textContent = `加载中... ${pct}%`;
+      }
+    },
+    (error) => {
+      console.warn('模型自动加载失败（需HTTP服务器），使用演示模型:', error.message);
+      loadingText.textContent = '请通过HTTP服务器打开，或点击上传模型';
+      setTimeout(() => {
+        hideLoading();
+        createDemoModel();
+        modelNameEl.textContent = '演示模式 · 请上传模型或刷新页面';
+      }, 2000);
+    }
+  );
+}
+
+// 处理文件上传
+function handleFileUpload(file) {
+  if (!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (!['glb', 'gltf', 'obj', 'fbx', 'stl'].includes(ext)) {
+    alert('请上传 GLB、GLTF、OBJ、FBX 或 STL 格式的 3D 模型文件');
+    return;
+  }
+
+  if (ext === 'obj' || ext === 'fbx' || ext === 'stl') {
+    alert(`暂不支持 ${ext.toUpperCase()} 格式的在线预览，请转换为 GLB 或 GLTF 格式后上传。\n推荐使用 Blender 导出为 GLB 格式。`);
+    return;
+  }
+
+  const url = URL.createObjectURL(file);
+  loadGLTFModel(url, file.name.replace(/\.[^/.]+$/, ''));
+}
+
+modelInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  handleFileUpload(file);
+});
+
+// ============ 拖放上传 ============
+viewerEl.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  viewerEl.classList.add('drag-over');
+});
+
+viewerEl.addEventListener('dragleave', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  viewerEl.classList.remove('drag-over');
+});
+
+viewerEl.addEventListener('drop', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  viewerEl.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  handleFileUpload(file);
+});
+
+// ============ 重置按钮 ============
+resetBtn.addEventListener('click', () => {
+  // 平滑动画到默认视角
+  const targetPos = new THREE.Vector3(5, 5, 8);
+  const targetLook = new THREE.Vector3(0, 3, 0);
+  const startPos = camera.position.clone();
+  const startTarget = controls.target.clone();
+  const startTime = performance.now();
+  const duration = 1000;
+
+  function animateReset(time) {
+    const elapsed = time - startTime;
+    const t = Math.min(elapsed / duration, 1);
+    // easeInOutCubic
+    const ease = t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
+    camera.position.lerpVectors(startPos, targetPos, ease);
+    controls.target.lerpVectors(startTarget, targetLook, ease);
+    controls.update();
+    if (t < 1) {
+      requestAnimationFrame(animateReset);
+    }
+  }
+  requestAnimationFrame(animateReset);
+  controls.autoRotate = true;
+});
+
+// ============ 全屏 ============
+fsBtn.addEventListener('click', () => {
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+  } else {
+    viewerEl.requestFullscreen();
+  }
+});
+
+// ============ 折叠面板 ============
+document.querySelectorAll('.accordion-header').forEach(header => {
+  header.addEventListener('click', () => {
+    const item = header.parentElement;
+    item.classList.toggle('open');
+  });
+});
+
+// ============ 幻灯片 ============
+const slideData = [
+  { type: 'placeholder', color1: '#1a1a2e', color2: '#16213e', label: '正面视图', caption: '反无人机装置 5-10 正面 — 多层复合结构' },
+  { type: 'placeholder', color1: '#2d1b2e', color2: '#1a1a3e', label: '侧面视图', caption: '侧面 — 碳板加固与散热槽设计' },
+  { type: 'placeholder', color1: '#1e2d1b', color2: '#0f1a2e', label: '材质细节', caption: '黑色哑光表面 + 粗糙灰色材质搭配' },
+  { type: 'placeholder', color1: '#2e1b1b', color2: '#1a1a3e', label: '结构分解', caption: '核心组件 — 探测模块 / 碳板 / 外壳' },
+  { type: 'placeholder', color1: '#1b1b2e', color2: '#16213e', label: '部署场景', caption: '反无人机装置在哨站中的部署示意' },
+];
+
+const slidesTrack = document.getElementById('slides-track');
+const slideDots = document.getElementById('slide-dots');
+let currentSlide = 0;
+
+function renderSlides() {
+  slidesTrack.innerHTML = '';
+  slideDots.innerHTML = '';
+
+  slideData.forEach((slide, i) => {
+    const slideEl = document.createElement('div');
+    slideEl.className = 'slide';
+
+    const placeholder = document.createElement('div');
+    placeholder.className = 'slide-placeholder';
+    placeholder.style.background = `linear-gradient(135deg, ${slide.color1}, ${slide.color2})`;
+    placeholder.innerHTML = `
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.6">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <circle cx="8.5" cy="8.5" r="1.5"/>
+        <polyline points="21 15 16 10 5 21"/>
+      </svg>
+      <span>${slide.label}</span>
+    `;
+    slideEl.appendChild(placeholder);
+
+    if (slide.caption) {
+      const caption = document.createElement('div');
+      caption.className = 'slide-caption';
+      caption.textContent = slide.caption;
+      slideEl.appendChild(caption);
+    }
+
+    slidesTrack.appendChild(slideEl);
+
+    // 导航点
+    const dot = document.createElement('button');
+    dot.className = 'slide-dot' + (i === 0 ? ' active' : '');
+    slideDots.appendChild(dot);
+  });
+
+  updateSlidePosition();
+}
+
+function updateSlidePosition() {
+  slidesTrack.style.transform = `translateX(-${currentSlide * 100}%)`;
+  const dots = slideDots.querySelectorAll('.slide-dot');
+  dots.forEach((d, i) => d.classList.toggle('active', i === currentSlide));
+}
+
+let slideshowTimer = null;
+let slideInterval = 4000; // 4秒自动切换
+
+function startAutoPlay() {
+  stopAutoPlay();
+  slideshowTimer = setInterval(nextSlide, slideInterval);
+}
+function stopAutoPlay() {
+  if (slideshowTimer) { clearInterval(slideshowTimer); slideshowTimer = null; }
+}
+function resetAutoPlay() { stopAutoPlay(); startAutoPlay(); }
+
+function goToSlide(index) {
+  currentSlide = (index + slideData.length) % slideData.length;
+  updateSlidePosition();
+}
+
+function nextSlide() { goToSlide(currentSlide + 1); }
+function prevSlide() { goToSlide(currentSlide - 1); }
+
+document.getElementById('slide-next').addEventListener('click', () => { nextSlide(); resetAutoPlay(); });
+document.getElementById('slide-prev').addEventListener('click', () => { prevSlide(); resetAutoPlay(); });
+
+// 点击导航点
+slideDots.addEventListener('click', (e) => {
+  const dot = e.target.closest('.slide-dot');
+  if (dot) {
+    const idx = [...slideDots.children].indexOf(dot);
+    goToSlide(idx);
+    resetAutoPlay();
+  }
+});
+
+// 全屏幻灯片
+let fsMode = false;
+function openFullscreenSlideshow() {
+  if (fsMode) return;
+  fsMode = true; stopAutoPlay();
+  const fs = document.createElement('div');
+  fs.className = 'slideshow-fullscreen';
+  fs.id = 'fs-slideshow';
+  fs.innerHTML = `
+    <button class="close-fs">✕</button>
+    <div class="slides-track-wrap"><div class="slides-track" id="fs-track"></div></div>
+    <p class="fs-caption" id="fs-caption"></p>
+    <div class="fs-nav">
+      <button id="fs-prev">← 上一张</button>
+      <span class="fs-counter" id="fs-counter"></span>
+      <button id="fs-next">下一张 →</button>
+    </div>
+  `;
+  document.body.appendChild(fs);
+
+  const fsTrack = document.getElementById('fs-track');
+  const fsCaption = document.getElementById('fs-caption');
+  const fsCounter = document.getElementById('fs-counter');
+  let fsIdx = currentSlide;
+
+  function updateFS() {
+    fsTrack.style.transform = `translateX(-${fsIdx * 100}%)`;
+    fsCaption.textContent = slideData[fsIdx].caption;
+    fsCounter.textContent = `${fsIdx + 1} / ${slideData.length}`;
+  }
+
+  slideData.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'slide';
+    const ph = document.createElement('div');
+    ph.className = 'slide-placeholder';
+    ph.style.background = `linear-gradient(135deg, ${s.color1}, ${s.color2})`;
+    ph.innerHTML = `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span style="margin-top:12px">${s.label}</span>`;
+    el.appendChild(ph);
+    fsTrack.appendChild(el);
+  });
+  updateFS();
+
+  document.getElementById('fs-prev').addEventListener('click', () => { fsIdx = (fsIdx - 1 + slideData.length) % slideData.length; updateFS(); });
+  document.getElementById('fs-next').addEventListener('click', () => { fsIdx = (fsIdx + 1) % slideData.length; updateFS(); });
+
+  function closeFS() {
+    fs.remove();
+    fsMode = false;
+    goToSlide(fsIdx);
+    startAutoPlay();
+  }
+
+  fs.querySelector('.close-fs').addEventListener('click', closeFS);
+  fs.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeFS();
+    if (e.key === 'ArrowLeft') { fsIdx = (fsIdx - 1 + slideData.length) % slideData.length; updateFS(); }
+    if (e.key === 'ArrowRight') { fsIdx = (fsIdx + 1) % slideData.length; updateFS(); }
+  });
+  fs.querySelector('.close-fs').focus();
+}
+
+// 全屏按钮
+document.getElementById('slide-fs-btn').addEventListener('click', openFullscreenSlideshow);
+
+// 触摸滑动
+let touchStartX = 0;
+document.getElementById('slideshow').addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+document.getElementById('slideshow').addEventListener('touchend', (e) => {
+  const diff = touchStartX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 50) { diff > 0 ? nextSlide() : prevSlide(); resetAutoPlay(); }
+});
+
+// 键盘导航 (非全屏)
+document.addEventListener('keydown', (e) => {
+  if (fsMode) return;
+  if (e.key === 'ArrowLeft') { prevSlide(); resetAutoPlay(); }
+  if (e.key === 'ArrowRight') { nextSlide(); resetAutoPlay(); }
+});
+
+renderSlides();
+startAutoPlay();
+
+// ============ 渲染循环 ============
+function resize() {
+  const rect = viewerEl.getBoundingClientRect();
+  renderer.setSize(rect.width, rect.height);
+  camera.aspect = rect.width / Math.max(rect.height, 1);
+  camera.updateProjectionMatrix();
+}
+
+function animate(time) {
+  requestAnimationFrame(animate);
+  controls.update();
+
+  // 粒子缓慢旋转
+  particles.rotation.y += 0.0003;
+  particles.rotation.x += 0.0001;
+
+  renderer.render(scene, camera);
+}
+
+// ============ 启动 ============
+resize();
+
+// 优先尝试 HTTP 加载，失败则自动弹出文件选择
+const MODEL_PATH = 'https://github.com/286079288-del/travel-map/releases/download/exhibit-v1/lens.glb';
+console.log('尝试 HTTP 加载:', MODEL_PATH);
+
+// 先用 fetch HEAD 检测 HTTP 是否可用
+fetch(MODEL_PATH, { method: 'HEAD' })
+  .then(resp => {
+    if (resp.ok) {
+      console.log('HTTP 可用，开始加载模型 (158MB)...');
+      loadGLTFModel(MODEL_PATH, '反无人机装置 5-10 · 黑色版');
+    } else {
+      throw new Error('HTTP not ok');
+    }
+  })
+  .catch(() => {
+    console.log('HTTP 不可用，等待用户手动加载');
+    hideLoading();
+    createDemoModel();
+    modelNameEl.textContent = '点击上方「上传模型」选择 lens.glb';
+    // 自动弹出文件选择框
+    setTimeout(() => modelInput.click(), 800);
+  });
+
+animate(0);
+
+window.addEventListener('resize', resize);
+
+// 全屏变化时重新计算尺寸
+document.addEventListener('fullscreenchange', () => {
+  setTimeout(resize, 100);
+});
+
+// ============ 键盘快捷键 ============
+document.addEventListener('keydown', (e) => {
+  switch(e.key.toLowerCase()) {
+    case 'r':
+      resetBtn.click();
+      break;
+    case 'f':
+      fsBtn.click();
+      break;
+    case 'a':
+      controls.autoRotate = !controls.autoRotate;
+      break;
+  }
+});
+
+console.log('🖼️ 反无人机装置 5-10 · 3D 展品展示');
+console.log('  - 鼠标拖拽: 旋转 | 滚轮: 缩放 | 右键拖拽: 平移');
+console.log('  - 键盘: R=重置 F=全屏 A=自动旋转');
+console.log('  - 可通过上传按钮替换其他模型');
+</script>
+
+</body>
+</html>
