@@ -6,14 +6,14 @@
 <title>无人机 · 3D 展品展示</title>
 <style>
   :root {
-    --bg: #0d0d0f;
-    --panel-bg: #16161a;
-    --card-bg: #1e1e24;
-    --text: #e4e4e7;
-    --text-dim: #9898a0;
-    --accent: #c9a96e;
-    --accent-glow: rgba(201, 169, 110, 0.3);
-    --border: #2a2a32;
+    --bg: #f0f2f7;
+    --panel-bg: #ffffff;
+    --card-bg: #f7f8fc;
+    --text: #1a1a2e;
+    --text-dim: #6b7280;
+    --accent: #3b82f6;
+    --accent-glow: rgba(59, 130, 246, 0.15);
+    --border: #e5e7eb;
     --radius: 12px;
     --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -41,7 +41,7 @@
   .viewer {
     flex: 1;
     position: relative;
-    background: radial-gradient(ellipse at center, #1a1a24 0%, #0a0a10 100%);
+    background: radial-gradient(ellipse at center, #e8edf5 0%, #cfd8e8 100%);
     cursor: grab;
     min-width: 0;
   }
@@ -628,8 +628,8 @@ rimLight.position.set(0, 1, 5);
 scene.add(rimLight);
 
 // ============ 场景环境 ============
-scene.background = new THREE.Color('#0a0a10');
-scene.fog = new THREE.Fog('#0a0a10', 20, 60);
+scene.background = new THREE.Color('#c8d4e6');
+scene.fog = new THREE.Fog('#c8d4e6', 20, 60);
 
 // ============ 地面（网格可见 + 边缘自然消退） ============
 const groundSize = 50;
@@ -639,11 +639,11 @@ gndCanvas.height = 1024;
 const gctx = gndCanvas.getContext('2d');
 
 // 基底：仅比天空亮一点
-gctx.fillStyle = '#0a0a12';
+gctx.fillStyle = '#e8ecf5';
 gctx.fillRect(0, 0, 1024, 1024);
 
 // 网格 32px
-gctx.strokeStyle = 'rgba(200,195,185,0.08)';
+gctx.strokeStyle = 'rgba(59,130,246,0.06)';
 gctx.lineWidth = 0.4;
 for (let n = 32; n < 1024; n += 32) {
   gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 1024); gctx.stroke();
@@ -651,7 +651,7 @@ for (let n = 32; n < 1024; n += 32) {
 }
 
 // 网格 8px
-gctx.strokeStyle = 'rgba(200,195,185,0.04)';
+gctx.strokeStyle = 'rgba(59,130,246,0.03)';
 gctx.lineWidth = 0.2;
 for (let n = 8; n < 1024; n += 8) {
   gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 1024); gctx.stroke();
@@ -683,11 +683,11 @@ scene.add(ground);
 
 // ============ 灯光优化（仰视不黑） ============
 // 增强环境光 + 底部补光
-ambientLight.intensity = 3.5;
-ambientLight.color.set('#aabbdd');
+ambientLight.intensity = 4;
+ambientLight.color.set('#dce4f5');
 
 // 正面底部补光
-const botLight = new THREE.DirectionalLight('#8899cc', 2.5);
+const botLight = new THREE.DirectionalLight('#aaccff', 2.5);
 botLight.position.set(0, 2, 8);
 scene.add(botLight);
 
@@ -702,7 +702,7 @@ for (let i = 0; i < pc; i++) {
 }
 particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
 const particlesMat = new THREE.PointsMaterial({
-  color: '#c9a96e', size: 0.025, transparent: true, opacity: 0.35,
+  color: '#3b82f6', size: 0.025, transparent: true, opacity: 0.2,
   blending: THREE.AdditiveBlending, depthWrite: false,
 });
 const particles = new THREE.Points(particlesGeo, particlesMat);
@@ -734,7 +734,7 @@ function createDemoModel() {
   mainGeo.computeVertexNormals();
 
   const mainMat = new THREE.MeshStandardMaterial({
-    color: '#c9a96e',
+    color: '#3b82f6',
     roughness: 0.25,
     metalness: 0.7,
   });
@@ -758,7 +758,7 @@ function createDemoModel() {
   // 环绕线框
   const wireGeo = new THREE.IcosahedronGeometry(1.15, 2);
   const wireMat = new THREE.MeshBasicMaterial({
-    color: '#c9a96e',
+    color: '#3b82f6',
     wireframe: true,
     transparent: true,
     opacity: 0.15,
@@ -770,7 +770,7 @@ function createDemoModel() {
   // 外光环
   const haloGeo = new THREE.TorusGeometry(1.25, 0.01, 16, 64);
   const haloMat = new THREE.MeshStandardMaterial({
-    color: '#c9a96e',
+    color: '#3b82f6',
     roughness: 0.2,
     metalness: 0.9,
     emissive: '#c9a96e',
