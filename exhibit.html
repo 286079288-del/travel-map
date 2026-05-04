@@ -867,6 +867,43 @@ function hideLoading() {
   loadingEl.classList.remove('active');
 }
 
+// gzip 模型加载（线上用，绕过 github.com 被墙）
+async function loadGzippedGLB(gzUrl, fileName) {
+  showLoading('下载模型中 (gzip)...');
+  try {
+    const resp = await fetch(gzUrl);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const total = +resp.headers.get('Content-Length') || 0;
+    const reader = resp.body.getReader();
+    const chunks = [];
+    let loaded = 0;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      loaded += value.length;
+      if (total) {
+        const pct = Math.round(loaded / total * 100);
+        loadingText.textContent = `下载中... ${pct}%`;
+      }
+    }
+    loadingText.textContent = '解压模型中...';
+    const blob = new Blob(chunks);
+    const ds = new DecompressionStream('gzip');
+    const decompressed = blob.stream().pipeThrough(ds);
+    const decompressedBlob = await new Response(decompressed).blob();
+    const blobUrl = URL.createObjectURL(decompressedBlob);
+    loadingText.textContent = '解析模型中...';
+    loadGLTFModel(blobUrl, fileName);
+  } catch (err) {
+    console.warn('gzip加载失败:', err.message);
+    hideLoading();
+    createDemoModel();
+    modelNameEl.textContent = '网络不通 · 点击上传模型';
+    setTimeout(() => modelInput.click(), 800);
+  }
+}
+
 function loadGLTFModel(url, fileName = '') {
   showLoading();
   gltfLoader.load(
@@ -1246,28 +1283,10 @@ function animate(time) {
 // ============ 启动 ============
 resize();
 
-// 优先尝试 HTTP 加载，失败则自动弹出文件选择
-const MODEL_PATH = 'https://github.com/286079288-del/travel-map/releases/download/exhibit-v1/lens.glb';
-console.log('尝试 HTTP 加载:', MODEL_PATH);
-
-// 先用 fetch HEAD 检测 HTTP 是否可用
-fetch(MODEL_PATH, { method: 'HEAD' })
-  .then(resp => {
-    if (resp.ok) {
-      console.log('HTTP 可用，开始加载模型 (158MB)...');
-      loadGLTFModel(MODEL_PATH, '反无人机装置 5-10 · 黑色版');
-    } else {
-      throw new Error('HTTP not ok');
-    }
-  })
-  .catch(() => {
-    console.log('HTTP 不可用，等待用户手动加载');
-    hideLoading();
-    createDemoModel();
-    modelNameEl.textContent = '点击上方「上传模型」选择 lens.glb';
-    // 自动弹出文件选择框
-    setTimeout(() => modelInput.click(), 800);
-  });
+// 线上：从 GitHub Release 加载 gzip 压缩模型（用户浏览器可直连）
+const GZ_URL = 'https://github.com/286079288-del/travel-map/releases/download/exhibit-v1/lens.glb.gz';
+console.log('Load:', GZ_URL);
+loadGzippedGLB(GZ_URL, '反无人机装置 5-10 · 黑色版');
 
 animate(0);
 
