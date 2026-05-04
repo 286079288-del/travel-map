@@ -177,6 +177,9 @@
   .side-panel.collapsed .panel-scroll { display: none; }
   .side-panel.collapsed { width: auto; bottom: auto; }
 
+  .viewer:fullscreen .side-panel { z-index: 999; }
+  .viewer:-webkit-full-screen .side-panel { z-index: 999; }
+
   .panel-header {
     position: relative;
     padding: 24px 24px 16px;
@@ -664,16 +667,16 @@ gctx.fillStyle = '#b4bcc8';
 gctx.fillRect(0, 0, 1024, 1024);
 
 // 网格 32px
-gctx.strokeStyle = 'rgba(100,100,110,0.06)';
-gctx.lineWidth = 0.3;
+gctx.strokeStyle = 'rgba(80,80,90,0.15)';
+gctx.lineWidth = 0.6;
 for (let n = 32; n < 1024; n += 32) {
   gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 1024); gctx.stroke();
   gctx.beginPath(); gctx.moveTo(0, n); gctx.lineTo(1024, n); gctx.stroke();
 }
 
 // 网格 8px
-gctx.strokeStyle = 'rgba(100,100,110,0.03)';
-gctx.lineWidth = 0.15;
+gctx.strokeStyle = 'rgba(80,80,90,0.08)';
+gctx.lineWidth = 0.3;
 for (let n = 8; n < 1024; n += 8) {
   gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 1024); gctx.stroke();
   gctx.beginPath(); gctx.moveTo(0, n); gctx.lineTo(1024, n); gctx.stroke();
@@ -730,28 +733,35 @@ const particles = new THREE.Points(particlesGeo, particlesMat);
 particles.name = 'particles';
 scene.add(particles);
 
-// ============ 云朵 ============
+// ============ 云层（大型半透明平面） ============
 const clouds = new THREE.Group();
-const cloudMat = new THREE.MeshStandardMaterial({
-  color: '#ffffff', roughness: 0.9, metalness: 0,
-  transparent: true, opacity: 0.35, depthWrite: false,
+const cloudGeo = new THREE.PlaneGeometry(3, 1.5);
+const cloudCanvas = document.createElement('canvas');
+cloudCanvas.width = 256;
+cloudCanvas.height = 128;
+const cctx = cloudCanvas.getContext('2d');
+const cloudGrad = cctx.createRadialGradient(128, 64, 10, 128, 64, 128);
+cloudGrad.addColorStop(0, 'rgba(255,255,255,0.6)');
+cloudGrad.addColorStop(0.4, 'rgba(255,255,255,0.3)');
+cloudGrad.addColorStop(0.8, 'rgba(255,255,255,0.05)');
+cloudGrad.addColorStop(1, 'rgba(255,255,255,0)');
+cctx.fillStyle = cloudGrad;
+cctx.fillRect(0, 0, 256, 128);
+const cloudTex = new THREE.CanvasTexture(cloudCanvas);
+const cloudMat = new THREE.MeshBasicMaterial({
+  map: cloudTex, transparent: true, depthWrite: false,
+  side: THREE.DoubleSide,
 });
 const cloudPositions = [
-  [-10, 8, -8], [8, 7, -6], [-6, 9, 5], [10, 8, 7], [0, 7, -9],
-  [-12, 8, 3], [12, 7, -4], [-8, 9, -7], [5, 8, 8], [-3, 7, 6],
+  [-8, 9, -5], [6, 8, -7], [-4, 9, 6], [9, 8, 4], [0, 9, -8],
+  [-10, 8, 3], [11, 8, -3], [-6, 9, -6], [4, 9, 7], [-2, 8, -4],
 ];
 cloudPositions.forEach(([cx, cy, cz]) => {
-  const cloudGroup = new THREE.Group();
-  for (let i = 0; i < 5; i++) {
-    const size = 0.3 + Math.random() * 0.8;
-    const geo = new THREE.SphereGeometry(size, 6, 5);
-    geo.scale(1, 0.4, 1);
-    const piece = new THREE.Mesh(geo, cloudMat);
-    piece.position.set((Math.random()-0.5)*2, (Math.random()-0.5)*0.6, (Math.random()-0.5)*1.5);
-    cloudGroup.add(piece);
-  }
-  cloudGroup.position.set(cx, cy, cz);
-  clouds.add(cloudGroup);
+  const cloud = new THREE.Mesh(cloudGeo, cloudMat);
+  cloud.position.set(cx, cy, cz);
+  cloud.rotation.set(-0.3, Math.random() * Math.PI, 0);
+  cloud.scale.set(1 + Math.random() * 2, 1, 1);
+  clouds.add(cloud);
 });
 scene.add(clouds);
 
@@ -973,7 +983,7 @@ fsBtn.addEventListener('click', () => {
   if (document.fullscreenElement) {
     document.exitFullscreen();
   } else {
-    viewerEl.requestFullscreen();
+    document.documentElement.requestFullscreen();
   }
 });
 
