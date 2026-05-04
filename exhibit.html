@@ -709,12 +709,12 @@ gndCanvas.width = 2048;
 gndCanvas.height = 2048;
 const gctx = gndCanvas.getContext('2d');
 
-// 基底：暗色
-gctx.fillStyle = '#0c0c14';
+// 基底：极暗
+gctx.fillStyle = '#06060a';
 gctx.fillRect(0, 0, 2048, 2048);
 
 // 大网格
-gctx.strokeStyle = 'rgba(100,95,85,0.06)';
+gctx.strokeStyle = 'rgba(80,75,70,0.04)';
 gctx.lineWidth = 1;
 for (let x = 128; x < 2048; x += 128) {
   gctx.beginPath(); gctx.moveTo(x, 0); gctx.lineTo(x, 2048); gctx.stroke();
@@ -722,7 +722,7 @@ for (let x = 128; x < 2048; x += 128) {
 }
 
 // 小网格
-gctx.strokeStyle = 'rgba(100,95,85,0.025)';
+gctx.strokeStyle = 'rgba(80,75,70,0.015)';
 gctx.lineWidth = 0.5;
 for (let n = 32; n < 2048; n += 32) {
   gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 2048); gctx.stroke();
