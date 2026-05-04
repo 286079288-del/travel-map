@@ -638,31 +638,31 @@ gndCanvas.width = 1024;
 gndCanvas.height = 1024;
 const gctx = gndCanvas.getContext('2d');
 
-// 基底：深蓝灰
-gctx.fillStyle = '#1a1a2e';
+// 基底：暗蓝灰
+gctx.fillStyle = '#0e0e1a';
 gctx.fillRect(0, 0, 1024, 1024);
 
 // 粗网格 64px
-gctx.strokeStyle = 'rgba(200,195,185,0.22)';
-gctx.lineWidth = 1.5;
+gctx.strokeStyle = 'rgba(180,175,165,0.08)';
+gctx.lineWidth = 0.8;
 for (let n = 64; n < 1024; n += 64) {
   gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 1024); gctx.stroke();
   gctx.beginPath(); gctx.moveTo(0, n); gctx.lineTo(1024, n); gctx.stroke();
 }
 
 // 细网格 16px
-gctx.strokeStyle = 'rgba(200,195,185,0.10)';
-gctx.lineWidth = 0.7;
+gctx.strokeStyle = 'rgba(180,175,165,0.04)';
+gctx.lineWidth = 0.4;
 for (let n = 16; n < 1024; n += 16) {
   gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 1024); gctx.stroke();
   gctx.beginPath(); gctx.moveTo(0, n); gctx.lineTo(1024, n); gctx.stroke();
 }
 
 // 简单径向渐变蒙版：中心清晰，边缘渐隐
-const mask = gctx.createRadialGradient(512, 512, 100, 512, 512, 512);
+const mask = gctx.createRadialGradient(512, 512, 150, 512, 512, 512);
 mask.addColorStop(0, 'rgba(255,255,255,1)');
-mask.addColorStop(0.7, 'rgba(255,255,255,0.7)');
-mask.addColorStop(0.9, 'rgba(255,255,255,0.25)');
+mask.addColorStop(0.6, 'rgba(255,255,255,0.65)');
+mask.addColorStop(0.85, 'rgba(255,255,255,0.2)');
 mask.addColorStop(1, 'rgba(255,255,255,0)');
 gctx.globalCompositeOperation = 'destination-in';
 gctx.fillStyle = mask;
