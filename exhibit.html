@@ -638,22 +638,22 @@ gndCanvas.width = 1024;
 gndCanvas.height = 1024;
 const gctx = gndCanvas.getContext('2d');
 
-// 基底：暗蓝灰
-gctx.fillStyle = '#0e0e1a';
+// 基底：仅比天空亮一点
+gctx.fillStyle = '#0b0b13';
 gctx.fillRect(0, 0, 1024, 1024);
 
-// 粗网格 64px
-gctx.strokeStyle = 'rgba(180,175,165,0.04)';
-gctx.lineWidth = 0.5;
-for (let n = 64; n < 1024; n += 64) {
+// 网格 32px
+gctx.strokeStyle = 'rgba(180,175,165,0.03)';
+gctx.lineWidth = 0.15;
+for (let n = 32; n < 1024; n += 32) {
   gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 1024); gctx.stroke();
   gctx.beginPath(); gctx.moveTo(0, n); gctx.lineTo(1024, n); gctx.stroke();
 }
 
-// 细网格 16px
-gctx.strokeStyle = 'rgba(180,175,165,0.02)';
-gctx.lineWidth = 0.25;
-for (let n = 16; n < 1024; n += 16) {
+// 网格 8px
+gctx.strokeStyle = 'rgba(180,175,165,0.015)';
+gctx.lineWidth = 0.08;
+for (let n = 8; n < 1024; n += 8) {
   gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 1024); gctx.stroke();
   gctx.beginPath(); gctx.moveTo(0, n); gctx.lineTo(1024, n); gctx.stroke();
 }
