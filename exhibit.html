@@ -618,16 +618,16 @@ controls.autoRotateSpeed = 1.2;
 controls.target.set(0, 1, 0);
 controls.update();
 
-// ============ 光照 ============
-const ambientLight = new THREE.AmbientLight('#8899bb', 2.5);
+// ============ 光照（简化，单主光+阴影） ============
+const ambientLight = new THREE.AmbientLight('#8899aa', 0.6);
 scene.add(ambientLight);
 
-const hemiLight = new THREE.HemisphereLight('#ccddff', '#221108', 1.0);
+const hemiLight = new THREE.HemisphereLight('#ddeeff', '#334455', 0.8);
 scene.add(hemiLight);
 
 // 主方向光 (带阴影，从右前上方)
-const keyLight = new THREE.DirectionalLight('#ffffff', 6);
-keyLight.position.set(6, 8, 6);
+const keyLight = new THREE.DirectionalLight('#ffffff', 5);
+keyLight.position.set(6, 10, 6);
 keyLight.castShadow = true;
 keyLight.shadow.mapSize.width = 2048;
 keyLight.shadow.mapSize.height = 2048;
@@ -637,19 +637,9 @@ keyLight.shadow.camera.left = -12;
 keyLight.shadow.camera.right = 12;
 keyLight.shadow.camera.top = 12;
 keyLight.shadow.camera.bottom = -12;
-keyLight.shadow.bias = -0.0001;
+keyLight.shadow.bias = -0.0002;
 keyLight.shadow.normalBias = 0.02;
 scene.add(keyLight);
-
-// 左前补光
-const fillLight = new THREE.DirectionalLight('#ffe0c0', 2.5);
-fillLight.position.set(-4, 3, -3);
-scene.add(fillLight);
-
-// 底部补光（减少暗面）
-const rimLight = new THREE.DirectionalLight('#8899cc', 2.0);
-rimLight.position.set(0, 1, 5);
-scene.add(rimLight);
 
 // ============ 场景环境 ============
 scene.background = new THREE.Color('#c8d4e6');
@@ -663,19 +653,19 @@ gndCanvas.height = 1024;
 const gctx = gndCanvas.getContext('2d');
 
 // 暗灰底
-gctx.fillStyle = '#b4bcc8';
+gctx.fillStyle = '#c0c8d4';
 gctx.fillRect(0, 0, 1024, 1024);
 
-// 网格 32px
-gctx.strokeStyle = 'rgba(60,60,70,0.82)';
-gctx.lineWidth = 0.4;
+// 网格 32px (黑灰清晰线)
+gctx.strokeStyle = 'rgba(40,40,50,0.35)';
+gctx.lineWidth = 1.2;
 for (let n = 32; n < 1024; n += 32) {
   gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 1024); gctx.stroke();
   gctx.beginPath(); gctx.moveTo(0, n); gctx.lineTo(1024, n); gctx.stroke();
 }
 
 // 网格 8px
-gctx.strokeStyle = 'rgba(60,60,70,0.15)';
+gctx.strokeStyle = 'rgba(40,40,50,0.18)';
 gctx.lineWidth = 0.6;
 for (let n = 8; n < 1024; n += 8) {
   gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 1024); gctx.stroke();
@@ -693,16 +683,18 @@ gctx.fillStyle = mask;
 gctx.fillRect(0, 0, 1024, 1024);
 
 const groundTex = new THREE.CanvasTexture(gndCanvas);
-groundTex.anisotropy = 4;
+groundTex.minFilter = THREE.NearestFilter;
+groundTex.magFilter = THREE.NearestFilter;
 
 const groundGeo = new THREE.PlaneGeometry(groundSize, groundSize);
-const groundMat = new THREE.MeshBasicMaterial({
-  map: groundTex, transparent: true, depthWrite: false,
+const groundMat = new THREE.MeshStandardMaterial({
+  map: groundTex, roughness: 0.95, metalness: 0,
   side: THREE.FrontSide,
 });
 const ground = new THREE.Mesh(groundGeo, groundMat);
 ground.rotation.x = -Math.PI / 2;
 ground.position.y = -0.05;
+ground.receiveShadow = true;
 scene.add(ground);
 
 // ============ 灯光优化（仰视不黑） ============
@@ -732,38 +724,6 @@ const particlesMat = new THREE.PointsMaterial({
 const particles = new THREE.Points(particlesGeo, particlesMat);
 particles.name = 'particles';
 scene.add(particles);
-
-// ============ 云层（大型半透明平面） ============
-const clouds = new THREE.Group();
-const cloudGeo = new THREE.PlaneGeometry(3, 1.5);
-const cloudCanvas = document.createElement('canvas');
-cloudCanvas.width = 256;
-cloudCanvas.height = 128;
-const cctx = cloudCanvas.getContext('2d');
-const cloudGrad = cctx.createRadialGradient(128, 64, 10, 128, 64, 128);
-cloudGrad.addColorStop(0, 'rgba(255,255,255,0.6)');
-cloudGrad.addColorStop(0.4, 'rgba(255,255,255,0.3)');
-cloudGrad.addColorStop(0.8, 'rgba(255,255,255,0.05)');
-cloudGrad.addColorStop(1, 'rgba(255,255,255,0)');
-cctx.fillStyle = cloudGrad;
-cctx.fillRect(0, 0, 256, 128);
-const cloudTex = new THREE.CanvasTexture(cloudCanvas);
-const cloudMat = new THREE.MeshBasicMaterial({
-  map: cloudTex, transparent: true, depthWrite: false,
-  side: THREE.DoubleSide,
-});
-const cloudPositions = [
-  [-8, 9, -5], [6, 8, -7], [-4, 9, 6], [9, 8, 4], [0, 9, -8],
-  [-10, 8, 3], [11, 8, -3], [-6, 9, -6], [4, 9, 7], [-2, 8, -4],
-];
-cloudPositions.forEach(([cx, cy, cz]) => {
-  const cloud = new THREE.Mesh(cloudGeo, cloudMat);
-  cloud.position.set(cx, cy, cz);
-  cloud.rotation.set(-0.3, Math.random() * Math.PI, 0);
-  cloud.scale.set(1 + Math.random() * 2, 1, 1);
-  clouds.add(cloud);
-});
-scene.add(clouds);
 
 // ============ 默认演示模型 (几何体) ============
 let currentModel = null;
