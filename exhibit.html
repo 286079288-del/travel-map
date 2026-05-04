@@ -642,7 +642,7 @@ gctx.fillStyle = '#030306';
 gctx.fillRect(0, 0, 2048, 2048);
 
 // 细网格 (每格 64px)
-gctx.strokeStyle = 'rgba(60,55,50,0.025)';
+gctx.strokeStyle = 'rgba(80,75,65,0.06)';
 gctx.lineWidth = 0.8;
 for (let n = 64; n < 2048; n += 64) {
   gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 2048); gctx.stroke();
@@ -650,23 +650,28 @@ for (let n = 64; n < 2048; n += 64) {
 }
 
 // 超细网格 (每格 16px)
-gctx.strokeStyle = 'rgba(60,55,50,0.012)';
-gctx.lineWidth = 0.3;
+gctx.strokeStyle = 'rgba(80,75,65,0.03)';
+gctx.lineWidth = 0.4;
 for (let n = 16; n < 2048; n += 16) {
   gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 2048); gctx.stroke();
   gctx.beginPath(); gctx.moveTo(0, n); gctx.lineTo(2048, n); gctx.stroke();
 }
 
-// 平滑径向渐变：中心不透明，自然过渡到边缘透明（无圆形波纹）
-const maskGrad = gctx.createRadialGradient(1024, 1024, 200, 1024, 1024, 1024);
-maskGrad.addColorStop(0, 'rgba(0,0,0,1)');
-maskGrad.addColorStop(0.35, 'rgba(0,0,0,0.95)');
-maskGrad.addColorStop(0.65, 'rgba(0,0,0,0.6)');
-maskGrad.addColorStop(0.85, 'rgba(0,0,0,0.15)');
-maskGrad.addColorStop(1, 'rgba(0,0,0,0)');
+// 用像素级三次方曲线做透明渐变（无环状线）
+const maskData = gctx.createImageData(2048, 2048);
+for (let py = 0; py < 2048; py++) {
+  for (let px = 0; px < 2048; px++) {
+    const dx = (px - 1024) / 1024;
+    const dy = (py - 1024) / 1024;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    // 三次方曲线：中心完全保持，边缘快速衰减
+    const alpha = dist < 1 ? Math.max(0, 1 - Math.pow(dist, 3.5)) : 0;
+    const idx = (py * 2048 + px) * 4;
+    maskData.data[idx + 3] = Math.round(alpha * 255);
+  }
+}
 gctx.globalCompositeOperation = 'destination-in';
-gctx.fillStyle = maskGrad;
-gctx.fillRect(0, 0, 2048, 2048);
+gctx.putImageData(maskData, 0, 0);
 
 const groundTex = new THREE.CanvasTexture(gndCanvas);
 groundTex.anisotropy = 4;
