@@ -144,37 +144,33 @@
     right: 16px;
     bottom: 16px;
     width: 380px;
-    background: rgba(18, 18, 24, 0.72);
+    background: rgba(255,255,255,0.85);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid rgba(59,130,246,0.15);
     border-radius: 16px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     z-index: 5;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+    box-shadow: 0 4px 24px rgba(59,130,246,0.08);
   }
 
   .panel-header {
-    padding: 28px 28px 20px;
-    border-bottom: 1px solid var(--border);
+    padding: 24px 24px 16px;
+    border-bottom: 1px solid #e8ecf5;
     flex-shrink: 0;
   }
   .panel-header h1 {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 700;
-    letter-spacing: 0.5px;
-    background: linear-gradient(135deg, var(--text), var(--accent));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #1a1a2e;
   }
   .panel-header .subtitle {
-    font-size: 14px;
-    color: var(--text-dim);
-    margin-top: 6px;
-    letter-spacing: 1px;
+    font-size: 13px;
+    color: #3b82f6;
+    margin-top: 4px;
+    font-weight: 500;
   }
 
   .panel-scroll {
@@ -193,30 +189,30 @@
     margin-top: 12px;
   }
   .accordion-item {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+    background: #fff;
+    border: 1px solid #e8ecf5;
+    border-radius: 10px;
     margin-bottom: 10px;
     overflow: hidden;
     transition: var(--transition);
   }
   .accordion-item:hover {
-    border-color: #3a3a44;
+    border-color: #3b82f6;
+    box-shadow: 0 2px 12px rgba(59,130,246,0.06);
   }
   .accordion-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
+    padding: 14px 16px;
     cursor: pointer;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
+    color: #1a1a2e;
     transition: var(--transition);
     user-select: none;
   }
-  .accordion-header:hover {
-    color: var(--accent);
-  }
+  .accordion-header:hover { color: #3b82f6; }
   .accordion-icon {
     width: 20px;
     height: 20px;
@@ -638,12 +634,12 @@ gndCanvas.width = 1024;
 gndCanvas.height = 1024;
 const gctx = gndCanvas.getContext('2d');
 
-// 基底：仅比天空亮一点
-gctx.fillStyle = '#e8ecf5';
+// 暗灰底
+gctx.fillStyle = '#b4bcc8';
 gctx.fillRect(0, 0, 1024, 1024);
 
-// 网格 32px
-gctx.strokeStyle = 'rgba(59,130,246,0.06)';
+// 网格 32px (灰色)
+gctx.strokeStyle = 'rgba(120,120,130,0.08)';
 gctx.lineWidth = 0.4;
 for (let n = 32; n < 1024; n += 32) {
   gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 1024); gctx.stroke();
@@ -651,7 +647,7 @@ for (let n = 32; n < 1024; n += 32) {
 }
 
 // 网格 8px
-gctx.strokeStyle = 'rgba(59,130,246,0.03)';
+gctx.strokeStyle = 'rgba(120,120,130,0.04)';
 gctx.lineWidth = 0.2;
 for (let n = 8; n < 1024; n += 8) {
   gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 1024); gctx.stroke();
@@ -702,7 +698,7 @@ for (let i = 0; i < pc; i++) {
 }
 particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
 const particlesMat = new THREE.PointsMaterial({
-  color: '#3b82f6', size: 0.025, transparent: true, opacity: 0.2,
+  color: '#3b82f6', size: 0.015, transparent: true, opacity: 0.08,
   blending: THREE.AdditiveBlending, depthWrite: false,
 });
 const particles = new THREE.Points(particlesGeo, particlesMat);
