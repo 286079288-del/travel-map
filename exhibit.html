@@ -643,16 +643,16 @@ gctx.fillStyle = '#0e0e1a';
 gctx.fillRect(0, 0, 1024, 1024);
 
 // 粗网格 64px
-gctx.strokeStyle = 'rgba(180,175,165,0.08)';
-gctx.lineWidth = 0.8;
+gctx.strokeStyle = 'rgba(180,175,165,0.04)';
+gctx.lineWidth = 0.5;
 for (let n = 64; n < 1024; n += 64) {
   gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 1024); gctx.stroke();
   gctx.beginPath(); gctx.moveTo(0, n); gctx.lineTo(1024, n); gctx.stroke();
 }
 
 // 细网格 16px
-gctx.strokeStyle = 'rgba(180,175,165,0.04)';
-gctx.lineWidth = 0.4;
+gctx.strokeStyle = 'rgba(180,175,165,0.02)';
+gctx.lineWidth = 0.25;
 for (let n = 16; n < 1024; n += 16) {
   gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 1024); gctx.stroke();
   gctx.beginPath(); gctx.moveTo(0, n); gctx.lineTo(1024, n); gctx.stroke();
