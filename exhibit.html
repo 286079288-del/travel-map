@@ -659,7 +659,7 @@ gctx.fillRect(0, 0, 1024, 1024);
 
 // 网格 32px (黑灰清晰线)
 gctx.strokeStyle = 'rgba(40,40,50,0.35)';
-gctx.lineWidth = 1.2;
+gctx.lineWidth = 0.6;
 for (let n = 32; n < 1024; n += 32) {
   gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 1024); gctx.stroke();
   gctx.beginPath(); gctx.moveTo(0, n); gctx.lineTo(1024, n); gctx.stroke();
@@ -667,7 +667,7 @@ for (let n = 32; n < 1024; n += 32) {
 
 // 网格 8px
 gctx.strokeStyle = 'rgba(40,40,50,0.18)';
-gctx.lineWidth = 0.6;
+gctx.lineWidth = 0.3;
 for (let n = 8; n < 1024; n += 8) {
   gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 1024); gctx.stroke();
   gctx.beginPath(); gctx.moveTo(0, n); gctx.lineTo(1024, n); gctx.stroke();
@@ -676,8 +676,13 @@ for (let n = 8; n < 1024; n += 8) {
 const groundTex = new THREE.CanvasTexture(gndCanvas);
 groundTex.minFilter = THREE.NearestFilter;
 groundTex.magFilter = THREE.NearestFilter;
+// 圆形裁剪 Canvas
+gctx.globalCompositeOperation = 'destination-in';
+gctx.beginPath();
+gctx.arc(512, 512, 512, 0, Math.PI * 2);
+gctx.fill();
 
-const groundGeo = new THREE.PlaneGeometry(groundSize, groundSize);
+const groundGeo = new THREE.CircleGeometry(25, 64);
 const groundMat = new THREE.MeshBasicMaterial({
   map: groundTex,
   side: THREE.DoubleSide,
