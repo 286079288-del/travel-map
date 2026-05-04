@@ -156,8 +156,29 @@
     z-index: 5;
     box-shadow: 0 4px 24px rgba(59,130,246,0.08);
   }
+  .panel-toggle {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.8);
+    color: #6b7280;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+  }
+  .panel-toggle:hover { border-color: #3b82f6; color: #3b82f6; }
+  .side-panel.collapsed .panel-scroll { display: none; }
+  .side-panel.collapsed { width: auto; bottom: auto; }
 
   .panel-header {
+    position: relative;
     padding: 24px 24px 16px;
     border-bottom: 1px solid #e8ecf5;
     flex-shrink: 0;
@@ -437,6 +458,7 @@
   <!-- ============ 侧边面板 ============ -->
   <div class="side-panel" id="side-panel">
     <div class="panel-header">
+      <button class="panel-toggle" id="panel-toggle" title="展开/缩小">−</button>
       <h1>无人机</h1>
       <p class="subtitle" id="model-name">DRONE · 黑色版</p>
     </div>
@@ -565,6 +587,8 @@ const loadingEl = document.getElementById('loading');
 const loadingText = document.getElementById('loading-text');
 const modelNameEl = document.getElementById('model-name');
 const fsBtn = document.getElementById('fs-btn');
+const panelToggle = document.getElementById('panel-toggle');
+const sidePanel = document.getElementById('side-panel');
 
 // ============ Three.js 初始化 ============
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -639,7 +663,21 @@ const gctx = gndCanvas.getContext('2d');
 gctx.fillStyle = '#b4bcc8';
 gctx.fillRect(0, 0, 1024, 1024);
 
-// 极淡网格 (几乎不可见)
+// 网格 32px
+gctx.strokeStyle = 'rgba(100,100,110,0.06)';
+gctx.lineWidth = 0.3;
+for (let n = 32; n < 1024; n += 32) {
+  gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 1024); gctx.stroke();
+  gctx.beginPath(); gctx.moveTo(0, n); gctx.lineTo(1024, n); gctx.stroke();
+}
+
+// 网格 8px
+gctx.strokeStyle = 'rgba(100,100,110,0.03)';
+gctx.lineWidth = 0.15;
+for (let n = 8; n < 1024; n += 8) {
+  gctx.beginPath(); gctx.moveTo(n, 0); gctx.lineTo(n, 1024); gctx.stroke();
+  gctx.beginPath(); gctx.moveTo(0, n); gctx.lineTo(1024, n); gctx.stroke();
+}
 
 // 极缓渐变蒙版：只在最边缘消退
 const mask = gctx.createRadialGradient(512, 512, 0, 512, 512, 512);
@@ -691,6 +729,31 @@ const particlesMat = new THREE.PointsMaterial({
 const particles = new THREE.Points(particlesGeo, particlesMat);
 particles.name = 'particles';
 scene.add(particles);
+
+// ============ 云朵 ============
+const clouds = new THREE.Group();
+const cloudMat = new THREE.MeshStandardMaterial({
+  color: '#ffffff', roughness: 0.9, metalness: 0,
+  transparent: true, opacity: 0.35, depthWrite: false,
+});
+const cloudPositions = [
+  [-10, 8, -8], [8, 7, -6], [-6, 9, 5], [10, 8, 7], [0, 7, -9],
+  [-12, 8, 3], [12, 7, -4], [-8, 9, -7], [5, 8, 8], [-3, 7, 6],
+];
+cloudPositions.forEach(([cx, cy, cz]) => {
+  const cloudGroup = new THREE.Group();
+  for (let i = 0; i < 5; i++) {
+    const size = 0.3 + Math.random() * 0.8;
+    const geo = new THREE.SphereGeometry(size, 6, 5);
+    geo.scale(1, 0.4, 1);
+    const piece = new THREE.Mesh(geo, cloudMat);
+    piece.position.set((Math.random()-0.5)*2, (Math.random()-0.5)*0.6, (Math.random()-0.5)*1.5);
+    cloudGroup.add(piece);
+  }
+  cloudGroup.position.set(cx, cy, cz);
+  clouds.add(cloudGroup);
+});
+scene.add(clouds);
 
 // ============ 默认演示模型 (几何体) ============
 let currentModel = null;
@@ -920,6 +983,14 @@ document.querySelectorAll('.accordion-header').forEach(header => {
     const item = header.parentElement;
     item.classList.toggle('open');
   });
+});
+
+// ============ 面板折叠/展开 ============
+let panelOpen = true;
+panelToggle.addEventListener('click', () => {
+  panelOpen = !panelOpen;
+  sidePanel.classList.toggle('collapsed', !panelOpen);
+  panelToggle.textContent = panelOpen ? '−' : '+';
 });
 
 // ============ 幻灯片 ============
