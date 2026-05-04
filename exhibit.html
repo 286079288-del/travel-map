@@ -658,11 +658,11 @@ for (let n = 16; n < 1024; n += 16) {
   gctx.beginPath(); gctx.moveTo(0, n); gctx.lineTo(1024, n); gctx.stroke();
 }
 
-// 简单径向渐变蒙版：中心清晰，边缘渐隐
-const mask = gctx.createRadialGradient(512, 512, 150, 512, 512, 512);
+// 极缓渐变蒙版：只在最边缘消退
+const mask = gctx.createRadialGradient(512, 512, 0, 512, 512, 512);
 mask.addColorStop(0, 'rgba(255,255,255,1)');
-mask.addColorStop(0.6, 'rgba(255,255,255,0.65)');
-mask.addColorStop(0.85, 'rgba(255,255,255,0.2)');
+mask.addColorStop(0.82, 'rgba(255,255,255,0.85)');
+mask.addColorStop(0.94, 'rgba(255,255,255,0.3)');
 mask.addColorStop(1, 'rgba(255,255,255,0)');
 gctx.globalCompositeOperation = 'destination-in';
 gctx.fillStyle = mask;
