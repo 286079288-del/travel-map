@@ -1943,7 +1943,7 @@
 
   .td-seq { width: 35px; text-align: center; color: var(--text-muted); font-size: 12px; }
 
-  .td-content { color: var(--text-primary); font-weight: 500; cursor: pointer; min-width: 80px; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .td-content { color: var(--text-primary); font-weight: 500; cursor: pointer; min-width: 80px; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap !important; word-break: keep-all; }
 
   .td-content:hover { color: #00d4ff; }
 
@@ -3080,7 +3080,7 @@
     .schedule-table-wrap { padding: 6px; }
     .schedule-table { font-size: 11px; min-width: 500px; }
     .th-seq, .td-seq { width: 32px; min-width: 32px; }
-    .th-content, .td-content { min-width: 60px; max-width: 100px; }
+    .th-content, .td-content { min-width: 60px; max-width: 120px; }
     .th-person, .td-person { min-width: 50px; max-width: 60px; }
     .th-connector, .td-connector { min-width: 50px; max-width: 60px; }
     .th-time, .td-time { min-width: 70px; max-width: 90px; }
@@ -8274,7 +8274,7 @@ function renderProjectSchedule() {
 
       '<td class="td-seq" style="' + seqStyle + '">' + (idx + 1) + todayBadge + '</td>' +
 
-      '<td class="td-content" onclick="editScheduleItem(' + realIdx + ')" style="' + contentStyle + '">' + (item.content || '') + '</td>' +
+      '<td class="td-content" onclick="editScheduleItem(' + realIdx + ')" style="' + contentStyle + '">' + ((item.content || '').replace(/\n/g, ' ')) + '</td>' +
 
       '<td class="td-person">' + (item.person || '-') + '</td>' +
 
