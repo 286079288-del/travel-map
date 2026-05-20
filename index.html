@@ -7953,27 +7953,419 @@ function switchPanelTab(tab) {
 const SCHEDULE_KEY = 'travel_schedule_v1';
 
 const DEFAULT_SCHEDULE = [
-
-  { id: 1, content: '浙江台州', person: '陈志勇', date: '2026-04-17', endDate: '2026-04-18' },
-
-  { id: 2, content: '广州东莞', person: '骈一鑫', date: '2026-04-17', endDate: '2026-04-18' },
-
-  { id: 3, content: '广西玉林', person: '', date: '2026-04-18', endDate: '2026-04-19' },
-
-  { id: 4, content: '浙江丽水', person: '陈志勇', date: '2026-04-23', endDate: '2026-04-24' },
-
-  { id: 5, content: '山东淄博', person: '骈一鑫', date: '2026-04-23', endDate: '2026-04-24' },
-
-  { id: 6, content: '浙江金华', person: '', date: '2026-04-24', endDate: '2026-04-25' },
-
-  { id: 7, content: '吉林长春', person: '程广超', date: '2026-04-27', endDate: '2026-04-28' },
-
-  { id: 8, content: '广西茂名', person: '', date: '2026-04-29', endDate: '2026-04-30' },
-
-  { id: 9, content: '贵州', person: '', date: '2026-04-29', endDate: '2026-04-30' },
-
-  { id: 10, content: '合肥', person: '', date: '2026-04-29', endDate: '2026-04-30' },
-
+  {
+    "id": 1,
+    "content": "澳门",
+    "person": "",
+    "date": "2026-04-09",
+    "endDate": "2026-04-09"
+  },
+  {
+    "id": 2,
+    "content": "宣传片方案",
+    "person": "",
+    "date": "2026-04-14",
+    "endDate": "2026-04-14"
+  },
+  {
+    "id": 3,
+    "content": "伊利直播",
+    "person": "李彦赛",
+    "date": "2026-04-17",
+    "endDate": "2026-04-17"
+  },
+  {
+    "id": 4,
+    "content": "浙江台州",
+    "person": "陈智勇",
+    "date": "2026-04-17",
+    "endDate": "2026-04-17"
+  },
+  {
+    "id": 5,
+    "content": "广州东莞",
+    "person": "骈一鑫",
+    "date": "2026-04-17",
+    "endDate": "2026-04-17"
+  },
+  {
+    "id": 6,
+    "content": "浙江台州",
+    "person": "陈智勇",
+    "date": "2026-04-18",
+    "endDate": "2026-04-18"
+  },
+  {
+    "id": 7,
+    "content": "广州东莞",
+    "person": "骈一鑫",
+    "date": "2026-04-18",
+    "endDate": "2026-04-18"
+  },
+  {
+    "id": 8,
+    "content": "广西玉林",
+    "person": "程广超",
+    "date": "2026-04-18",
+    "endDate": "2026-04-18"
+  },
+  {
+    "id": 9,
+    "content": "广西玉林",
+    "person": "程广超",
+    "date": "2026-04-19",
+    "endDate": "2026-04-19"
+  },
+  {
+    "id": 10,
+    "content": "浙江丽水",
+    "person": "王志斌",
+    "date": "2026-04-23",
+    "endDate": "2026-04-23"
+  },
+  {
+    "id": 11,
+    "content": "山东淄博",
+    "person": "程广超",
+    "date": "2026-04-23",
+    "endDate": "2026-04-23"
+  },
+  {
+    "id": 12,
+    "content": "浙江丽水",
+    "person": "王志斌",
+    "date": "2026-04-24",
+    "endDate": "2026-04-24"
+  },
+  {
+    "id": 13,
+    "content": "山东淄博",
+    "person": "程广超",
+    "date": "2026-04-24",
+    "endDate": "2026-04-24"
+  },
+  {
+    "id": 14,
+    "content": "浙江金华",
+    "person": "陈智勇",
+    "date": "2026-04-24",
+    "endDate": "2026-04-24"
+  },
+  {
+    "id": 15,
+    "content": "内蒙周播",
+    "person": "李彦赛",
+    "date": "2026-04-24",
+    "endDate": "2026-04-24"
+  },
+  {
+    "id": 16,
+    "content": "浙江金华",
+    "person": "陈智勇",
+    "date": "2026-04-25",
+    "endDate": "2026-04-25"
+  },
+  {
+    "id": 17,
+    "content": "北京策划工作",
+    "person": "程广超",
+    "date": "2026-04-26",
+    "endDate": "2026-04-26"
+  },
+  {
+    "id": 18,
+    "content": "邹城",
+    "person": "程广超",
+    "date": "2026-04-27",
+    "endDate": "2026-04-27"
+  },
+  {
+    "id": 19,
+    "content": "甘肃定西",
+    "person": "李彦赛",
+    "date": "2026-04-27",
+    "endDate": "2026-04-27"
+  },
+  {
+    "id": 20,
+    "content": "回京",
+    "person": "程广超",
+    "date": "2026-04-28",
+    "endDate": "2026-04-28"
+  },
+  {
+    "id": 21,
+    "content": "甘肃定西",
+    "person": "李彦赛",
+    "date": "2026-04-28",
+    "endDate": "2026-04-28"
+  },
+  {
+    "id": 22,
+    "content": "贵州贵阳",
+    "person": "程广超",
+    "date": "2026-04-29",
+    "endDate": "2026-04-29"
+  },
+  {
+    "id": 23,
+    "content": "贵州贵阳",
+    "person": "程广超",
+    "date": "2026-04-30",
+    "endDate": "2026-04-30"
+  },
+  {
+    "id": 24,
+    "content": "SELL公司双机位拍摄",
+    "person": "张恩林",
+    "date": "2026-04-30",
+    "endDate": "2026-04-30"
+  },
+  {
+    "id": 25,
+    "content": "短视频需要查看",
+    "person": "程广超",
+    "date": "2026-05-03",
+    "endDate": "2026-05-03"
+  },
+  {
+    "id": 26,
+    "content": "长春",
+    "person": "程广超",
+    "date": "2026-05-05",
+    "endDate": "2026-05-05"
+  },
+  {
+    "id": 27,
+    "content": "长春",
+    "person": "程广超",
+    "date": "2026-05-06",
+    "endDate": "2026-05-06"
+  },
+  {
+    "id": 28,
+    "content": "赣州",
+    "person": "陈智勇",
+    "date": "2026-05-07",
+    "endDate": "2026-05-07"
+  },
+  {
+    "id": 29,
+    "content": "赣州",
+    "person": "陈智勇",
+    "date": "2026-05-08",
+    "endDate": "2026-05-08"
+  },
+  {
+    "id": 30,
+    "content": "内蒙古",
+    "person": "李彦赛",
+    "date": "2026-05-08",
+    "endDate": "2026-05-08"
+  },
+  {
+    "id": 31,
+    "content": "石家庄",
+    "person": "骈一鑫",
+    "date": "2026-05-09",
+    "endDate": "2026-05-09"
+  },
+  {
+    "id": 32,
+    "content": "石家庄",
+    "person": "骈一鑫",
+    "date": "2026-05-10",
+    "endDate": "2026-05-10"
+  },
+  {
+    "id": 33,
+    "content": "上海项目",
+    "person": "程广超",
+    "date": "2026-05-11",
+    "endDate": "2026-05-11"
+  },
+  {
+    "id": 34,
+    "content": "上海项目",
+    "person": "程广超",
+    "date": "2026-05-13",
+    "endDate": "2026-05-13"
+  },
+  {
+    "id": 35,
+    "content": "明星场",
+    "person": "程广超",
+    "date": "2026-05-14",
+    "endDate": "2026-05-14"
+  },
+  {
+    "id": 36,
+    "content": "昆明",
+    "person": "陈智勇",
+    "date": "2026-05-14",
+    "endDate": "2026-05-14"
+  },
+  {
+    "id": 37,
+    "content": "伊利周播",
+    "person": "李彦赛",
+    "date": "2026-05-15",
+    "endDate": "2026-05-15"
+  },
+  {
+    "id": 38,
+    "content": "明星场",
+    "person": "程广超",
+    "date": "2026-05-15",
+    "endDate": "2026-05-15"
+  },
+  {
+    "id": 39,
+    "content": "昆明",
+    "person": "陈智勇",
+    "date": "2026-05-15",
+    "endDate": "2026-05-15"
+  },
+  {
+    "id": 40,
+    "content": "明星场",
+    "person": "程广超",
+    "date": "2026-05-16",
+    "endDate": "2026-05-16"
+  },
+  {
+    "id": 41,
+    "content": "晋城",
+    "person": "王志斌",
+    "date": "2026-05-16",
+    "endDate": "2026-05-16"
+  },
+  {
+    "id": 42,
+    "content": "晋城",
+    "person": "王志斌",
+    "date": "2026-05-17",
+    "endDate": "2026-05-17"
+  },
+  {
+    "id": 43,
+    "content": "山东 烟台",
+    "person": "张恩林",
+    "date": "2026-05-21",
+    "endDate": "2026-05-21"
+  },
+  {
+    "id": 44,
+    "content": "湖南 郴州",
+    "person": "程广超",
+    "date": "2026-05-21",
+    "endDate": "2026-05-21"
+  },
+  {
+    "id": 45,
+    "content": "伊利周播",
+    "person": "李彦赛",
+    "date": "2026-05-22",
+    "endDate": "2026-05-22"
+  },
+  {
+    "id": 46,
+    "content": "山东 烟台",
+    "person": "张恩林",
+    "date": "2026-05-22",
+    "endDate": "2026-05-22"
+  },
+  {
+    "id": 47,
+    "content": "湖南 郴州",
+    "person": "程广超",
+    "date": "2026-05-22",
+    "endDate": "2026-05-22"
+  },
+  {
+    "id": 48,
+    "content": "河北秦皇岛",
+    "person": "骈一鑫",
+    "date": "2026-05-22",
+    "endDate": "2026-05-22"
+  },
+  {
+    "id": 49,
+    "content": "河北秦皇岛",
+    "person": "骈一鑫",
+    "date": "2026-05-23",
+    "endDate": "2026-05-23"
+  },
+  {
+    "id": 50,
+    "content": "广州 茂名",
+    "person": "程广超",
+    "date": "2026-05-24",
+    "endDate": "2026-05-24"
+  },
+  {
+    "id": 51,
+    "content": "广州 茂名",
+    "person": "程广超",
+    "date": "2026-05-25",
+    "endDate": "2026-05-25"
+  },
+  {
+    "id": 52,
+    "content": "江苏 南通",
+    "person": "陈智勇",
+    "date": "2026-05-26",
+    "endDate": "2026-05-26"
+  },
+  {
+    "id": 53,
+    "content": "江苏 南通",
+    "person": "陈智勇",
+    "date": "2026-05-27",
+    "endDate": "2026-05-27"
+  },
+  {
+    "id": 54,
+    "content": "广东 清远",
+    "person": "陈智勇",
+    "date": "2026-05-28",
+    "endDate": "2026-05-28"
+  },
+  {
+    "id": 55,
+    "content": "浙江 杭州",
+    "person": "程广超",
+    "date": "2026-05-28",
+    "endDate": "2026-05-28"
+  },
+  {
+    "id": 56,
+    "content": "伊利周播",
+    "person": "李彦赛",
+    "date": "2026-05-29",
+    "endDate": "2026-05-29"
+  },
+  {
+    "id": 57,
+    "content": "昆明",
+    "person": "程广超",
+    "date": "2026-05-29",
+    "endDate": "2026-05-29"
+  },
+  {
+    "id": 58,
+    "content": "广东 清远",
+    "person": "陈智勇",
+    "date": "2026-05-29",
+    "endDate": "2026-05-29"
+  },
+  {
+    "id": 59,
+    "content": "昆明",
+    "person": "程广超",
+    "date": "2026-05-30",
+    "endDate": "2026-05-30"
+  }
 ];
 
 let scheduleItems = [];
@@ -7989,13 +8381,13 @@ function loadScheduleItems() {
   } catch(e) { scheduleItems = []; }
 
   // 只在首次且没有任何数据时初始化默认值
-  if (!scheduleItems.length && !localStorage.getItem('schedule_inited_v2')) {
+  if (!scheduleItems.length && !localStorage.getItem('schedule_inited_v3')) {
 
     scheduleItems = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));
 
     saveScheduleItems();
 
-    localStorage.setItem('schedule_inited_v2', '1');
+    localStorage.setItem('schedule_inited_v3', '1');
 
   }
 
@@ -9842,7 +10234,7 @@ async function cloudLoadSchedule() {
       if (items && items.length > 0) {
         scheduleItems = items;
         localStorage.setItem(SCHEDULE_KEY, JSON.stringify(scheduleItems));
-        localStorage.setItem('schedule_inited_v2', 'true');
+        localStorage.setItem('schedule_inited_v3', 'true');
         renderProjectSchedule();
         console.log('☁️ Schedule loaded from Supabase:', items.length, 'items');
         showToast('☁️ 已从云端同步项目安排', 'success');
