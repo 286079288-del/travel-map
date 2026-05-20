@@ -1,4 +1,4 @@
-<!-- v6-completed-2026-05-03 -->
+<!-- fix:completed-type 2026-05-03 -->
 <!DOCTYPE html>
 
 <html lang="zh-CN">
@@ -2051,10 +2051,6 @@
 
   .list-section-title.upcoming-title { color: rgba(255,215,0,0.5); }
 
-  .list-section-title.completed-title { color: rgba(46,213,115,0.7); }
-
-  .list-section-title.completed-title .section-count { background: rgba(46,213,115,0.12); color: rgba(46,213,115,0.85); }
-
   .list-section-title.project-title { color: rgba(255,71,87,0.6); }
 
   .list-section-title .section-count {
@@ -2923,12 +2919,10 @@
     display: flex; flex-direction: column; align-items: center; justify-content: center;
 
     transition: opacity 0.8s ease, visibility 0.8s ease;
-    animation: forceHideLoading 0.5s 6s forwards;
 
   }
-  @keyframes forceHideLoading { to { opacity: 0; visibility: hidden; } }
 
-  .loading-overlay.hidden { opacity: 0; visibility: hidden; animation: none; }
+  .loading-overlay.hidden { opacity: 0; visibility: hidden; }
 
   .loading-spinner { width: 50px; height: 50px; border: 3px solid transparent; border-top-color: #00d4ff; border-right-color: #7b2ff7; border-radius: 50%; animation: spin 0.8s linear infinite; }
 
@@ -3270,7 +3264,7 @@
 
     <button class="toolbar-btn" title="导入数据" style="background:transparent;border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:14px;padding:4px 10px;" onclick="document.getElementById('importFileInput').click()">📥</button>
 
-    <span id="syncIndicator" style="font-size:12px;color:#00ff88;margin:0 6px;cursor:pointer;white-space:nowrap;" onclick="cloudLoadFootprints()" title="从 GitHub 下载数据">☁️ 下载</span>
+    <span id="syncIndicator" style="font-size:12px;color:#00ff88;margin:0 6px;cursor:pointer;white-space:nowrap;" onclick="cloudLoadFootprints()" title="点击从云端下载">☁️ 下载</span>
 
     <button class="toolbar-btn" id="uploadBtn" title="上传数据到云端（需要密码）" style="background:linear-gradient(135deg,#00d4ff22,#7b2ff722);border-color:rgba(0,212,255,0.3);color:#00d4ff;font-size:13px;padding:5px 14px;" onclick="manualUpload()">⬆️ 上传</button>
 
@@ -3403,7 +3397,7 @@
 
     <button class="top-tab active" id="tabSchedule" onclick="switchPanelTab('schedule')">📋 项目安排</button>
 
-    <button class="top-tab" id="tabFootprints" onclick="switchPanelTab('footprints')">📍 行程标记</button>
+    <button class="top-tab" id="tabFootprints" onclick="switchPanelTab('footprints')">📍 我的足迹</button>
 
   </div>
 
@@ -3631,7 +3625,7 @@
 
   <div class="modal">
 
-    <div class="modal-title" id="editFpModalTitle">✎ 编辑行程标记</div>
+    <div class="modal-title" id="editFpModalTitle">✎ 编辑足迹</div>
 
     <input type="hidden" id="editFpId">
 
@@ -3734,7 +3728,7 @@
       <p style="color:var(--text-secondary);margin-bottom:16px;">数据自动同步到云端，无需配置</p>
       <div id="cloudSyncStatus" style="padding:12px;background:rgba(255,255,255,0.05);border-radius:8px;margin-bottom:16px;font-size:13px;">
         <div>📡 最后同步：<span id="lastSyncTimeDisplay">从未</span></div>
-        <div>📊 行程数量：<span id="cloudFpCount">0</span></div>
+        <div>📊 足迹数量：<span id="cloudFpCount">0</span></div>
       </div>
       <div class="form-actions" style="flex-direction:column;gap:8px;">
         <button class="form-btn" style="width:100%;background:linear-gradient(135deg,#00ff88,#00d4aa);color:var(--text-primary);" onclick="cloudSaveFootprints(); showToast('⏳ 正在上传...','info');">⬆️ 立即上传到云端</button>
@@ -4496,12 +4490,10 @@ let currentMonth = new Date();
 let selectedDate = new Date();
 
 let itinerary = {};
-// Auto-load itinerary from DEFAULT_ITINERARY_RAW
 if (Array.isArray(itinerary)) { itinerary = {}; localStorage.removeItem(ITINERARY_KEY); }
 if (typeof DEFAULT_ITINERARY_RAW !== 'undefined' && Object.keys(DEFAULT_ITINERARY_RAW).length > 0 && Object.keys(itinerary).length === 0) {
     itinerary = DEFAULT_ITINERARY_RAW;
     localStorage.setItem(ITINERARY_KEY, JSON.stringify(itinerary));
-    console.log('Itinerary loaded from defaults:', Object.keys(itinerary).length, 'days');
 }
 
 try { itinerary = JSON.parse(localStorage.getItem(ITINERARY_KEY) || '{}'); } catch(e) { console.warn('itinerary parse error'); }
@@ -5845,7 +5837,7 @@ function openEditFootprintModal(fpId) {
 
   // 更新弹窗标题
 
-  const typeTitles = { visited: '✎ 编辑行程标记', upcoming: '✎ 编辑CGC项目', project: '✎ 编辑近期项目' };
+  const typeTitles = { visited: '✎ 编辑足迹', upcoming: '✎ 编辑CGC项目', project: '✎ 编辑近期项目' };
 
   document.getElementById('editFpModalTitle').textContent = typeTitles[fp.type];
 
@@ -6591,7 +6583,7 @@ function loadUserFootprints() {
     USER_FOOTPRINTS_RAW.forEach(fp => {
       addFootprint(fp.name, fp.address, [fp.lng, fp.lat], fp.type || 'visited', fp.time, fp.unlocked || 0);
     });
-    showToast(`✅ 已加载 ${USER_FOOTPRINTS_RAW.length} 个行程`, 'success');
+    showToast(`✅ 已加载 ${USER_FOOTPRINTS_RAW.length} 个足迹`, 'success');
   }
   localStorage.setItem('user_footprints_loaded', 'true');
 }
@@ -7088,17 +7080,18 @@ function addMarker(fp) {
 
 
 
-const VISITED_PASSWORD = '5215181';
-let visitedUnlocked = false;
+// 完成项目密码验证
+const COMPLETED_PASSWORD = '5215181';
+let completedUnlocked = false;
 
-function unlockVisited() {
-  if (visitedUnlocked) return true;
+function unlockCompleted() {
+  if (completedUnlocked) return true;
   const pwd = prompt('🔒 完成项目需要密码才能显示\n请输入密码：');
-  if (pwd === VISITED_PASSWORD) {
-    visitedUnlocked = true;
-    window.hiddenTypes.delete('visited');
+  if (pwd === COMPLETED_PASSWORD) {
+    completedUnlocked = true;
+    window.hiddenTypes.delete('completed');
     renderAllMarkers();
-    showToast('📍 已去过已解锁', 'visited');
+    showToast('✅ 完成项目已解锁', 'completed');
     return true;
   } else if (pwd !== null) {
     alert('❌ 密码错误！');
@@ -7113,8 +7106,11 @@ function renderAllMarkers() {
   markers = {};
 
   footprints.forEach(fp => {
-    if (fp.type === 'visited' && !visitedUnlocked) return;
-    addMarker(fp);
+  
+  if (fp.type === 'completed' && !completedUnlocked) return;
+  
+  addMarker(fp);
+  
   });
 
 }
@@ -7140,9 +7136,7 @@ function updateMarkerPopup(fpId) {
   const otherTypes = ['visited', 'upcoming', 'project', 'completed'].filter(t => t !== fp.type);
 
   const convertButtons = otherTypes.map(t => {
-
     const icons = { visited: '✓', upcoming: '●', project: '●', completed: '✅' };
-
     const labels = { visited: '去过', upcoming: 'CGC项目', project: '近期项目', completed: '完成项目' };
 
     return `<button class="popup-btn" onclick="convertFootprint('${fp.id}', '${t}'); map.closePopup();">${icons[t]} 改为${labels[t]}</button>`;
@@ -8211,13 +8205,13 @@ function renderFootprints() {
 
   const projects = footprints.filter(f => f.type === 'project' && !isDraft(f));
 
-  const completed = footprints.filter(f => f.type === 'completed' && !isDraft(f));
+  const wishlist = footprints.filter(f => f.type === 'wishlist' && !isDraft(f));
 
 
 
-  if (visited.length === 0 && upcoming.length === 0 && projects.length === 0 && completed.length === 0) {
+  if (visited.length === 0 && upcoming.length === 0 && projects.length === 0 && wishlist.length === 0) {
 
-    list.innerHTML = '<div style="padding:30px;text-align:center;color:rgba(255,255,255,0.2);font-size:13px;">还没有行程标记<br>搜索地点或点击地图开始记录 ✨</div>';
+    list.innerHTML = '<div style="padding:30px;text-align:center;color:rgba(255,255,255,0.2);font-size:13px;">还没有足迹<br>搜索地点或点击地图开始记录 ✨</div>';
 
     return;
 
@@ -8227,7 +8221,7 @@ function renderFootprints() {
 
   if (!window.sectionCollapsed) {
 
-    window.sectionCollapsed = { project: true, upcoming: true, completed: true, visited: true };
+    window.sectionCollapsed = { project: true, upcoming: true, visited: true, wishlist: true };
 
   }
 
@@ -8249,10 +8243,9 @@ function renderFootprints() {
 
 
 
-  // 完成项目始终显示
-  if (completed.length >= 0) {
+  if (wishlist.length > 0) {
 
-    renderSection(list, 'completed', '✅ 完成项目', completed, 'completed-title');
+    renderSection(list, 'wishlist', '🌟 想去', wishlist, 'wishlist-title');
 
   }
 
@@ -8374,13 +8367,11 @@ function createFootprintCard(fp, num) {
 
 
 
-  const otherTypes = ['visited', 'upcoming', 'project'].filter(t => t !== fp.type);
+  const otherTypes = ['visited', 'upcoming', 'project', 'completed'].filter(t => t !== fp.type);
 
   const convertButtons = otherTypes.map(t => {
-
-    const icons = { visited: '✓', upcoming: '●', project: '●' };
-
-    const labels = { visited: '去过', upcoming: 'CGC项目', project: '近期项目' };
+    const icons = { visited: '✓', upcoming: '●', project: '●', completed: '✅' };
+    const labels = { visited: '去过', upcoming: 'CGC项目', project: '近期项目', completed: '完成项目' };
 
     return `<button class="fp-action-btn convert-btn" title="改为${labels[t]}" data-target="${t}">${icons[t]}</button>`;
 
@@ -8500,13 +8491,15 @@ function updateStats() {
 const VISIBILITY_KEY = 'travel_type_visibility';
 
 window.hiddenTypes = new Set(JSON.parse(localStorage.getItem(VISIBILITY_KEY) || '[]'));
-if (!window.hiddenTypes.has('visited')) window.hiddenTypes.add('visited');
+// 完成项目默认隐藏，需要密码才能显示
+if (!window.hiddenTypes.has('completed')) window.hiddenTypes.add('completed');
 
 
 
 function toggleTypeVisibility(type) {
-  if (type === 'visited' && window.hiddenTypes.has('visited') && !visitedUnlocked) {
-    unlockVisited();
+  // 完成项目需要密码
+  if (type === 'completed' && window.hiddenTypes.has('completed') && !completedUnlocked) {
+    unlockCompleted();
     return;
   }
   if (window.hiddenTypes.has(type)) {
@@ -8841,7 +8834,7 @@ async function uploadToGist() {
 
     const body = JSON.stringify({
 
-      description: 'Travel Map Data - 旅行行程数据备份',
+      description: 'Travel Map Data - 旅行足迹数据备份',
 
       public: false,
 
@@ -9058,7 +9051,7 @@ async function downloadFromGist() {
 
     const itCount = data.itinerary ? Object.keys(data.itinerary).length : 0;
 
-    showToast('✅ 下载成功！' + fpCount + ' 个行程, ' + itCount + ' 条行程', 'success');
+    showToast('✅ 下载成功！' + fpCount + ' 个足迹, ' + itCount + ' 条行程', 'success');
 
   } catch (err) {
 
@@ -9126,7 +9119,7 @@ async function silentUploadToGist() {
 
       body: JSON.stringify({
 
-        description: 'Travel Map Data - 旅行行程数据备份',
+        description: 'Travel Map Data - 旅行足迹数据备份',
 
         public: false,
 
@@ -9312,148 +9305,285 @@ function updateAutoSyncUI() {
 
 
 
-// ===== GitHub 文件同步（替代 Supabase）=====
-// 数据存储在 GitHub 仓库的 travel-data.json 文件中
-// 读取：public raw URL，国内 CDN 可访问
-// 写入：需要 GitHub Token（存在 localStorage）
+// ===== Supabase Cloud Sync =====
+const SUPABASE_URL = 'https://jgsyxmuimxnvsjqutrrx.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_DRQQgMsywzjGa3KU4wNP6Q_pXZyY03G';
 
-const GITHUB_DATA_FILE = 'travel-data.json';
-const GITHUB_RAW_URL = 'https://raw.githubusercontent.com/286079288-del/travel-map/main/' + GITHUB_DATA_FILE;
-const GITHUB_API_URL = 'https://api.github.com/repos/286079288-del/travel-map/contents/' + GITHUB_DATA_FILE;
-
-// 获取 token（从 localStorage 或提示输入）
-function getGithubToken() {
-  let token = localStorage.getItem('github_sync_token');
-  if (token) return token;
-  token = prompt('🔑 首次使用需要 GitHub Token\n\n请到 https://github.com/settings/tokens 生成一个 token\n（勾选 repo 权限）\n\n请输入 Token：');
-  if (token) {
-    localStorage.setItem('github_sync_token', token);
-    showToast('✅ Token 已保存', 'success');
-  }
-  return token;
+function supaHeaders() {
+  return {
+    'apikey': SUPABASE_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_KEY,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=representation'
+  };
 }
 
-// 从 GitHub 下载数据（无需认证）
+function supaRequest(method, path, data) {
+  return fetch(SUPABASE_URL + '/rest/v1/' + path, {
+    method: method,
+    headers: supaHeaders(),
+    body: data ? JSON.stringify(data) : undefined
+  }).then(r => r.json());
+}
+
+// ===== 足迹云同步（带密码保护） =====
+const UPLOAD_PASSWORD = 'cgc5215181'; // 上传密码，可自定义
+let _cloudSaveTimer = null;
+let _uploadAuthorized = false; // 本次会话是否已验证过密码
+
+// 验证上传密码
+function askUploadPassword() {
+  return new Promise((resolve) => {
+    const pwd = prompt('🔒 上传数据到云端\n请输入上传密码：');
+    if (pwd === UPLOAD_PASSWORD) {
+      _uploadAuthorized = true;
+      resolve(true);
+    } else if (pwd !== null) {
+      alert('❌ 密码错误！');
+      resolve(false);
+    } else {
+      resolve(false);
+    }
+  });
+}
+
+async function cloudSaveFootprints() {
+  // 防抖：3秒内多次save只触发一次上传
+  if (_cloudSaveTimer) clearTimeout(_cloudSaveTimer);
+  _cloudSaveTimer = setTimeout(async () => {
+    try {
+      // 检查是否已授权（本次会话）
+      if (!_uploadAuthorized) {
+        const ok = await askUploadPassword();
+        if (!ok) {
+          updateSyncIndicator('🔒 未授权');
+          console.log('☁️ Upload cancelled: not authorized');
+          return;
+        }
+      }
+      
+      // 查询是否有记录
+      const res = await supaRequest('GET', 'travel_footprints?limit=1&order=updated_at.desc', null);
+      if (res && res.length > 0) {
+        // 更新已有记录
+        await fetch(SUPABASE_URL + '/rest/v1/travel_footprints?id=eq.' + res[0].id, {
+          method: 'PATCH',
+          headers: supaHeaders(),
+          body: JSON.stringify({
+            footprints: JSON.stringify(footprints),
+            itinerary: JSON.stringify(itinerary),
+            schedule: JSON.stringify(scheduleItems),
+            updated_at: new Date().toISOString()
+          })
+        });
+      } else {
+        // 创建新记录
+        await supaRequest('POST', 'travel_footprints', {
+          footprints: JSON.stringify(footprints),
+          itinerary: JSON.stringify(itinerary),
+          schedule: JSON.stringify(scheduleItems),
+          updated_at: new Date().toISOString()
+        });
+      }
+      localStorage.setItem('last_cloud_sync', new Date().toISOString());
+      updateSyncIndicator('✅ 已同步');
+      console.log('☁️ Footprints synced to Supabase');
+    } catch(e) {
+      console.warn('Cloud save failed:', e);
+      updateSyncIndicator('⚠️ 同步失败');
+    }
+  }, 3000);
+}
+
+// 从云端下载足迹数据
 async function cloudLoadFootprints() {
   try {
-    updateSyncIndicator('⏳ 下载中...');
-    const resp = await fetch(GITHUB_RAW_URL + '?t=' + Date.now());
-    if (!resp.ok) {
-      if (resp.status === 404) {
-        updateSyncIndicator('📭 云端无数据');
-        return;
+    console.log('☁️ 开始从云端下载数据...');
+    const res = await supaRequest('GET', 'travel_footprints?limit=1&order=updated_at.desc', null);
+    if (res && res.length > 0) {
+      const cloudData = res[0];
+      const cloudTime = new Date(cloudData.updated_at);
+      const localTime = new Date(localStorage.getItem('last_cloud_sync') || '2000-01-01');
+      console.log('☁️ 云端时间:', cloudTime.toISOString(), '| 本地时间:', localTime.toISOString());
+
+      // 只在云端数据更新时才覆盖（或首次使用时本地无数据）
+      if (cloudTime > localTime || !localStorage.getItem(STORAGE_KEY) || localStorage.getItem(STORAGE_KEY) === '[]' || JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]').length < 10) {
+        const cloudFootprints = JSON.parse(cloudData.footprints);
+        const cloudItinerary = JSON.parse(cloudData.itinerary || '{}');
+        const cloudSchedule = cloudData.schedule ? JSON.parse(cloudData.schedule) : null;
+
+        localStorage.removeItem('user_footprints_loaded');
+        footprints = cloudFootprints;
+        itinerary = cloudItinerary;
+        if (cloudSchedule && cloudSchedule.length > 0) {
+          scheduleItems = cloudSchedule;
+          localStorage.setItem(SCHEDULE_KEY, JSON.stringify(scheduleItems));
+        }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(footprints));
+        localStorage.setItem(ITINERARY_KEY, JSON.stringify(itinerary));
+        localStorage.setItem('last_cloud_sync', cloudData.updated_at);
+
+        // 也同步云端日历事件
+        if (cloudData.calendar_events) {
+          try {
+            const calEvents = JSON.parse(cloudData.calendar_events);
+            if (calEvents) {
+              localStorage.setItem('travel_calendar_v2', JSON.stringify(calEvents));
+              // 覆盖内存中的日历事件
+              Object.keys(CALENDAR_EVENTS).forEach(k => delete CALENDAR_EVENTS[k]);
+              Object.assign(CALENDAR_EVENTS, calEvents);
+            }
+          } catch(e2) { console.warn('Calendar events parse error:', e2); }
+        }
+
+        // 完整重绘所有UI
+        renderAllMarkers();
+        renderFootprints();
+        updateStats();
+        applyHiddenTypes();
+        renderCalendar();       // 日历必须最后渲染（依赖最新的 itinerary + CALENDAR_EVENTS）
+        renderDayDetail();
+        updateItineraryStats();
+        drawRouteLine();
+        renderDestinations();
+        loadScheduleItems();
+        renderProjectSchedule();
+
+        showToast('☁️ 已从云端同步 (' + cloudFootprints.length + '个足迹)', 'success');
+      } else {
+        updateSyncIndicator('✅ 已是最新');
+        console.log('☁️ Local data is newer, skip download');
       }
-      throw new Error('HTTP ' + resp.status);
+    } else {
+      updateSyncIndicator('☁️ 空白');
+      // 云端无数据，需要手动上传
     }
-    const data = await resp.json();
-    let loaded = false;
-    if (data.footprints && Array.isArray(data.footprints) && data.footprints.length > 0) {
-      // 合并：云端的覆盖同ID，保留本地独有的
-      const cloudIds = new Set(data.footprints.map(f => f.id));
-      footprints = [...footprints.filter(f => !cloudIds.has(f.id)), ...data.footprints];
-      save();
-      loaded = true;
-    }
-    if (data.itinerary && Array.isArray(data.itinerary)) itinerary = data.itinerary;
-    if (data.schedule && Array.isArray(data.schedule)) scheduleItems = data.schedule;
-    if (data.calendar_events) {
-      Object.keys(CALENDAR_EVENTS).forEach(k => delete CALENDAR_EVENTS[k]);
-      Object.assign(CALENDAR_EVENTS, data.calendar_events);
-      localStorage.setItem('travel_calendar_v2', JSON.stringify(data.calendar_events));
-    }
-    renderAllMarkers();
-    renderFootprints();
-    updateStats();
-    syncScheduleToCalendar();
-    const count = loaded ? data.footprints.length : 0;
-    updateSyncIndicator('✅ 已同步');
-    showToast('⬇️ 已从云端同步 (' + count + '个行程)', 'success');
   } catch(e) {
     console.warn('Cloud load failed:', e);
-    updateSyncIndicator('⚠️ 下载失败');
+    updateSyncIndicator('⚠️ 离线');
   }
 }
 
-// 上传数据到 GitHub
-async function cloudSaveFootprints() {
-  const token = getGithubToken();
-  if (!token) {
-    showToast('❌ 需要 GitHub Token', 'error');
+// 同步状态指示器
+function updateSyncIndicator(text) {
+  const el = document.getElementById('syncIndicator');
+  if (el) el.textContent = text;
+}
+
+// ===== 手动上传（需密码）=====
+async function manualUpload() {
+  const pwd = prompt('🔒 上传数据到云端\n请输入上传密码：');
+  if (pwd !== UPLOAD_PASSWORD) {
+    if (pwd !== null) alert('❌ 密码错误！');
     return;
   }
+  
   try {
     updateSyncIndicator('⏳ 上传中...');
-    const data = {
-      footprints: footprints,
-      itinerary: itinerary,
-      schedule: scheduleItems,
-      calendar_events: CALENDAR_EVENTS,
-      updated_at: new Date().toISOString()
-    };
-    const content = JSON.stringify(data, null, 2);
-    const contentB64 = btoa(unescape(encodeURIComponent(content)));
-
-    // 先获取文件 SHA（如果存在）
-    let sha = null;
-    try {
-      const getResp = await fetch(GITHUB_API_URL, {
-        headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
+    
+    // 查询是否有记录
+    const res = await supaRequest('GET', 'travel_footprints?limit=1&order=updated_at.desc', null);
+    if (res && res.length > 0) {
+      await fetch(SUPABASE_URL + '/rest/v1/travel_footprints?id=eq.' + res[0].id, {
+        method: 'PATCH',
+        headers: supaHeaders(),
+        body: JSON.stringify({
+          footprints: JSON.stringify(footprints),
+          itinerary: JSON.stringify(itinerary),
+          schedule: JSON.stringify(scheduleItems),
+          updated_at: new Date().toISOString()
+        })
       });
-      if (getResp.ok) {
-        const getData = await getResp.json();
-        sha = getData.sha;
-      }
-    } catch(e) {}
-
-    const body = { message: 'sync: update travel data', content: contentB64 };
-    if (sha) body.sha = sha;
-
-    const resp = await fetch(GITHUB_API_URL, {
-      method: 'PUT',
-      headers: {
-        'Authorization': 'token ' + token,
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    });
-
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({}));
-      if (resp.status === 401) {
-        localStorage.removeItem('github_sync_token');
-        throw new Error('Token 无效，请重新输入');
-      }
-      throw new Error(err.message || 'HTTP ' + resp.status);
+    } else {
+      await supaRequest('POST', 'travel_footprints', {
+        footprints: JSON.stringify(footprints),
+        itinerary: JSON.stringify(itinerary),
+        schedule: JSON.stringify(scheduleItems),
+        updated_at: new Date().toISOString()
+      });
     }
-
+    
     localStorage.setItem('last_cloud_sync', new Date().toISOString());
-    updateSyncIndicator('✅ 已同步');
-    showToast('⬆️ 数据已上传到云端', 'success');
+    updateSyncIndicator('✅ 已上传');
+    showToast('✅ 数据已上传到云端 (' + footprints.length + '个足迹)', 'success');
   } catch(e) {
-    console.warn('Cloud save failed:', e);
-    updateSyncIndicator('⚠️ 上传失败');
-    showToast('❌ ' + e.message, 'error');
+    console.warn('Upload failed:', e);
+    updateSyncIndicator('⚠️ 失败');
+    alert('❌ 上传失败：' + e.message);
   }
 }
 
-// Schedule 同步到 GitHub
+// Save schedule to cloud
 async function cloudSaveSchedule(items) {
-  // 复用 cloudSaveFootprints
-  await cloudSaveFootprints();
+  try {
+    const res = await supaRequest('GET', 'travel_footprints?limit=1&order=updated_at.desc', null);
+    if (res && res.length > 0) {
+      await fetch(SUPABASE_URL + '/rest/v1/travel_footprints?id=eq.' + res[0].id, {
+        method: 'PATCH',
+        headers: supaHeaders(),
+        body: JSON.stringify({ schedule: JSON.stringify(items), updated_at: new Date().toISOString() })
+      });
+    } else {
+      await supaRequest('POST', 'travel_footprints', { schedule: JSON.stringify(items), updated_at: new Date().toISOString() });
+    }
+    console.log('☁️ Schedule synced to Supabase');
+  } catch(e) { console.warn('Cloud save failed:', e); }
 }
 
+// Save calendar events to cloud
 async function cloudSaveCalendar(events) {
-  await cloudSaveFootprints();
+  try {
+    const res = await supaRequest('GET', 'travel_footprints?limit=1&order=updated_at.desc', null);
+    if (res && res.length > 0) {
+      await fetch(SUPABASE_URL + '/rest/v1/travel_footprints?id=eq.' + res[0].id, {
+        method: 'PATCH',
+        headers: supaHeaders(),
+        body: JSON.stringify({ calendar_events: JSON.stringify(events), updated_at: new Date().toISOString() })
+      });
+    } else {
+      await supaRequest('POST', 'travel_footprints', { calendar_events: JSON.stringify(events), updated_at: new Date().toISOString() });
+    }
+    console.log('☁️ Calendar synced to Supabase');
+  } catch(e) { console.warn('Cloud save failed:', e); }
 }
 
+// Load schedule from cloud
 async function cloudLoadSchedule() {
-  await cloudLoadFootprints();
+  try {
+    const res = await supaRequest('GET', 'travel_footprints?limit=1&order=updated_at.desc', null);
+    if (res && res.length > 0 && res[0].schedule) {
+      const items = JSON.parse(res[0].schedule);
+      if (items && items.length > 0) {
+        scheduleItems = items;
+        localStorage.setItem(SCHEDULE_KEY, JSON.stringify(scheduleItems));
+        localStorage.setItem('schedule_inited_v3', 'true');
+        renderProjectSchedule();
+        console.log('☁️ Schedule loaded from Supabase:', items.length, 'items');
+        showToast('☁️ 已从云端同步项目安排', 'success');
+      }
+    }
+  } catch(e) { console.warn('Cloud load failed:', e); }
 }
 
+// Load calendar events from cloud
 async function cloudLoadCalendar() {
-  await cloudLoadFootprints();
+  try {
+    const res = await supaRequest('GET', 'travel_footprints?limit=1&order=updated_at.desc', null);
+    if (res && res.length > 0 && res[0].calendar_events) {
+      const events = JSON.parse(res[0].calendar_events);
+      if (events) {
+        localStorage.setItem('travel_calendar_v2', JSON.stringify(events));
+        console.log('☁️ Calendar loaded from Supabase');
+      }
+    }
+  } catch(e) { console.warn('Cloud load failed:', e); }
 }
+
+// Start
+init();
+
+// 启动时同步项目安排到日历面板
+syncScheduleToCalendar();
 
 // 启动时从云端加载最新数据
 setTimeout(() => { cloudLoadSchedule(); cloudLoadCalendar(); }, 2000);
@@ -9476,7 +9606,7 @@ setTimeout(() => { cloudLoadSchedule(); cloudLoadCalendar(); }, 2000);
   </button>
   <button class="mobile-nav-item" id="navFootprints" onclick="toggleMobilePanel('footprints')" style="display:none;">
     <span class="mobile-nav-icon">📍</span>
-    <span class="mobile-nav-label">行程</span>
+    <span class="mobile-nav-label">足迹</span>
   </button>
   <button class="mobile-nav-item" id="navSync" onclick="toggleMobilePanel('sync')">
     <span class="mobile-nav-icon">☁️</span>
