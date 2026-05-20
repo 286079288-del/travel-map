@@ -3746,6 +3746,7 @@
       </div>
       <div class="form-actions" style="flex-direction:column;gap:8px;">
         <button class="form-btn" style="width:100%;background:linear-gradient(135deg,#00ff88,#00d4aa);color:var(--text-primary);" onclick="cloudSaveFootprints()">⬆️ 上传到云端（需密码）</button>
+        <p style="font-size:11px;color:#888;margin:-4px 0 4px;">电脑端直传 / 手机端自动导出文件</p>
         <button class="form-btn primary" style="width:100%;" onclick="cloudLoadFootprints()">⬇️ 从云端下载</button>
         <button class="form-btn secondary" style="width:100%;" onclick="exportData()">💾 导出到文件</button>
         <button class="form-btn secondary" style="width:100%;" onclick="document.getElementById('importFileInput').click()">📂 从文件导入</button>
@@ -9783,11 +9784,7 @@ async function cloudSaveFootprints() {
     }
   }
 
-  const token = getGithubToken();
-  if (!token) {
-    showToast('\u274C 需要 GitHub Token', 'error');
-    return;
-  }
+  const token = localStorage.getItem('github_sync_token');
   try {
     updateSyncIndicator('\u23F3 上传中...');
     showToast('\u23F3 正在上传 ' + footprints.length + ' 条数据...', 'info');
@@ -9838,12 +9835,27 @@ async function cloudSaveFootprints() {
     localStorage.setItem('last_cloud_sync', new Date().toISOString());
     updateSyncIndicator('\u2705 已同步');
     showToast('\u2705 上传成功！ ' + footprints.length + ' 条行程 + ' + Object.keys(itinerary).length + ' 天日程', 'success');
-    // 更新同步面板显示
     updateCloudSyncPanel();
   } catch(e) {
     console.warn('Cloud save failed:', e);
-    updateSyncIndicator('\u26A0\uFE0F 上传失败');
-    showToast('\u274C 上传失败：' + e.message, 'error');
+    // 网络不通时自动导出文件
+    const data = {
+      footprints: footprints,
+      itinerary: itinerary,
+      schedule: scheduleItems,
+      calendar_events: CALENDAR_EVENTS,
+      updated_at: new Date().toISOString(),
+      version: 'github-sync'
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'travel-map-upload-' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    updateSyncIndicator('\uD83D\uDCE4 已导出');
+    showToast('\u26A0\uFE0F 网络不通，数据已导出为文件。发送给超大人即可上传。', 'info');
   }
 }
 
