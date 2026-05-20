@@ -4506,8 +4506,13 @@ let selectedDate = new Date();
 
 let itinerary = {};
 
-try { itinerary = JSON.parse(localStorage.getItem(ITINERARY_KEY) || '{}'); } catch(e) { console.warn('itinerary parse error'); }
-if (Object.keys(itinerary).length === 0 && typeof DEFAULT_ITINERARY_RAW !== 'undefined' && Object.keys(DEFAULT_ITINERARY_RAW).length > 0) { itinerary = DEFAULT_ITINERARY_RAW; localStorage.setItem(ITINERARY_KEY, JSON.stringify(itinerary)); console.log('行程数据已从默认数据加载:', Object.keys(itinerary).length, '天'); }
+try { itinerary = JSON.parse(localStorage.getItem(ITINERARY_KEY) || '{}'); } catch(e) { console.warn('itinerary parse error'); itinerary = {}; }
+if (Array.isArray(itinerary)) { console.warn('行程数据格式错误(数组)，重置为对象'); itinerary = {}; localStorage.removeItem(ITINERARY_KEY); }
+if (typeof itinerary !== 'object' || Object.keys(itinerary).length === 0) {
+  if (typeof DEFAULT_ITINERARY_RAW !== 'undefined' && Object.keys(DEFAULT_ITINERARY_RAW).length > 0) {
+    itinerary = DEFAULT_ITINERARY_RAW; localStorage.setItem(ITINERARY_KEY, JSON.stringify(itinerary)); console.log('行程数据已从默认数据加载:', Object.keys(itinerary).length, '天');
+  }
+}
 
 const DONE_KEY = 'travel_plan_done';
 
