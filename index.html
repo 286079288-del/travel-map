@@ -6589,14 +6589,23 @@ function addFootprintWithReturn(name, address, lnglat, type, visitDate = null, u
 // ===== 加载用户足迹数据 =====
 
 function loadUserFootprints() {
-  if (localStorage.getItem('user_footprints_loaded')) return;
-  if (typeof USER_FOOTPRINTS_RAW !== 'undefined') {
-    USER_FOOTPRINTS_RAW.forEach(fp => {
-      addFootprint(fp.name, fp.address, [fp.lng, fp.lat], fp.type || 'visited', fp.time, fp.unlocked || 0);
-    });
-    showToast(`✅ 已加载 ${USER_FOOTPRINTS_RAW.length} 个行程`, 'success');
+  if (localStorage.getItem('user_footprints_loaded') && footprints.length > 0) return;
+  if (typeof USER_FOOTPRINTS_RAW !== 'undefined' && USER_FOOTPRINTS_RAW.length > 0) {
+    if (footprints.length > 0) {
+      const existIds = new Set(footprints.map(f => f.id));
+      let added = 0;
+      USER_FOOTPRINTS_RAW.forEach(fp => {
+        if (!existIds.has(fp.id)) { addFootprint(fp.name, fp.address, [fp.lng, fp.lat], fp.type || 'visited', fp.time, fp.unlocked || 0); added++; }
+      });
+      if (added > 0) showToast('✅ 补充加载 ' + added + ' 个足迹', 'success');
+    } else {
+      USER_FOOTPRINTS_RAW.forEach(fp => {
+        addFootprint(fp.name, fp.address, [fp.lng, fp.lat], fp.type || 'visited', fp.time, fp.unlocked || 0);
+      });
+      showToast('✅ 已加载 ' + USER_FOOTPRINTS_RAW.length + ' 个足迹', 'success');
+    }
+    localStorage.setItem('user_footprints_loaded', 'true');
   }
-  localStorage.setItem('user_footprints_loaded', 'true');
 }
 
 
