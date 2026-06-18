@@ -2677,6 +2677,10 @@
 
   @keyframes markerPulse { 0%{transform:translateX(-50%) scale(1);opacity:1} 100%{transform:translateX(-50%) scale(2.5);opacity:0} }
 
+  /* ===== 动态项目路线 ===== */
+  .person-route { stroke-dasharray: 12 8; animation: routeFlow 1.5s linear infinite; }
+  @keyframes routeFlow { 0% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -40; } }
+
 
 
   /* ===== Toast ===== */
@@ -8572,6 +8576,22 @@ function selectDate(date) {
 
 const PERSON_NAMES = ['陈志勇', '程广超', '骈一鑫', '李彦赛', '张恩林'];
 
+// 按人员固定颜色（MD5 hash 确保跨天、跨启动同色）
+const PERSON_PALETTE = ['#3b82f6','#8b5cf6','#ec4899','#f59e0b','#10b981','#ef4444','#06b6d4','#f97316','#84cc16','#eab308','#6366f1','#14b8a6','#22d3ee','#a78bfa','#fb7185','#34d399'];
+const PERSON_COLORS = {};
+const personRoutes = [];  // 动态路线图层
+
+function getPersonColor(name) {
+  if (!name) return '#ef4444';
+  if (!PERSON_COLORS[name]) {
+    // Simple hash for deterministic color
+    var h = 0;
+    for (var i = 0; i < name.length; i++) h = ((h << 5) - h + name.charCodeAt(i)) | 0;
+    PERSON_COLORS[name] = PERSON_PALETTE[Math.abs(h) % PERSON_PALETTE.length];
+  }
+  return PERSON_COLORS[name];
+}
+
 
 
 function extractPersonFromTitle(title) {
@@ -10163,6 +10183,9 @@ function addMarker(fp) {
 
   const isDraft = fp.name === '新地点' || fp.name === '地点';
 
+  // 人员颜色（用于 project 类型，同一人员同色）
+  const personColor = fp.person ? getPersonColor(fp.person) : '#ef4444';
+
   
 
   // 截短名字，超过6个字显示省略号
@@ -10197,11 +10220,11 @@ function addMarker(fp) {
 
       markerContent.innerHTML = `
 
-        <div class="marker-dot project-dot" style="width:10px;height:10px;margin:5px 0;"></div>
+        <div class="marker-dot project-dot" style="width:10px;height:10px;margin:5px 0;background:${personColor};box-shadow:0 0 12px ${personColor}90;"></div>
 
-        <div class="marker-ring project-ring" style="width:20px;height:20px;top:0;border-width:1px;"></div>
+        <div class="marker-ring project-ring" style="width:20px;height:20px;top:0;border-width:1px;border-color:${personColor}80;"></div>
 
-        <div class="marker-ring2 project-ring2" style="width:20px;height:20px;top:0;border-width:1px;"></div>
+        <div class="marker-ring2 project-ring2" style="width:20px;height:20px;top:0;border-width:1px;border-color:${personColor}40;"></div>
 
       `;
 
@@ -10254,17 +10277,17 @@ function addMarker(fp) {
   } else if (fp.type === 'project') {
 
     const personInline = fp.person ? `<span class="label-person">${fp.person}</span>` : '';
-    const dateHtml = fp.time ? `<div class="marker-date project-date">${formatFpDate(fp)}</div>` : '';
+    const dateHtml = fp.time ? `<div class="marker-date project-date" style="color:${personColor};">${formatFpDate(fp)}</div>` : '';
 
     markerContent.innerHTML = `
 
-      <div class="marker-dot project-dot"></div>
+      <div class="marker-dot project-dot" style="background:${personColor};box-shadow:0 0 15px ${personColor}80;"></div>
 
-      <div class="marker-ring project-ring"></div>
+      <div class="marker-ring project-ring" style="border-color:${personColor}80;"></div>
 
-      <div class="marker-ring2 project-ring2"></div>
+      <div class="marker-ring2 project-ring2" style="border-color:${personColor}40;"></div>
 
-      <div class="marker-label project-label"><span class="label-city">${displayName}</span>${personInline}</div>
+      <div class="marker-label project-label" style="color:${personColor};border-color:${personColor}60;text-shadow:0 0 6px ${personColor}50;"><span class="label-city">${displayName}</span>${personInline}</div>
 
       ${dateHtml}
 
@@ -10454,6 +10477,52 @@ function addMarker(fp) {
 
 }
 
+// ===== 动态路线：同一人员近期项目之间画连线 =====
+function drawPersonRoutes() {
+  personRoutes.forEach(function(r) { map.removeLayer(r); });
+  personRoutes.length = 0;
+  
+  var groups = {};
+  footprints.forEach(function(fp) {
+    if (fp.type !== 'project' || !fp.person || fp.lat === undefined) return;
+    if (!groups[fp.person]) groups[fp.person] = [];
+    groups[fp.person].push(fp);
+  });
+  
+  Object.keys(groups).forEach(function(person) {
+    var fps = groups[person];
+    if (fps.length < 2) return;
+    
+    fps.sort(function(a, b) {
+      var ta = a.time ? a.time.split(' ')[0] : '';
+      var tb = b.time ? b.time.split(' ')[0] : '';
+      return ta.localeCompare(tb);
+    });
+    
+    var color = getPersonColor(person);
+    var coords = fps.map(function(fp) { return [fp.lat, fp.lng]; });
+    
+    var line = L.polyline(coords, {
+      color: color, weight: 2.5, opacity: 0.7,
+      dashArray: '10 8', className: 'person-route', smoothFactor: 1
+    }).addTo(map);
+    personRoutes.push(line);
+    
+    if (coords.length >= 2) {
+      var midIdx = Math.floor(coords.length / 2);
+      var midPt = coords[midIdx];
+      var labelIcon = L.divIcon({
+        html: '<div style="font-size:10px;font-weight:600;color:' + color + ';background:rgba(0,0,0,0.65);padding:2px 6px;border-radius:10px;white-space:nowrap;border:1px solid ' + color + ';">' + person + '</div>',
+        className: '',
+        iconSize: [80, 20],
+        iconAnchor: [40, 10]
+      });
+      var labelMarker = L.marker(midPt, { icon: labelIcon, interactive: false }).addTo(map);
+      personRoutes.push(labelMarker);
+    }
+  });
+}
+
 
 
 function renderAllMarkers() {
@@ -10463,6 +10532,7 @@ function renderAllMarkers() {
   markers = {};
 
   footprints.forEach(fp => addMarker(fp));
+  drawPersonRoutes();
 
 }
 
