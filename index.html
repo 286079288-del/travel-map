@@ -10491,8 +10491,8 @@ function drawPersonRoutes() {
     fps.sort(function(a, b) { var ta = a.time ? a.time.split(" ")[0] : ""; var tb = b.time ? b.time.split(" ")[0] : ""; return ta.localeCompare(tb); });
     var color = getPersonColor(nm);
     var coords = fps.map(function(fp) { return [Number(fp.lat), Number(fp.lng)]; });
-    personRoutes.push(L.polyline(coords, { color: color, weight: 8, opacity: 0.25, className: 'person-route-glow', smoothFactor: 2, interactive: false }).addTo(map));
-    personRoutes.push(L.polyline(coords, { color: color, weight: 2.5, opacity: 0.9, dashArray: '8 6', className: 'person-route', smoothFactor: 2 }).addTo(map));
+    personRoutes.push(L.polyline(coords, { color: color, weight: 2.5, opacity: 0.15, className: 'person-route-glow', smoothFactor: 2, interactive: false }).addTo(map));
+    personRoutes.push(L.polyline(coords, { color: color, weight: 1.0, opacity: 1.0, dashArray: '8 6', className: 'person-route', smoothFactor: 2 }).addTo(map));
     var sIcon = L.divIcon({ html: '<div style="width:7px;height:7px;border-radius:50%;background:' + color + ';box-shadow:0 0 5px ' + color + ';"></div>', className: '', iconSize: [8,8], iconAnchor: [4,4] });
     personRoutes.push(L.marker(coords[0], { icon: sIcon, interactive: false }).addTo(map));
     var last = coords[coords.length-1], prev = coords[coords.length-2];
