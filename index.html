@@ -2677,13 +2677,6 @@
 
   @keyframes markerPulse { 0%{transform:translateX(-50%) scale(1);opacity:1} 100%{transform:translateX(-50%) scale(2.5);opacity:0} }
 
-  /* ===== 动态项目路线 ===== */
-  .person-route { stroke-dasharray: 10 14; animation: routeFlow 5s linear infinite; }
-  @keyframes routeFlow { 0% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -48; } }
-  .person-route-glow { pointer-events: none; }
-  .flow-dot { animation: flowPulse 1.2s ease-in-out infinite alternate; }
-  @keyframes flowPulse { 0% { transform: scale(0.8); opacity: 0.6; } 100% { transform: scale(1.3); opacity: 1; } }
-
 
 
   /* ===== Toast ===== */
@@ -8579,18 +8572,14 @@ function selectDate(date) {
 
 const PERSON_NAMES = ['陈志勇', '程广超', '骈一鑫', '李彦赛', '张恩林'];
 
-// 按人员固定颜色（MD5 hash 确保跨天、跨启动同色）
-const PERSON_PALETTE = ['#3b82f6','#8b5cf6','#ec4899','#f59e0b','#10b981','#ef4444','#06b6d4','#f97316','#84cc16','#eab308','#6366f1','#14b8a6','#22d3ee','#a78bfa','#fb7185','#34d399'];
-const PERSON_COLORS = {};
-const personRoutes = [];  // 动态路线图层
-
+var PERSON_COLORS = {};
+var personRoutes = [];
 function getPersonColor(name) {
   if (!name) return '#ef4444';
   if (!PERSON_COLORS[name]) {
-    // Simple hash for deterministic color
     var h = 0;
     for (var i = 0; i < name.length; i++) h = ((h << 5) - h + name.charCodeAt(i)) | 0;
-    PERSON_COLORS[name] = PERSON_PALETTE[Math.abs(h) % PERSON_PALETTE.length];
+    PERSON_COLORS[name] = ['#3b82f6','#8b5cf6','#ec4899','#f59e0b','#10b981','#ef4444','#06b6d4','#f97316','#84cc16','#eab308','#6366f1','#14b8a6'][Math.abs(h) % 12];
   }
   return PERSON_COLORS[name];
 }
@@ -10186,7 +10175,6 @@ function addMarker(fp) {
 
   const isDraft = fp.name === '新地点' || fp.name === '地点';
 
-  // 人员颜色（用于 project 类型，同一人员同色）
   const personColor = fp.person ? getPersonColor(fp.person) : '#ef4444';
 
   
@@ -10480,84 +10468,15 @@ function addMarker(fp) {
 
 }
 
-// ===== 动态路线：同一人员近期项目之间画连线 =====
-function drawPersonRoutes() {
-  personRoutes.forEach(function(r) { if (r._animId) clearInterval(r._animId); try { map.removeLayer(r); } catch(e) {} });
-  personRoutes.length = 0;
-  
-  var groups = {};
-  footprints.forEach(function(fp) {
-    if (fp.type !== "project" || !fp.person || fp.lat === undefined) return;
-    if (!groups[fp.person]) groups[fp.person] = [];
-    groups[fp.person].push(fp);
-  });
-  
-  Object.keys(groups).forEach(function(person) {
-    var fps = groups[person];
-    if (fps.length < 2) return;
-    
-    fps.sort(function(a, b) {
-      var ta = a.time ? a.time.split(" ")[0] : "";
-      var tb = b.time ? b.time.split(" ")[0] : "";
-      return ta.localeCompare(tb);
-    });
-    
-    var color = getPersonColor(person);
-    var coords = fps.map(function(fp) { return [Number(fp.lat), Number(fp.lng)]; });
-    
-    var glow = L.polyline(coords, { color: color, weight: 6, opacity: 0.15, className: "person-route-glow", interactive: false }).addTo(map);
-    personRoutes.push(glow);
-    
-    var line = L.polyline(coords, { color: color, weight: 2, opacity: 0.75, dashArray: "8 14", className: "person-route" }).addTo(map);
-    personRoutes.push(line);
-    
-    // flowing light dot along path
-    try {
-      var pathPts = [];
-      for (var j = 0; j < coords.length - 1; j++) {
-        var segs = Math.max(5, Math.floor(L.latLng(coords[j]).distanceTo(L.latLng(coords[j+1])) / 20000));
-        for (var k = 0; k <= segs; k++) {
-          var f = k / segs;
-          pathPts.push([coords[j][0] + (coords[j+1][0]-coords[j][0])*f, coords[j][1] + (coords[j+1][1]-coords[j][1])*f]);
-        }
-      }
-      if (pathPts.length > 1) {
-        var dotIcon = L.divIcon({
-          html: "<div class="flow-dot" style="width:10px;height:10px;border-radius:50%;background:white;box-shadow:0 0 8px 3px " + color + ",0 0 20px 6px " + color + "80;"></div>",
-          className: "", iconSize: [20, 20], iconAnchor: [10, 10]
-        });
-        var dm = L.marker(pathPts[0], { icon: dotIcon, interactive: false }).addTo(map);
-        personRoutes.push(dm);
-        var s = 0, t = pathPts.length - 1;
-        var anim = setInterval(function() { if (!map.hasLayer(dm)) { clearInterval(anim); return; } s = (s + 1) % (t + 1); dm.setLatLng(pathPts[s]); }, 70);
-        dm._animId = anim;
-      }
-    } catch(e) {}
-    
-    var startI = L.divIcon({ html: "<div style="width:8px;height:8px;border-radius:50%;background:" + color + ";box-shadow:0 0 6px " + color + ";"></div>", className: "", iconSize: [8, 8], iconAnchor: [4, 4] });
-    personRoutes.push(L.marker(coords[0], { icon: startI, interactive: false }).addTo(map));
-    
-    var last = coords[coords.length-1], prev = coords[coords.length-2];
-    var ang = Math.atan2(last[0]-prev[0], last[1]-prev[1]) * 180 / Math.PI - 90;
-    var arrI = L.divIcon({ html: "<div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:10px solid " + color + ";transform:rotate(" + ang + "deg);filter:drop-shadow(0 0 3px " + color + ");"></div>", className: "", iconSize: [12, 10], iconAnchor: [6, 0] });
-    personRoutes.push(L.marker(last, { icon: arrI, interactive: false }).addTo(map));
-    
-    var mid = coords[Math.floor(coords.length/2)];
-    var lblI = L.divIcon({ html: "<div style="font-size:10px;font-weight:600;color:#fff;background:" + color + ";padding:3px 8px;border-radius:10px;white-space:nowrap;box-shadow:0 2px 8px " + color + "60;">" + person + "</div>", className: "", iconSize: [80, 22], iconAnchor: [40, 11] });
-    personRoutes.push(L.marker(mid, { icon: lblI, interactive: false }).addTo(map));
-  });
-}
 
 
-
-function renderAllMarkers() { { { { {
+function renderAllMarkers() {
 
   Object.values(markers).forEach(m => map.removeLayer(m));
 
   markers = {};
 
   footprints.forEach(fp => addMarker(fp));
-  // drawPersonRoutes disabled for debugging
 
 }
 
@@ -12950,15 +12869,10 @@ var _cloudFile = 'data.json';
 
 // UTF-8 safe base64 encode (no deprecated unescape)
 function _base64Encode(str) {
-  // TextEncoder is available in all modern browsers
-  try {
-    var bytes = new TextEncoder().encode(str);
-    var bin = '';
-    for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-    return btoa(bin);
-  } catch(e) {}
-  // Fallback for edge cases
-  return btoa(unescape(encodeURIComponent(str)));
+  var bytes = new TextEncoder().encode(str);
+  var bin = '';
+  for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin);
 }
 
 async function _fetchCloudData(url, timeoutMs) {
