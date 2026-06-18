@@ -2677,6 +2677,12 @@
 
   @keyframes markerPulse { 0%{transform:translateX(-50%) scale(1);opacity:1} 100%{transform:translateX(-50%) scale(2.5);opacity:0} }
 
+  .person-route { stroke-dasharray: 10 14; animation: routeFlow 5s linear infinite; }
+  @keyframes routeFlow { 0% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -48; } }
+  .person-route-glow { pointer-events: none; }
+  .flow-dot { animation: flowPulse 1.2s ease-in-out infinite alternate; }
+  @keyframes flowPulse { 0% { transform: scale(0.8); opacity: 0.6; } 100% { transform: scale(1.3); opacity: 1; } }
+
 
 
   /* ===== Toast ===== */
@@ -10470,6 +10476,55 @@ function addMarker(fp) {
 
 
 
+function drawPersonRoutes() {
+  personRoutes.forEach(function(r) { if (r._animId) clearInterval(r._animId); try { map.removeLayer(r); } catch(e) {} });
+  personRoutes.length = 0;
+  var groups = {};
+  footprints.forEach(function(fp) {
+    if (fp.type !== "project" || !fp.person || fp.lat === undefined) return;
+    if (!groups[fp.person]) groups[fp.person] = [];
+    groups[fp.person].push(fp);
+  });
+  var names = Object.keys(groups);
+  for (var pi = 0; pi < names.length; pi++) {
+    var nm = names[pi];
+    var fps = groups[nm];
+    if (fps.length < 2) continue;
+    fps.sort(function(a, b) { var ta = a.time ? a.time.split(" ")[0] : ""; var tb = b.time ? b.time.split(" ")[0] : ""; return ta.localeCompare(tb); });
+    var color = getPersonColor(nm);
+    var coords = fps.map(function(fp) { return [Number(fp.lat), Number(fp.lng)]; });
+    var glow = L.polyline(coords, { color: color, weight: 6, opacity: 0.15, className: "person-route-glow", interactive: false }).addTo(map);
+    personRoutes.push(glow);
+    var line = L.polyline(coords, { color: color, weight: 2, opacity: 0.75, dashArray: "8 14", className: "person-route" }).addTo(map);
+    personRoutes.push(line);
+    try {
+      var pathPts = [];
+      for (var j = 0; j < coords.length - 1; j++) {
+        var segs = Math.max(5, Math.floor(L.latLng(coords[j]).distanceTo(L.latLng(coords[j+1])) / 20000));
+        for (var k = 0; k <= segs; k++) { var f = k / segs; pathPts.push([coords[j][0] + (coords[j+1][0]-coords[j][0])*f, coords[j][1] + (coords[j+1][1]-coords[j][1])*f]); }
+      }
+      if (pathPts.length > 1) {
+        var dotIcon = L.divIcon({ html: '<div class="flow-dot" style="width:10px;height:10px;border-radius:50%;background:white;box-shadow:0 0 8px 3px ' + color + ',0 0 20px 6px ' + color + '80;"></div>', className: '', iconSize: [20, 20], iconAnchor: [10, 10] });
+        var dm = L.marker(pathPts[0], { icon: dotIcon, interactive: false }).addTo(map);
+        personRoutes.push(dm);
+        var s = 0, t = pathPts.length - 1;
+        var anim = setInterval(function() { if (!map.hasLayer(dm)) { clearInterval(anim); return; } s = (s + 1) % (t + 1); dm.setLatLng(pathPts[s]); }, 80);
+        dm._animId = anim;
+      }
+    } catch(e) {}
+    var si = L.divIcon({ html: '<div style="width:8px;height:8px;border-radius:50%;background:' + color + ';box-shadow:0 0 6px ' + color + ';"></div>', className: '', iconSize: [8, 8], iconAnchor: [4, 4] });
+    personRoutes.push(L.marker(coords[0], { icon: si, interactive: false }).addTo(map));
+    var last = coords[coords.length-1], prev = coords[coords.length-2];
+    var ang = Math.atan2(last[0]-prev[0], last[1]-prev[1]) * 180 / Math.PI - 90;
+    var ai = L.divIcon({ html: '<div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:10px solid ' + color + ';transform:rotate(' + ang + 'deg);filter:drop-shadow(0 0 3px ' + color + ');"></div>', className: '', iconSize: [12, 10], iconAnchor: [6, 0] });
+    personRoutes.push(L.marker(last, { icon: ai, interactive: false }).addTo(map));
+    var mid = coords[Math.floor(coords.length/2)];
+    var li = L.divIcon({ html: '<div style="font-size:10px;font-weight:600;color:#fff;background:' + color + ';padding:3px 8px;border-radius:10px;white-space:nowrap;box-shadow:0 2px 8px ' + color + '60;">' + nm + '</div>', className: '', iconSize: [80, 22], iconAnchor: [40, 11] });
+    personRoutes.push(L.marker(mid, { icon: li, interactive: false }).addTo(map));
+  }
+}
+
+
 function renderAllMarkers() {
 
   Object.values(markers).forEach(m => map.removeLayer(m));
@@ -10477,6 +10532,7 @@ function renderAllMarkers() {
   markers = {};
 
   footprints.forEach(fp => addMarker(fp));
+  try { drawPersonRoutes(); } catch(e) { console.error(e); }
 
 }
 
