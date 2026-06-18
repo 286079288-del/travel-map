@@ -10503,92 +10503,85 @@ function drawPersonRoutes() {
     });
     
     var color = getPersonColor(person);
-    var pts = fps.map(function(fp) { return [fp.lat, fp.lng]; });
-    
-    // Catmull-Rom 曲线插值生成平滑路径
-    var curved = [];
-    for (var i = 0; i < pts.length - 1; i++) {
-      var p0 = i > 0 ? pts[i-1] : pts[i];
-      var p1 = pts[i];
-      var p2 = pts[i+1];
-      var p3 = i < pts.length - 2 ? pts[i+2] : pts[i+1];
-      var steps = Math.max(8, Math.floor(L.latLng(p1).distanceTo(L.latLng(p2)) / 20000));
-      for (var t = 0; t <= steps; t++) {
-        var tt = t / steps;
-        var t2 = tt * tt, t3 = t2 * tt;
-        var lat = 0.5 * ((2*p1[0]) + (-p0[0]+p2[0])*tt + (2*p0[0]-5*p1[0]+4*p2[0]-p3[0])*t2 + (-p0[0]+3*p1[0]-3*p2[0]+p3[0])*t3);
-        var lng = 0.5 * ((2*p1[1]) + (-p0[1]+p2[1])*tt + (2*p0[1]-5*p1[1]+4*p2[1]-p3[1])*t2 + (-p0[1]+3*p1[1]-3*p2[1]+p3[1])*t3);
-        curved.push([lat, lng]);
-      }
-    }
-    if (curved.length < 2) curved = pts;
+    var coords = fps.map(function(fp) { return [Number(fp.lat), Number(fp.lng)]; });
     
     // 底层光晕
-    var glow = L.polyline(curved, {
+    var glow = L.polyline(coords, {
       color: color, weight: 8, opacity: 0.12,
+      smoothFactor: 2.5,
       className: 'person-route-glow',
       interactive: false
     }).addTo(map);
     personRoutes.push(glow);
     
-    // 主虚线
-    var line = L.polyline(curved, {
+    // 主虚线 (高 smoothFactor 实现曲线效果)
+    var line = L.polyline(coords, {
       color: color, weight: 2.2, opacity: 0.8,
       dashArray: '8 14',
+      smoothFactor: 2.5,
       className: 'person-route'
     }).addTo(map);
     personRoutes.push(line);
     
-    // 流动光点 (沿路径移动)
+    // 抽取路径点用于光点动画
+    var pathPoints = [];
+    try {
+      for (var j = 0; j < coords.length - 1; j++) {
+        var a = L.latLng(coords[j]);
+        var b = L.latLng(coords[j+1]);
+        var dist = a.distanceTo(b);
+        var segs = Math.max(6, Math.floor(dist / 15000));
+        for (var k = 0; k <= segs; k++) {
+          var frac = k / segs;
+          pathPoints.push([coords[j][0] + (coords[j+1][0]-coords[j][0])*frac, coords[j][1] + (coords[j+1][1]-coords[j][1])*frac]);
+        }
+      }
+    } catch(e) { pathPoints = coords; }
+    
+    // 流动光点
     var dotIcon = L.divIcon({
       html: '<div class="flow-dot" style="width:10px;height:10px;border-radius:50%;background:white;box-shadow:0 0 8px 3px ' + color + ',0 0 20px 6px ' + color + '80;"></div>',
       className: '',
       iconSize: [20, 20],
       iconAnchor: [10, 10]
     });
-    var dotMarker = L.marker(curved[0], { icon: dotIcon, interactive: false }).addTo(map);
+    var dotMarker = L.marker(pathPoints[0], { icon: dotIcon, interactive: false }).addTo(map);
     personRoutes.push(dotMarker);
     
-    // 光点移动动画
     var step = 0;
-    var totalSteps = curved.length - 1;
-    var dotAnim = setInterval(function() {
-      if (!map.hasLayer(dotMarker)) { clearInterval(dotAnim); return; }
-      step = (step + 1) % (totalSteps + 1);
-      dotMarker.setLatLng(curved[step]);
-    }, 60);
-    // 保存动画ID用于清理
-    dotMarker._animId = dotAnim;
+    var totalSteps = pathPoints.length - 1;
+    if (totalSteps > 0) {
+      var dotAnim = setInterval(function() {
+        if (!map.hasLayer(dotMarker)) { clearInterval(dotAnim); return; }
+        step = (step + 1) % (totalSteps + 1);
+        dotMarker.setLatLng(pathPoints[step]);
+      }, 70);
+      dotMarker._animId = dotAnim;
+    }
     
-    // 起点圆点标记
+    // 起点圆点
     var startIcon = L.divIcon({
       html: '<div style="width:8px;height:8px;border-radius:50%;background:' + color + ';box-shadow:0 0 6px ' + color + ';"></div>',
-      className: '',
-      iconSize: [8, 8],
-      iconAnchor: [4, 4]
+      className: '', iconSize: [8, 8], iconAnchor: [4, 4]
     });
-    personRoutes.push(L.marker(pts[0], { icon: startIcon, interactive: false }).addTo(map));
+    personRoutes.push(L.marker(coords[0], { icon: startIcon, interactive: false }).addTo(map));
     
     // 终点箭头
-    var last = pts[pts.length - 1];
-    var prev = pts[pts.length - 2];
+    var last = coords[coords.length - 1];
+    var prev = coords[coords.length - 2];
     var angle = Math.atan2(last[0] - prev[0], last[1] - prev[1]) * 180 / Math.PI - 90;
     var arrowIcon = L.divIcon({
       html: '<div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:10px solid ' + color + ';transform:rotate(' + angle + 'deg);filter:drop-shadow(0 0 3px ' + color + ');"></div>',
-      className: '',
-      iconSize: [12, 10],
-      iconAnchor: [6, 0]
+      className: '', iconSize: [12, 10], iconAnchor: [6, 0]
     });
     personRoutes.push(L.marker(last, { icon: arrowIcon, interactive: false }).addTo(map));
     
-    // 人员标签 (路线中点)
-    var midIdx = Math.floor(pts.length / 2);
-    var midPt = pts[midIdx];
+    // 人员标签
+    var midIdx = Math.floor(coords.length / 2);
+    var midPt = coords[midIdx];
     var labelIcon = L.divIcon({
       html: '<div style="font-size:10px;font-weight:600;color:#fff;background:' + color + ';padding:3px 8px;border-radius:10px;white-space:nowrap;box-shadow:0 2px 8px ' + color + '60;">' + person + '</div>',
-      className: '',
-      iconSize: [80, 22],
-      iconAnchor: [40, 11]
+      className: '', iconSize: [80, 22], iconAnchor: [40, 11]
     });
     personRoutes.push(L.marker(midPt, { icon: labelIcon, interactive: false }).addTo(map));
   });
@@ -10596,7 +10589,7 @@ function drawPersonRoutes() {
 
 
 
-function renderAllMarkers() { { {
+function renderAllMarkers() { { { {
 
   Object.values(markers).forEach(m => map.removeLayer(m));
 
