@@ -10487,7 +10487,7 @@ function drawPersonRoutes() {
   
   var groups = {};
   footprints.forEach(function(fp) {
-    if (fp.type !== 'project' || !fp.person || fp.lat === undefined) return;
+    if (fp.type !== "project" || !fp.person || fp.lat === undefined) return;
     if (!groups[fp.person]) groups[fp.person] = [];
     groups[fp.person].push(fp);
   });
@@ -10497,106 +10497,67 @@ function drawPersonRoutes() {
     if (fps.length < 2) return;
     
     fps.sort(function(a, b) {
-      var ta = a.time ? a.time.split(' ')[0] : '';
-      var tb = b.time ? b.time.split(' ')[0] : '';
+      var ta = a.time ? a.time.split(" ")[0] : "";
+      var tb = b.time ? b.time.split(" ")[0] : "";
       return ta.localeCompare(tb);
     });
     
     var color = getPersonColor(person);
     var coords = fps.map(function(fp) { return [Number(fp.lat), Number(fp.lng)]; });
     
-    // 底层光晕
-    var glow = L.polyline(coords, {
-      color: color, weight: 8, opacity: 0.12,
-      smoothFactor: 2.5,
-      className: 'person-route-glow',
-      interactive: false
-    }).addTo(map);
+    var glow = L.polyline(coords, { color: color, weight: 6, opacity: 0.15, className: "person-route-glow", interactive: false }).addTo(map);
     personRoutes.push(glow);
     
-    // 主虚线 (高 smoothFactor 实现曲线效果)
-    var line = L.polyline(coords, {
-      color: color, weight: 2.2, opacity: 0.8,
-      dashArray: '8 14',
-      smoothFactor: 2.5,
-      className: 'person-route'
-    }).addTo(map);
+    var line = L.polyline(coords, { color: color, weight: 2, opacity: 0.75, dashArray: "8 14", className: "person-route" }).addTo(map);
     personRoutes.push(line);
     
-    // 抽取路径点用于光点动画
-    var pathPoints = [];
+    // flowing light dot along path
     try {
+      var pathPts = [];
       for (var j = 0; j < coords.length - 1; j++) {
-        var a = L.latLng(coords[j]);
-        var b = L.latLng(coords[j+1]);
-        var dist = a.distanceTo(b);
-        var segs = Math.max(6, Math.floor(dist / 15000));
+        var segs = Math.max(5, Math.floor(L.latLng(coords[j]).distanceTo(L.latLng(coords[j+1])) / 20000));
         for (var k = 0; k <= segs; k++) {
-          var frac = k / segs;
-          pathPoints.push([coords[j][0] + (coords[j+1][0]-coords[j][0])*frac, coords[j][1] + (coords[j+1][1]-coords[j][1])*frac]);
+          var f = k / segs;
+          pathPts.push([coords[j][0] + (coords[j+1][0]-coords[j][0])*f, coords[j][1] + (coords[j+1][1]-coords[j][1])*f]);
         }
       }
-    } catch(e) { pathPoints = coords; }
+      if (pathPts.length > 1) {
+        var dotIcon = L.divIcon({
+          html: "<div class="flow-dot" style="width:10px;height:10px;border-radius:50%;background:white;box-shadow:0 0 8px 3px " + color + ",0 0 20px 6px " + color + "80;"></div>",
+          className: "", iconSize: [20, 20], iconAnchor: [10, 10]
+        });
+        var dm = L.marker(pathPts[0], { icon: dotIcon, interactive: false }).addTo(map);
+        personRoutes.push(dm);
+        var s = 0, t = pathPts.length - 1;
+        var anim = setInterval(function() { if (!map.hasLayer(dm)) { clearInterval(anim); return; } s = (s + 1) % (t + 1); dm.setLatLng(pathPts[s]); }, 70);
+        dm._animId = anim;
+      }
+    } catch(e) {}
     
-    // 流动光点
-    var dotIcon = L.divIcon({
-      html: '<div class="flow-dot" style="width:10px;height:10px;border-radius:50%;background:white;box-shadow:0 0 8px 3px ' + color + ',0 0 20px 6px ' + color + '80;"></div>',
-      className: '',
-      iconSize: [20, 20],
-      iconAnchor: [10, 10]
-    });
-    var dotMarker = L.marker(pathPoints[0], { icon: dotIcon, interactive: false }).addTo(map);
-    personRoutes.push(dotMarker);
+    var startI = L.divIcon({ html: "<div style="width:8px;height:8px;border-radius:50%;background:" + color + ";box-shadow:0 0 6px " + color + ";"></div>", className: "", iconSize: [8, 8], iconAnchor: [4, 4] });
+    personRoutes.push(L.marker(coords[0], { icon: startI, interactive: false }).addTo(map));
     
-    var step = 0;
-    var totalSteps = pathPoints.length - 1;
-    if (totalSteps > 0) {
-      var dotAnim = setInterval(function() {
-        if (!map.hasLayer(dotMarker)) { clearInterval(dotAnim); return; }
-        step = (step + 1) % (totalSteps + 1);
-        dotMarker.setLatLng(pathPoints[step]);
-      }, 70);
-      dotMarker._animId = dotAnim;
-    }
+    var last = coords[coords.length-1], prev = coords[coords.length-2];
+    var ang = Math.atan2(last[0]-prev[0], last[1]-prev[1]) * 180 / Math.PI - 90;
+    var arrI = L.divIcon({ html: "<div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:10px solid " + color + ";transform:rotate(" + ang + "deg);filter:drop-shadow(0 0 3px " + color + ");"></div>", className: "", iconSize: [12, 10], iconAnchor: [6, 0] });
+    personRoutes.push(L.marker(last, { icon: arrI, interactive: false }).addTo(map));
     
-    // 起点圆点
-    var startIcon = L.divIcon({
-      html: '<div style="width:8px;height:8px;border-radius:50%;background:' + color + ';box-shadow:0 0 6px ' + color + ';"></div>',
-      className: '', iconSize: [8, 8], iconAnchor: [4, 4]
-    });
-    personRoutes.push(L.marker(coords[0], { icon: startIcon, interactive: false }).addTo(map));
-    
-    // 终点箭头
-    var last = coords[coords.length - 1];
-    var prev = coords[coords.length - 2];
-    var angle = Math.atan2(last[0] - prev[0], last[1] - prev[1]) * 180 / Math.PI - 90;
-    var arrowIcon = L.divIcon({
-      html: '<div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:10px solid ' + color + ';transform:rotate(' + angle + 'deg);filter:drop-shadow(0 0 3px ' + color + ');"></div>',
-      className: '', iconSize: [12, 10], iconAnchor: [6, 0]
-    });
-    personRoutes.push(L.marker(last, { icon: arrowIcon, interactive: false }).addTo(map));
-    
-    // 人员标签
-    var midIdx = Math.floor(coords.length / 2);
-    var midPt = coords[midIdx];
-    var labelIcon = L.divIcon({
-      html: '<div style="font-size:10px;font-weight:600;color:#fff;background:' + color + ';padding:3px 8px;border-radius:10px;white-space:nowrap;box-shadow:0 2px 8px ' + color + '60;">' + person + '</div>',
-      className: '', iconSize: [80, 22], iconAnchor: [40, 11]
-    });
-    personRoutes.push(L.marker(midPt, { icon: labelIcon, interactive: false }).addTo(map));
+    var mid = coords[Math.floor(coords.length/2)];
+    var lblI = L.divIcon({ html: "<div style="font-size:10px;font-weight:600;color:#fff;background:" + color + ";padding:3px 8px;border-radius:10px;white-space:nowrap;box-shadow:0 2px 8px " + color + "60;">" + person + "</div>", className: "", iconSize: [80, 22], iconAnchor: [40, 11] });
+    personRoutes.push(L.marker(mid, { icon: lblI, interactive: false }).addTo(map));
   });
 }
 
 
 
-function renderAllMarkers() { { { {
+function renderAllMarkers() { { { { {
 
   Object.values(markers).forEach(m => map.removeLayer(m));
 
   markers = {};
 
   footprints.forEach(fp => addMarker(fp));
-  drawPersonRoutes();
+  // drawPersonRoutes disabled for debugging
 
 }
 
