@@ -10503,12 +10503,7 @@ function drawPersonRoutes() {
     var ang = Math.atan2(last[0]-prev[0], last[1]-prev[1]) * 180 / Math.PI - 90;
     var aIcon = L.divIcon({ html: '<div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:9px solid ' + color + ';transform:rotate(' + ang + 'deg);filter:drop-shadow(0 0 3px ' + color + ');"></div>', className: '', iconSize: [10,9], iconAnchor: [5,0] });
     personRoutes.push(L.marker(last, { icon: aIcon, interactive: false }).addTo(map));
-    // Label
-    var mid = coords[Math.floor(coords.length/2)];
-    var lIcon = L.divIcon({ html: '<div style="font-size:10px;font-weight:600;color:#fff;background:' + color + ';padding:2px 7px;border-radius:8px;white-space:nowrap;box-shadow:0 1px 6px ' + color + '60;">' + nm + '</div>', className: '', iconSize: [70, 20], iconAnchor: [35, 10] });
-    personRoutes.push(L.marker(mid, { icon: lIcon, interactive: false }).addTo(map));
-  }
-}
+
 function renderAllMarkers() {
 
   Object.values(markers).forEach(m => map.removeLayer(m));
