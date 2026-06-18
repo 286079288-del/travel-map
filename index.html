@@ -8572,18 +8572,6 @@ function selectDate(date) {
 
 const PERSON_NAMES = ['陈志勇', '程广超', '骈一鑫', '李彦赛', '张恩林'];
 
-var PERSON_COLORS = {};
-var personRoutes = [];
-function getPersonColor(name) {
-  if (!name) return '#ef4444';
-  if (!PERSON_COLORS[name]) {
-    var h = 0;
-    for (var i = 0; i < name.length; i++) h = ((h << 5) - h + name.charCodeAt(i)) | 0;
-    PERSON_COLORS[name] = ['#3b82f6','#8b5cf6','#ec4899','#f59e0b','#10b981','#ef4444','#06b6d4','#f97316','#84cc16','#eab308','#6366f1','#14b8a6'][Math.abs(h) % 12];
-  }
-  return PERSON_COLORS[name];
-}
-
 
 
 function extractPersonFromTitle(title) {
@@ -10175,8 +10163,6 @@ function addMarker(fp) {
 
   const isDraft = fp.name === '新地点' || fp.name === '地点';
 
-  const personColor = fp.person ? getPersonColor(fp.person) : '#ef4444';
-
   
 
   // 截短名字，超过6个字显示省略号
@@ -10211,11 +10197,11 @@ function addMarker(fp) {
 
       markerContent.innerHTML = `
 
-        <div class="marker-dot project-dot" style="width:10px;height:10px;margin:5px 0;background:${personColor};box-shadow:0 0 12px ${personColor}90;"></div>
+        <div class="marker-dot project-dot" style="width:10px;height:10px;margin:5px 0;"></div>
 
-        <div class="marker-ring project-ring" style="width:20px;height:20px;top:0;border-width:1px;border-color:${personColor}80;"></div>
+        <div class="marker-ring project-ring" style="width:20px;height:20px;top:0;border-width:1px;"></div>
 
-        <div class="marker-ring2 project-ring2" style="width:20px;height:20px;top:0;border-width:1px;border-color:${personColor}40;"></div>
+        <div class="marker-ring2 project-ring2" style="width:20px;height:20px;top:0;border-width:1px;"></div>
 
       `;
 
@@ -10268,17 +10254,17 @@ function addMarker(fp) {
   } else if (fp.type === 'project') {
 
     const personInline = fp.person ? `<span class="label-person">${fp.person}</span>` : '';
-    const dateHtml = fp.time ? `<div class="marker-date project-date" style="color:${personColor};">${formatFpDate(fp)}</div>` : '';
+    const dateHtml = fp.time ? `<div class="marker-date project-date">${formatFpDate(fp)}</div>` : '';
 
     markerContent.innerHTML = `
 
-      <div class="marker-dot project-dot" style="background:${personColor};box-shadow:0 0 15px ${personColor}80;"></div>
+      <div class="marker-dot project-dot"></div>
 
-      <div class="marker-ring project-ring" style="border-color:${personColor}80;"></div>
+      <div class="marker-ring project-ring"></div>
 
-      <div class="marker-ring2 project-ring2" style="border-color:${personColor}40;"></div>
+      <div class="marker-ring2 project-ring2"></div>
 
-      <div class="marker-label project-label" style="color:${personColor};border-color:${personColor}60;text-shadow:0 0 6px ${personColor}50;"><span class="label-city">${displayName}</span>${personInline}</div>
+      <div class="marker-label project-label"><span class="label-city">${displayName}</span>${personInline}</div>
 
       ${dateHtml}
 
