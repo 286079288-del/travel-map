@@ -434,8 +434,20 @@
     border: 1px solid var(--border-color); border-radius: 16px;
 
     overflow: hidden;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
 
   }
+  .left-panel.collapsed { transform: translateX(calc(-100% - 30px)); opacity: 0; pointer-events: none; }
+
+  .panel-toggle {
+    position: fixed; top: 50%; left: 745px; transform: translateY(-50%); z-index: 101;
+    width: 24px; height: 60px; border-radius: 0 12px 12px 0;
+    background: var(--bg-panel); border: 1px solid var(--border-color); border-left: none;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; color: var(--text-secondary); transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .panel-toggle.collapsed { left: 8px; border-radius: 12px 0 0 12px; border-left: 1px solid var(--border-color); border-right: none; }
+  .panel-toggle:hover { background: var(--accent-bg); color: var(--accent); }
 
 
 
@@ -1767,8 +1779,20 @@
     border: 1px solid var(--border-color); border-radius: 16px;
 
     overflow: hidden;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
 
   }
+  .footprint-panel.collapsed { transform: translateX(calc(100% + 30px)); opacity: 0; pointer-events: none; }
+
+  .right-panel-toggle {
+    position: fixed; top: 50%; right: 445px; transform: translateY(-50%); z-index: 101;
+    width: 24px; height: 60px; border-radius: 12px 0 0 12px;
+    background: var(--bg-panel); border: 1px solid var(--border-color); border-right: none;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; color: var(--text-secondary); transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .right-panel-toggle.collapsed { right: 8px; border-radius: 0 12px 12px 0; border-right: 1px solid var(--border-color); border-left: none; }
+  .right-panel-toggle:hover { background: var(--accent-bg); color: var(--accent); }
 
   .panel-header {
 
@@ -3000,6 +3024,11 @@
     .logo-text { font-size: 16px; letter-spacing: 1px; }
     .stats { display: none !important; }
 
+    .panel-toggle { display: none !important; }
+    .right-panel-toggle { display: none !important; }
+    .footprint-panel.collapsed { transform: none; opacity: 1; pointer-events: auto; }
+    .left-panel.collapsed { transform: none; opacity: 1; pointer-events: auto; }
+
     /* Left panel - full width overlay, unified scroll on mobile */
     .left-panel {
       position: fixed;
@@ -3296,7 +3325,9 @@
 
 <!-- Left Panel - 合并搜索和行程 -->
 
-<div class="left-panel">
+<div class="panel-toggle" id="panelToggle" onclick="togglePanel()" title="收起面板">◀</div>
+
+<div class="left-panel" id="leftPanel">
 
   <!-- Search Section -->
 
@@ -3385,7 +3416,9 @@
 
 <!-- Footprint Panel -->
 
-<div class="footprint-panel">
+<div class="right-panel-toggle" id="rightPanelToggle" onclick="toggleRightPanel()" title="收起面板">▶</div>
+
+<div class="footprint-panel" id="rightPanel">
 
   <!-- Top tabs -->
 
@@ -3484,8 +3517,6 @@
         <option value="张恩林">张恩林</option>
         <option value="王志斌">王志斌</option>
 
-        <option value="王志斌">王志斌</option>
-
       </select>
 
     </div>
@@ -3505,6 +3536,8 @@
         <option value="赵悦">赵悦</option>
         <option value="晓安">晓安</option>
         <option value="鸡柳">鸡柳</option>
+        <option value="铁锤">铁锤</option>
+        <option value="鸡哥">鸡哥</option>
 
         <option value="七七">七七</option>
 
@@ -13141,6 +13174,24 @@ async function uploadToCloud() {
 
 <script>
 // Mobile panel toggle
+function togglePanel() {
+  var p = document.getElementById("leftPanel");
+  var t = document.getElementById("panelToggle");
+  p.classList.toggle("collapsed");
+  t.classList.toggle("collapsed");
+  t.textContent = p.classList.contains("collapsed") ? '\u25b6' : '\u25c0';
+  setTimeout(function() { map.invalidateSize(); }, 400);
+}
+
+function toggleRightPanel() {
+  var p = document.getElementById("rightPanel");
+  var t = document.getElementById("rightPanelToggle");
+  p.classList.toggle("collapsed");
+  t.classList.toggle("collapsed");
+  t.textContent = p.classList.contains("collapsed") ? "\u25c0" : "\u25b6";
+  setTimeout(function() { map.invalidateSize(); }, 400);
+}
+
 function toggleMobilePanel(panel) {
   const leftPanel = document.querySelector('.left-panel');
   const rightPanel = document.querySelector('.footprint-panel');
