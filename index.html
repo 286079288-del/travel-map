@@ -13122,17 +13122,35 @@ async function uploadToCloud() {
   if (ub) { ub.textContent = '⬆️ 上传中...'; ub.disabled = true; }
 
   try {
+    // 第一步：获取当前文件的 SHA（必须成功，否则无法上传）
+    var sha = '';
     var data = { footprints: footprints, itinerary: itinerary, schedule: scheduleItems, exportTime: new Date().toISOString() };
     var jsonStr = JSON.stringify(data);
+    
+    // 尝试获取 SHA，最多重试2次
+    for (var retry = 0; retry < 2 && !sha; retry++) {
+      try {
+        var gr = await fetch('https://api.github.com/repos/' + _cloudRepo + '/contents/' + _cloudFile, {
+          headers: { 'Authorization': 'token ' + _cloudToken, 'Accept': 'application/vnd.github.v3+json' },
+          signal: AbortSignal.timeout(12000)
+        });
+        if (gr.ok) { var ex = await gr.json(); sha = ex.sha || ''; }
+      } catch(e) {
+        console.warn('GET sha attempt ' + (retry+1) + ' failed:', e.message);
+        if (retry < 1) await new Promise(function(r) { setTimeout(r, 1000); });
+      }
+    }
+    
+    if (!sha) {
+      showToast('无法获取文件信息，请确认网络后重试', 'error');
+      if (ub) { ub.textContent = '⬆️ 上传'; ub.disabled = false; }
+      return;
+    }
+
+    // 第二步：上传
     var c = _base64Encode(jsonStr);
-    var sha = '';
-    try {
-      var gr = await fetch('https://api.github.com/repos/' + _cloudRepo + '/contents/' + _cloudFile, {
-        headers: { 'Authorization': 'token ' + _cloudToken, 'Accept': 'application/vnd.github.v3+json' },
-        signal: AbortSignal.timeout(8000)
-      });
-      if (gr.ok) { var ex = await gr.json(); sha = ex.sha || ''; }
-    } catch(e) { console.warn('GET sha failed:', e.message); }
+    if (!c) { showToast('数据编码失败，请重试', 'error'); return; }
+    
     var upr = await fetch('https://api.github.com/repos/' + _cloudRepo + '/contents/' + _cloudFile, {
       method: 'PUT', headers: { 'Authorization': 'token ' + _cloudToken, 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: 'sync', content: c, sha: sha }),
@@ -13145,13 +13163,16 @@ async function uploadToCloud() {
     } else {
       var errBody = '';
       try { errBody = await upr.text(); } catch(e) {}
-      console.error('Upload failed:', upr.status, errBody.substring(0,200));
-      showToast('上传失败(' + upr.status + ')，请重试', 'error');
+      console.error('Upload failed:', upr.status, errBody.substring(0,300));
+      if (upr.status === 409) {
+        showToast('文件冲突(409)，其他设备刚上传过，请重新下载后再上传', 'error');
+      } else {
+        showToast('上传失败(' + upr.status + ')，请重试', 'error');
+      }
     }
   } catch(e) {
     console.error('Upload error:', e.message || e);
-    showToast('上传失败���已自动导出JSON备份', 'error');
-    // 上传失败时自动导出JSON，确保数据不丢失
+    showToast('上传失败，已自动导出JSON备份', 'error');
     try {
       var backup = { footprints: footprints, itinerary: itinerary, schedule: scheduleItems, exportTime: new Date().toISOString() };
       var blob = new Blob([JSON.stringify(backup, null, 2)], {type: 'application/json'});
@@ -13159,7 +13180,7 @@ async function uploadToCloud() {
       a.href = URL.createObjectURL(blob);
       a.download = 'travel-backup-' + new Date().toISOString().slice(0,10) + '.json';
       a.click();
-    } catch(e2) { console.error('backup export failed:', e2); }
+    } catch(e2) { console.error('backup failed:', e2); }
   }
   if (ub) { ub.textContent = '⬆️ 上传'; ub.disabled = false; }
 }
