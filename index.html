@@ -13026,10 +13026,28 @@ var _cloudFile = 'data.json';
 
 // UTF-8 safe base64 encode (no deprecated unescape)
 function _base64Encode(str) {
-  var bytes = new TextEncoder().encode(str);
-  var bin = '';
-  for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-  return btoa(bin);
+  // 方法1: TextEncoder + btoa (现代浏览器)
+  try {
+    var bytes = new TextEncoder().encode(str);
+    var bin = '';
+    for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin);
+  } catch(e) {}
+  
+  // 方法2: encodeURIComponent + btoa (Safari/老浏览器回退)
+  try {
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(m,p) {
+      return String.fromCharCode(parseInt(p, 16));
+    }));
+  } catch(e) {}
+  
+  // 方法3: 终极回退 - 纯ASCII base64 via btoa(unescape)
+  try {
+    return btoa(unescape(encodeURIComponent(str)));
+  } catch(e) {
+    console.error('base64 encode failed:', e);
+    return '';
+  }
 }
 
 async function _fetchCloudData(url, timeoutMs) {
@@ -13132,7 +13150,16 @@ async function uploadToCloud() {
     }
   } catch(e) {
     console.error('Upload error:', e.message || e);
-    showToast('上传失败，请检查网络后重试', 'error');
+    showToast('上传失败���已自动导出JSON备份', 'error');
+    // 上传失败时自动导出JSON，确保数据不丢失
+    try {
+      var backup = { footprints: footprints, itinerary: itinerary, schedule: scheduleItems, exportTime: new Date().toISOString() };
+      var blob = new Blob([JSON.stringify(backup, null, 2)], {type: 'application/json'});
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'travel-backup-' + new Date().toISOString().slice(0,10) + '.json';
+      a.click();
+    } catch(e2) { console.error('backup export failed:', e2); }
   }
   if (ub) { ub.textContent = '⬆️ 上传'; ub.disabled = false; }
 }
